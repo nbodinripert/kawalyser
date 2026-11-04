@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "title": "Kawalyser",
+    "description": "Test a keyboard layout and measure how comfortable it is to type on, without having to learn it."
+  },
+  "home": {
+    "tagline": "Keyboard layout analyser supporting magic rules, 1DK and thumb alphas.",
+    "status": "Under construction"
+  },
+  "languageSwitcher": {
+    "label": "Language"
+  },
+  "themeToggle": {
+    "toDark": "Switch to dark theme",
+    "toLight": "Switch to light theme"
+  }
+}

@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Light by default. Provisional values, to be replaced by the real design. */
+:root {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #16201f;
+  --muted: #5b6b69;
+  --border: #dde5e4;
+  --accent: #00797a;
+  --accent-soft: #e0f5f3;
+}
+
+/* Used for dark mode without JavaScript. Otherwise the inline theme script decides. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #0e1514;
+    --foreground: #e8f0ef;
+    --muted: #93a5a3;
+    --border: #263332;
+    --accent: #5fd9cc;
+    --accent-soft: #143231;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0e1514;
+  --foreground: #e8f0ef;
+  --muted: #93a5a3;
+  --border: #263332;
+  --accent: #5fd9cc;
+  --accent-soft: #143231;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
