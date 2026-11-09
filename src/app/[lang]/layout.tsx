@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   if (!hasLocale(lang)) return {};
 
   const { meta } = await getDictionary(lang);
-  return { title: meta.title, description: meta.description };
+  return { title: meta.title, description: meta.description, icons: { icon: "/icon.svg" } };
 }
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {

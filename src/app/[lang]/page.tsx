@@ -22,9 +22,9 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-accent text-sm font-bold text-accent-contrast">
-              K
-            </span>
+            {/* Same file as the browser tab icon, so the two never drift apart. */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- a small static SVG gains nothing from next/image */}
+            <img src="/icon.svg" alt="" aria-hidden className="size-8 shrink-0" />
             <div>
               <p className="text-sm font-semibold tracking-tight">{dictionary.meta.title}</p>
               <p className="hidden text-xs text-muted sm:block">{dictionary.home.tagline}</p>
