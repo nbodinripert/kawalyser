@@ -38,9 +38,16 @@
     "redo": "Rétablir",
     "reset": "Revenir à la disposition importée",
     "hint": "Glissez un caractère sur une autre touche pour les échanger. Visez le bord droit d'une touche pour le placer après la touche morte. Ou double-cliquez sur une zone, ou appuyez sur Entrée, puis tapez un caractère.",
-    "selectedHint": "Tapez le caractère à placer dans cette zone. Échap pour annuler.",
+    "selectedHint": "Tapez le caractère à placer dans cette zone, ou appuyez sur Suppr pour la vider. Échap pour annuler.",
+    "legend": {
+      "label": "Touches spéciales",
+      "dead": "Touche morte 1DK",
+      "repeat": "Repeat",
+      "magic": "Magic",
+      "notPlaced": "non placée"
+    },
     "trash": "Corbeille",
-    "trashHint": "Déposez un caractère ici pour le supprimer. Ou sélectionnez une zone et appuyez sur Suppr ou Retour arrière.",
+    "trashHint": "Pour supprimer un caractère, glissez-le sur la corbeille, ou sélectionnez sa zone et appuyez sur Suppr ou Retour arrière.",
     "drag": {
       "deleted": "Caractère supprimé.",
       "pickedUp": "{char} saisi.",
@@ -71,7 +78,7 @@
   },
   "replacements": {
     "title": "Remplacements",
-    "empty": "Aucun fichier de remplacements. Importez-en un pour analyser Repeat, Magic, et les corrections essentielles et optionnelles.",
+    "empty": "Aucun fichier de remplacements. Importez-en un pour analyser Magic et les corrections essentielles et optionnelles.",
     "hidden": "Aucun remplacement n'est appliqué : choisissez des corrections dans le sélecteur « Remplacements » pour les afficher.",
     "essential": "Corrections essentielles",
     "optional": "Corrections optionnelles",

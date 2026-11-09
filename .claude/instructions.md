@@ -31,7 +31,7 @@ L'utilisateur est développeur React confirmé mais débute sur les claviers. Ka
 | Touche | Symbole | Effet |
 | --- | --- | --- |
 | Touche morte 1DK | `*` | Une seule touche morte ; touche morte puis touche X donne le caractère `dk` de X. Les autres touches mortes de Kalamine sont ignorées (question 23, prévu plus tard). |
-| Repeat | `$` | Répète la frappe précédente : `ll` devient `l$`. Actif seulement si `$` est sur la carte. |
+| Repeat | `$` | Répète la frappe précédente : `ll` devient `l$`. Actif seulement si `$` est sur la carte, à tous les niveaux. |
 | Magic | `#` | Sa sortie dépend de la frappe précédente ; ses effets sont décrits dans le fichier de remplacements. |
 | Clever Keys | — | Règles contextuelles du firmware : taper `keys` produit `text`, avec des conditions sur la lettre avant ou après. Ce sont les `optionalCorrections`. |
 
@@ -39,8 +39,8 @@ Doublons : un caractère présent deux fois sur la grille principale dans la mê
 
 ### Les niveaux d'analyse
 
-1. `raw` (« Aucun ») : le texte tel quel ; seuls les caractères simples de la couche morte sont convertis en deux frappes.
-2. `corrections` : en plus, les séquences de touche morte de plusieurs caractères, Repeat, puis les `essentialCorrections`.
+1. `raw` (« Aucun ») : le texte tel quel ; seuls les caractères simples de la couche morte sont convertis en deux frappes, et les lettres doublées passent par Repeat si `$` est sur la carte.
+2. `corrections` : en plus, les séquences de touche morte de plusieurs caractères, puis les `essentialCorrections`.
 3. `clever` : les `optionalCorrections` (Clever Keys) d'abord, puis tout ce qui précède.
 
 L'ordre d'application vient du VBA (`adapt.ts`) : ne pas le changer sans preuve.

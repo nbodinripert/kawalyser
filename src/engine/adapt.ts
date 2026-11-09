@@ -6,7 +6,7 @@ import { keysToTokens, REPEAT, type KeyMap } from "./keymap";
 /**
  * Turns the corpus into what is really typed, word by word, as the Excel analyser does:
  * optional corrections (Clever Keys) first, then the dead key strings, Repeat and essential corrections,
- * then the dead key layer.
+ * then the dead key layer. Repeat does not depend on the level: it follows the key being on the map.
  */
 
 type Rule = {
@@ -90,18 +90,19 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
     else singleDeadKeyRules.push(rule);
   }
 
+  // Repeat: the Excel analyser applies it from the "corrections" level, to "aa" to "zz", even without the key.
+  // Now the key alone decides (feedback on Repeat): placed on the map, every valid doubled character uses it, at every level.
+  const repeatable = compat
+    ? Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i))
+    : keyMap.slotOf.has(REPEAT)
+      ? [...validChars[language]].filter((char) => char !== DEAD_KEY)
+      : [];
+  const repeatRules = repeatable.map((char) => register({ pattern: char + char, replacement: char + REPEAT }));
+
   const correctionRules: Rule[] = [];
+  if (level !== "raw") correctionRules.push(...multiDeadKeyRules);
+  if (!compat || level !== "raw") correctionRules.push(...repeatRules);
   if (level !== "raw") {
-    correctionRules.push(...multiDeadKeyRules);
-
-    // Repeat: in the Excel analyser, "aa" to "zz" even without the key; now every valid character, if the key is placed.
-    const repeatable = compat
-      ? Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i))
-      : keyMap.slotOf.has(REPEAT)
-        ? [...validChars[language]].filter((char) => char !== DEAD_KEY)
-        : [];
-    for (const char of repeatable) correctionRules.push(register({ pattern: char + char, replacement: char + REPEAT }));
-
     for (const rule of replacements.essentialCorrections) {
       correctionRules.push(register({ pattern: rule.text, replacement: keysToTokens(rule.keys) }));
     }

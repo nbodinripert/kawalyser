@@ -15,6 +15,8 @@ type StackedColumnsProps = {
   tableLabel: string;
   hideTableLabel: string;
   totalLabel?: string;
+  /** A figure that belongs to the whole chart, shown as the first row of the table. */
+  summary?: { label: string; value: string; hint?: string };
   /** Prints each column's total above it. */
   showTotals?: boolean;
 };
@@ -48,6 +50,7 @@ export function StackedColumns({
   tableLabel,
   hideTableLabel,
   totalLabel,
+  summary,
   showTotals = true,
 }: StackedColumnsProps) {
   const [active, setActive] = useState<number | null>(null);
@@ -210,25 +213,36 @@ export function StackedColumns({
           <table className="w-full text-left text-xs">
             <thead className="text-muted">
               <tr>
-                <th className="py-1 pr-3 font-medium" />
+                <th className="px-3 py-1 font-medium" />
                 {series.map((s) => (
-                  <th key={s.id} className="py-1 pr-3 text-right font-medium">
+                  <th key={s.id} className="px-3 py-1 text-right font-medium">
                     {s.label}
                   </th>
                 ))}
-                {totalLabel && <th className="py-1 text-right font-medium">{totalLabel}</th>}
+                {totalLabel && <th className="px-3 py-1 text-right font-medium">{totalLabel}</th>}
               </tr>
             </thead>
             <tbody className="tabular">
+              {summary && (
+                <tr className="bg-accent-soft">
+                  <th className="px-3 py-1.5 text-left font-semibold text-foreground">
+                    {summary.label}
+                    {summary.hint && <span className="block text-[0.7rem] font-normal text-muted">{summary.hint}</span>}
+                  </th>
+                  <td colSpan={series.length + (totalLabel ? 1 : 0)} className="px-3 py-1.5 text-right text-sm font-semibold">
+                    {summary.value}
+                  </td>
+                </tr>
+              )}
               {categoryNames.map((name, index) => (
                 <tr key={name + index} className={cx("border-t border-border")}>
-                  <th className="py-1 pr-3 font-normal text-muted">{name}</th>
+                  <th className="px-3 py-1 font-normal text-muted">{name}</th>
                   {series.map((s) => (
-                    <td key={s.id} className="py-1 pr-3 text-right">
+                    <td key={s.id} className="px-3 py-1 text-right">
                       {formatValue(s.values[index] ?? 0)}
                     </td>
                   ))}
-                  {totalLabel && <td className="py-1 text-right font-medium">{formatValue(totals[index] ?? 0)}</td>}
+                  {totalLabel && <td className="px-3 py-1 text-right font-medium">{formatValue(totals[index] ?? 0)}</td>}
                 </tr>
               ))}
             </tbody>

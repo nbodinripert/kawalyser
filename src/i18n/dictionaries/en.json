@@ -38,9 +38,16 @@
     "redo": "Redo",
     "reset": "Back to the imported layout",
     "hint": "Drag a character onto another key to swap them. Aim at the right edge of a key to place it after the dead key. Or double-click a zone, or press Enter on it, then type a character.",
-    "selectedHint": "Type the character to place in this zone. Press Escape to cancel.",
+    "selectedHint": "Type the character to place in this zone, or press Delete to empty it. Press Escape to cancel.",
+    "legend": {
+      "label": "Special keys",
+      "dead": "1DK dead key",
+      "repeat": "Repeat",
+      "magic": "Magic",
+      "notPlaced": "not placed"
+    },
     "trash": "Trash",
-    "trashHint": "Drop a character here to delete it. Or select a zone and press Delete or Backspace.",
+    "trashHint": "To delete a character, drag it onto the trash, or select its zone and press Delete or Backspace.",
     "drag": {
       "deleted": "Character deleted.",
       "pickedUp": "Picked up {char}.",
@@ -71,7 +78,7 @@
   },
   "replacements": {
     "title": "Replacements",
-    "empty": "No replacement file. Import one to analyse Repeat, Magic, and the essential and optional corrections.",
+    "empty": "No replacement file. Import one to analyse Magic and the essential and optional corrections.",
     "hidden": "No replacement is applied: pick corrections in the Replacements selector to show them.",
     "essential": "Essential corrections",
     "optional": "Optional corrections",

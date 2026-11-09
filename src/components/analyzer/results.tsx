@@ -132,13 +132,6 @@ function Difficulties({ result, dictionary, numbers }: ResultsProps) {
   return (
     <Card title={labels.title}>
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-        <div className="rounded-xl bg-accent-soft px-3 py-2.5" title={labels.totalHint}>
-          <dt className="text-xs font-semibold text-foreground">{labels.total}</dt>
-          <dd className="mt-0.5 text-lg font-semibold tracking-tight">
-            {numbers.percent(difficultyIds.reduce((total, id) => total + result.difficulties[id], 0))}
-          </dd>
-          <dd className="truncate text-xs text-muted">{labels.totalHint}</dd>
-        </div>
         {difficultyIds.map((id) => (
           <div key={id} className="rounded-xl bg-surface-muted px-3 py-2.5" title={labels.items[id]}>
             <dt className="flex items-baseline justify-between gap-2 text-xs">
@@ -186,8 +179,18 @@ function Difficulties({ result, dictionary, numbers }: ResultsProps) {
 function Distribution({ result, dictionary, numbers }: ResultsProps) {
   const labels = dictionary.results.distribution;
   const fingers = dictionary.results.fingerLoad;
+  const difficulties = dictionary.results.difficulties;
+  const total = numbers.percent(difficultyIds.reduce((sum, id) => sum + result.difficulties[id], 0));
   return (
-    <Card title={labels.title}>
+    <Card
+      title={labels.title}
+      // The total stays in sight, as the table below can be hidden; it is also its first row.
+      actions={
+        <p title={difficulties.totalHint} className="rounded-lg bg-accent-soft px-3 py-1 text-sm">
+          <span className="text-muted">{difficulties.total}</span> <span className="tabular font-semibold">{total}</span>
+        </p>
+      }
+    >
       <p className="-mt-3 mb-4 text-xs text-muted">{labels.subtitle}</p>
       <StackedColumns
         categories={fingers.short}
@@ -200,6 +203,7 @@ function Distribution({ result, dictionary, numbers }: ResultsProps) {
         formatValue={numbers.integer}
         formatTick={(value) => (value >= 10000 ? `${numbers.integer(value / 1000)}k` : numbers.integer(value))}
         totalLabel={fingers.total}
+        summary={{ label: difficulties.total, value: total, hint: difficulties.totalHint }}
         tableLabel={dictionary.results.table}
         hideTableLabel={dictionary.results.hideTable}
       />

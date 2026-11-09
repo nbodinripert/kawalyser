@@ -58,7 +58,7 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 
 | Comportement de l'Excel | Sur le site |
 | --- | --- |
-| Repeat remplace `aa` à `zz`, même sans touche `$` | Tous les caractères valides doublés, seulement si `$` est placé |
+| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Corrections essentielles » | Tous les caractères valides doublés, seulement si `$` est placé, quel que soit le niveau |
 | « Pas de lettre avant ou après » ne reconnaît que `a` à `z` et `é` | Toutes les lettres |
 | Les barres de charge des index oublient `B` et `K` | Toutes les touches comptent |
 | « Sans espace » retire aussi la touche voisine d'espace | Seule la touche espace est retirée |

@@ -18,7 +18,7 @@ import { useMemo, useState, type KeyboardEvent } from "react";
 import { clearZone, dropZone, moveZone, typeIntoZone, type ZoneRef } from "@/domain/edit";
 import { shapes, type KeySlot } from "@/domain/geometry";
 import { visibleZones, type Layout, type Zone } from "@/domain/layout";
-import { SPACE } from "@/domain/symbols";
+import { DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
 import type { CorpusLanguage } from "@/domain/valid-chars";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx, format } from "../ui";
@@ -59,7 +59,17 @@ type Drag = { from: ZoneRef; char: string; target: ZoneRef | null; overTrash: bo
 
 const TRASH_ID = "trash";
 
-const showChar = (char: string, labels: Labels) => (char === SPACE ? labels.space : char);
+const specialName = (char: string, labels: Labels): string | undefined =>
+  char === DEAD_KEY ? labels.legend.dead : char === REPEAT_KEY ? labels.legend.repeat : char === MAGIC_KEY ? labels.legend.magic : undefined;
+
+/** What is said or written for a character: the special keys carry their name, since a bare symbol means nothing. */
+const showChar = (char: string, labels: Labels) => {
+  if (char === SPACE) return labels.space;
+  const name = specialName(char, labels);
+  return name === undefined ? char : `${char} (${name})`;
+};
+
+const legendKeys = [DEAD_KEY, REPEAT_KEY, MAGIC_KEY] as const;
 
 /** The zones a move would change, to highlight them while the user is still dragging. */
 function changedZones(before: Layout, after: Layout, keys: string[], language: CorpusLanguage): Set<string> {
@@ -209,9 +219,10 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
           ))}
         </div>
       </div>
+      <Legend layout={layout} labels={labels} />
       <Trash label={labels.trash} active={drag?.overTrash ?? false} dragging={drag !== null} />
       <p className="mt-3 min-h-5 text-xs text-muted" aria-live="polite">
-        {selected ? labels.selectedHint : labels.hint} {labels.trashHint}
+        {selected ? labels.selectedHint : `${labels.hint} ${labels.trashHint}`}
       </p>
       <p className="sr-only" role="status">
         {notice}
@@ -306,7 +317,7 @@ function ZoneCell({ refId, char, labels, selected, highlighted, strong, interact
   const ariaLabel =
     char === undefined
       ? format(labels.emptyZone, { zone: zoneName })
-      : format(labels.keyLabel, { zone: zoneName, char: char === SPACE ? labels.space : char });
+      : format(labels.keyLabel, { zone: zoneName, char: showChar(char, labels) });
 
   return (
     <button
@@ -364,7 +375,7 @@ function Trash({ label, active, dragging }: { label: string; active: boolean; dr
     <div
       ref={setNodeRef}
       className={cx(
-        "mx-auto mt-3 flex w-max items-center gap-2 rounded-lg border border-dashed px-3 py-1.5 text-xs transition-colors duration-100",
+        "mx-auto mt-3 flex w-max items-center gap-2 rounded-xl border border-dashed px-4 py-2.5 text-sm font-medium transition-colors duration-100",
         active
           ? "border-danger bg-danger-soft text-danger"
           : dragging
@@ -372,10 +383,32 @@ function Trash({ label, active, dragging }: { label: string; active: boolean; dr
             : "border-key-border text-muted",
       )}
     >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
       </svg>
       {label}
     </div>
+  );
+}
+
+/**
+ * Names the special keys outside the keys themselves, where a thumb key has no room for text.
+ * A key that is not on the map is dimmed: Repeat in particular only acts once its symbol is placed.
+ */
+function Legend({ layout, labels }: { layout: Layout; labels: Labels }) {
+  const placed = new Set<string>();
+  for (const chars of Object.values(layout.keys)) for (const char of Object.values(chars)) if (char !== undefined) placed.add(char);
+  return (
+    <ul aria-label={labels.legend.label} className="mx-auto mt-3 flex w-max max-w-full flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-muted">
+      {legendKeys.map((char) => (
+        <li key={char} className={cx("flex items-center gap-1.5", !placed.has(char) && "opacity-60")}>
+          <kbd className="inline-flex size-5 items-center justify-center rounded-[5px] border border-key-border bg-key font-sans font-semibold text-foreground">{char}</kbd>
+          <span>
+            {specialName(char, labels)}
+            {!placed.has(char) && ` (${labels.legend.notPlaced})`}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }

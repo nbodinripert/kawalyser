@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { defaultLayoutToml } from "@/domain/default-layout";
 import { importKalamine } from "@/domain/kalamine";
+import type { Layout } from "@/domain/layout";
 import { parseReplacements, type Replacements } from "@/domain/replacements";
 import { createAdapter } from "./adapt";
 import { buildKeyMap, DK, MAGIC, REPEAT } from "./keymap";
@@ -31,7 +32,21 @@ describe("createAdapter", () => {
 
   it("uses Repeat for doubled characters when the key is placed", () => {
     expect(typed("elle", "corrections")).toBe(`el${REPEAT}e`);
-    expect(typed("elle", "raw")).toBe("elle");
+    expect(typed("elle", "raw")).toBe(`el${REPEAT}e`);
+  });
+
+  it("does not use Repeat when the key is not on the map, at any level", () => {
+    const without: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).map(([id, chars]) => [id, Object.fromEntries(Object.entries(chars).filter(([, char]) => char !== "$"))])) };
+    for (const level of ["raw", "corrections", "clever"] as const) {
+      const adapter = createAdapter(buildKeyMap(without, { language: "fr" }), replacements, { level, language: "fr" });
+      expect(adapter.adaptLine("elle").adapted.join(" ")).toBe("elle");
+    }
+  });
+
+  it("keeps the Excel behaviour in compat mode: Repeat only from the corrections level, key or not", () => {
+    const keyMap = buildKeyMap(layout, { language: "fr" });
+    expect(createAdapter(keyMap, replacements, { level: "raw", language: "fr", compat: true }).adaptLine("elle").adapted.join(" ")).toBe("elle");
+    expect(createAdapter(keyMap, replacements, { level: "corrections", language: "fr", compat: true }).adaptLine("elle").adapted.join(" ")).toBe(`el${REPEAT}e`);
   });
 
   it("applies Clever Keys before the corrections, word by word", () => {
