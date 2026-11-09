@@ -2,47 +2,112 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Light by default. Provisional values, to be replaced by the real design. */
+/*
+ * Light by default. The chart series were checked with the data-viz palette validator
+ * (colour-blind separation, lightness band, contrast) in both modes.
+ */
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #16201f;
-  --muted: #5b6b69;
-  --border: #dde5e4;
-  --accent: #00797a;
-  --accent-soft: #e0f5f3;
+  --background: #f6f8f8;
+  --surface: #ffffff;
+  --surface-muted: #eef3f2;
+  --foreground: #142120;
+  --muted: #586866;
+  --faint: #8a9896;
+  --border: #dbe4e3;
+  --accent: #00766f;
+  --accent-strong: #005c56;
+  --accent-soft: #dff3f0;
+  --accent-contrast: #ffffff;
+  --danger: #b4232c;
+  --danger-soft: #fbe9ea;
+  --key: #ffffff;
+  --key-border: #cfdbd9;
+  --heat: #0a8f86;
+  --heat-ink: #ffffff;
+  --grid: #e4ebea;
+  --axis: #c5d1cf;
+  --series-home: #1baf7a;
+  --series-other: #2a78d6;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
 }
 
-/* Used for dark mode without JavaScript. Otherwise the inline theme script decides. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --background: #0e1514;
-    --foreground: #e8f0ef;
-    --muted: #93a5a3;
-    --border: #263332;
-    --accent: #5fd9cc;
-    --accent-soft: #143231;
+    --background: #0c1312;
+    --surface: #131c1b;
+    --surface-muted: #1a2524;
+    --foreground: #e6efee;
+    --muted: #9fb0ae;
+    --faint: #6f817f;
+    --border: #253331;
+    --accent: #3fc4b6;
+    --accent-strong: #6fd8cb;
+    --accent-soft: #15302d;
+    --accent-contrast: #062421;
+    --danger: #f07a80;
+    --danger-soft: #3a1a1d;
+    --key: #182322;
+    --key-border: #2c3c3a;
+    --heat: #2fb7a9;
+    --heat-ink: #04201d;
+    --grid: #22302e;
+    --axis: #34443f;
+    --series-home: #199e70;
+    --series-other: #3987e5;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #0e1514;
-  --foreground: #e8f0ef;
-  --muted: #93a5a3;
-  --border: #263332;
-  --accent: #5fd9cc;
-  --accent-soft: #143231;
+  --background: #0c1312;
+  --surface: #131c1b;
+  --surface-muted: #1a2524;
+  --foreground: #e6efee;
+  --muted: #9fb0ae;
+  --faint: #6f817f;
+  --border: #253331;
+  --accent: #3fc4b6;
+  --accent-strong: #6fd8cb;
+  --accent-soft: #15302d;
+  --accent-contrast: #062421;
+  --danger: #f07a80;
+  --danger-soft: #3a1a1d;
+  --key: #182322;
+  --key-border: #2c3c3a;
+  --heat: #2fb7a9;
+  --heat-ink: #04201d;
+  --grid: #22302e;
+  --axis: #34443f;
+  --series-home: #199e70;
+  --series-other: #3987e5;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-border: var(--border);
   --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-key: var(--key);
+  --color-key-border: var(--key-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -51,4 +116,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
 }

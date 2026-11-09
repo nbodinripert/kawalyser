@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
+import { InlineScript } from "@/components/inline-script";
 import { hasLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { themeScript } from "@/lib/theme";
@@ -40,7 +41,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <InlineScript html={themeScript} />
       </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

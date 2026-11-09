@@ -1,8 +1,15 @@
 import { notFound } from "next/navigation";
+import { Analyzer } from "@/components/analyzer/analyzer";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { defaultLayoutToml } from "@/domain/default-layout";
+import { importKalamine } from "@/domain/kalamine";
+import { emptyLayout } from "@/domain/layout";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+
+const defaultImport = importKalamine(defaultLayoutToml, "split40");
+const defaultLayout = defaultImport.ok ? defaultImport.layout : emptyLayout("split40");
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
@@ -12,20 +19,32 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
   return (
     <>
-      <header className="flex items-center justify-between border-b border-border px-6 py-4">
-        <span className="font-semibold tracking-tight">{dictionary.meta.title}</span>
-        <div className="flex items-center gap-3">
-          <LanguageSwitcher current={lang} label={dictionary.languageSwitcher.label} />
-          <ThemeToggle labels={dictionary.themeToggle} />
+      <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-accent text-sm font-bold text-accent-contrast">
+              K
+            </span>
+            <div>
+              <p className="text-sm font-semibold tracking-tight">{dictionary.meta.title}</p>
+              <p className="hidden text-xs text-muted sm:block">{dictionary.home.tagline}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher current={lang} label={dictionary.languageSwitcher.label} />
+            <ThemeToggle labels={dictionary.themeToggle} />
+          </div>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-4 px-6 py-16">
-        <h1 className="text-4xl font-semibold tracking-tight">{dictionary.meta.title}</h1>
-        <p className="text-lg text-muted">{dictionary.home.tagline}</p>
-        <p className="w-fit rounded-full bg-accent-soft px-3 py-1 text-sm font-medium text-accent">
-          {dictionary.home.status}
-        </p>
+
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        <h1 className="sr-only">{dictionary.meta.title}</h1>
+        <Analyzer dictionary={dictionary} locale={lang} defaultLayout={defaultLayout} />
       </main>
+
+      <footer className="border-t border-border">
+        <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-muted sm:px-6">{dictionary.footer.credits}</div>
+      </footer>
     </>
   );
 }

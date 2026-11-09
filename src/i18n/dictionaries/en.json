@@ -4,8 +4,7 @@
     "description": "Test a keyboard layout and measure how comfortable it is to type on, without having to learn it."
   },
   "home": {
-    "tagline": "Keyboard layout analyser supporting magic rules, 1DK and thumb alphas.",
-    "status": "Under construction"
+    "tagline": "Keyboard layout analyser supporting magic rules, 1DK and thumb alphas."
   },
   "languageSwitcher": {
     "label": "Language"
@@ -13,5 +12,231 @@
   "themeToggle": {
     "toDark": "Switch to dark theme",
     "toLight": "Switch to light theme"
+  },
+  "layout": {
+    "title": "Layout",
+    "importToml": "Import .toml",
+    "importReplacements": "Import replacements",
+    "removeReplacements": "Remove replacements",
+    "shape": "Keyboard",
+    "shapes": {
+      "split40": "Split, 40 keys",
+      "split34": "Split, 34 keys"
+    },
+    "corpus": "Corpus",
+    "corpora": {
+      "fr": "French",
+      "en": "English"
+    },
+    "level": "Replacements",
+    "levels": {
+      "raw": "None",
+      "corrections": "Corrections",
+      "clever": "Corrections and Clever Keys"
+    },
+    "undo": "Undo",
+    "redo": "Redo",
+    "reset": "Back to the imported layout",
+    "hint": "Drag a character onto another key to swap them. Aim at the right edge of a key to place it after the dead key. Or double-click a zone, or press Enter on it, then type a character.",
+    "selectedHint": "Type the character to place in this zone. Press Escape to cancel.",
+    "drag": {
+      "pickedUp": "Picked up {char}.",
+      "over": "Over the {key} key.",
+      "outside": "Not over a key.",
+      "dropped": "Characters swapped.",
+      "cancelled": "Move cancelled."
+    },
+    "space": "space",
+    "mapLabel": "Keyboard map",
+    "zones": {
+      "base": "alone",
+      "shift": "with Shift",
+      "dk": "after the dead key",
+      "dkShift": "after the dead key, with Shift"
+    },
+    "keyLabel": "{zone}: {char}",
+    "emptyZone": "{zone}: empty",
+    "imported": "{name} imported.",
+    "droppedReserved": "{chars} are reserved for special keys and were left out.",
+    "errors": {
+      "unreadable": "This file could not be read: {detail}",
+      "noLayer": "This file has no base or full layer.",
+      "unknownGeometry": "The {geometry} geometry is not supported. Supported geometries: ERGO, ISO, ANSI and ALT.",
+      "duplicates": "{chars} appear on several keys of the main pad. The analyser could not tell which key is typed, so the file was not imported.",
+      "replacements": "This replacement file is not valid: {detail}"
+    }
+  },
+  "replacements": {
+    "title": "Replacements",
+    "empty": "No replacement file. Import one to analyse Repeat, Magic and Clever Keys.",
+    "corrections": "Essential corrections",
+    "cleverKeys": "Clever Keys",
+    "toWrite": "To write",
+    "type": "type"
+  },
+  "analysis": {
+    "run": "Run analysis",
+    "running": "Analysing…",
+    "failed": "The analysis failed. Please try again in a moment.",
+    "empty": "Run the analysis to see the statistics of this layout.",
+    "cleared": "The layout changed, so the previous statistics were cleared.",
+    "downloadNgrams": "Download n-grams",
+    "downloadDifficulties": "Download difficulties",
+    "downloadFailed": "The download failed. Please try again."
+  },
+  "results": {
+    "fingerLoad": {
+      "title": "Finger load",
+      "home": "Home keys",
+      "other": "Other keys",
+      "fingers": [
+        "Left pinky",
+        "Left ring",
+        "Left middle",
+        "Left index",
+        "Left thumb",
+        "Right thumb",
+        "Right index",
+        "Right middle",
+        "Right ring",
+        "Right pinky"
+      ],
+      "short": [
+        "P",
+        "R",
+        "M",
+        "I",
+        "T",
+        "T",
+        "I",
+        "M",
+        "R",
+        "P"
+      ],
+      "total": "Total"
+    },
+    "hands": {
+      "title": "Hands",
+      "left": "Left",
+      "right": "Right",
+      "innerColumns": "Inner columns",
+      "outerColumns": "Outer columns",
+      "withoutThumbs": "Total without thumbs",
+      "overall": "Overall total",
+      "homeKeys": "Home keys",
+      "withSpace": "All keys",
+      "withoutSpace": "Without space",
+      "presses": "Key presses",
+      "pressesHint": "Compared with typing the corpus character by character"
+    },
+    "trigrams": {
+      "title": "Trigrams",
+      "scope": "Keys included",
+      "scopes": {
+        "pad": "Main pad",
+        "noSpace": "All but space",
+        "all": "All keys"
+      },
+      "alternation": "Alternation",
+      "rolls": "Rolls",
+      "inward": "Inward",
+      "outward": "Outward",
+      "oneHand": "3-rolls",
+      "ratio": "In/out ratio",
+      "redirects": "Redirects"
+    },
+    "difficulties": {
+      "title": "Difficulties",
+      "details": "Details",
+      "items": {
+        "sfb": "Same-finger bigrams",
+        "skb": "Same-key bigrams",
+        "lsb": "Lateral stretch bigrams",
+        "fsb": "Full-scissor bigrams",
+        "hsb": "Half-scissor bigrams",
+        "rjb": "Row-jump bigrams",
+        "badRedirects": "Bad redirects",
+        "sfs": "Same-finger skipgrams",
+        "sts": "Same-thumb spacegrams",
+        "fss": "Full-scissor skipgrams",
+        "cc": "Cognitive load",
+        "shs": "Same-hand sequences"
+      },
+      "short": {
+        "sfb": "SFB",
+        "skb": "SKB",
+        "lsb": "LSB",
+        "fsb": "FSB",
+        "hsb": "HSB",
+        "rjb": "RJB",
+        "badRedirects": "Bad redir.",
+        "sfs": "SFS*",
+        "sts": "STS*",
+        "fss": "FSS*",
+        "cc": "CC",
+        "shs": "SHS"
+      },
+      "weighted": "* Cases whose middle key is on the other hand count half.",
+      "lists": {
+        "sfb": "SFB",
+        "skb": "SKB",
+        "lsb": "LSB",
+        "fsb": "FSB",
+        "hsb": "HSB",
+        "rjb": "RJB",
+        "badRedirects": "Bad redirects",
+        "sfsRedirect": "SFS, redirect",
+        "sfsAlternation": "SFS, alternation",
+        "fssRedirect": "FSS, redirect",
+        "fssAlternation": "FSS, alternation",
+        "cc": "Cognitive load",
+        "shs4": "SHS, 4 keys",
+        "shs5": "SHS, 5 keys or more"
+      },
+      "emptyList": "None",
+      "occurrences": "{count} times"
+    },
+    "distribution": {
+      "title": "Where difficulties land",
+      "subtitle": "Weighted scores per finger, without unit",
+      "distance": "Distance (SKB, SFB, SFS)",
+      "scissors": "Scissors",
+      "stretch": "LSB and bad redirects"
+    },
+    "table": "Show as a table",
+    "hideTable": "Hide the table"
+  },
+  "csv": {
+    "words": "Words",
+    "typed": "Typed",
+    "count": "Count",
+    "quadrigrams": "Quadrigrams",
+    "trigrams": "Trigrams",
+    "bigrams": "Bigrams",
+    "characters": "Characters",
+    "layoutCount": "Count once typed",
+    "corpusCount": "Count in the corpus",
+    "change": "Change",
+    "share": "Share",
+    "lists": {
+      "sfb": "SFB",
+      "skb": "SKB",
+      "lsb": "LSB",
+      "fsb": "Full scissors",
+      "hsb": "Half scissors",
+      "rjb": "RJB",
+      "badRedirects": "Bad redirect",
+      "sfsRedirect": "SFS redirect",
+      "sfsAlternation": "SFS alternation",
+      "fssRedirect": "FSS redirect",
+      "fssAlternation": "FSS alternation",
+      "cc": "Cognitive load",
+      "shs4": "SHS 4",
+      "shs5": "SHS 5+"
+    }
+  },
+  "footer": {
+    "credits": "Algorithms ported from the Kawalyser Excel analyser by Kawamashi. Default layout: Propergol (MIT licence).",
+    "source": "Source code"
   }
 }

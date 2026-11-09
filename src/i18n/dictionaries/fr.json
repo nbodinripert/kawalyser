@@ -4,8 +4,7 @@
     "description": "Testez une disposition de clavier et mesurez si elle est agréable à taper, sans avoir à l'apprendre."
   },
   "home": {
-    "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces.",
-    "status": "En construction"
+    "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces."
   },
   "languageSwitcher": {
     "label": "Langue"
@@ -13,5 +12,231 @@
   "themeToggle": {
     "toDark": "Passer au thème sombre",
     "toLight": "Passer au thème clair"
+  },
+  "layout": {
+    "title": "Disposition",
+    "importToml": "Importer un .toml",
+    "importReplacements": "Importer des remplacements",
+    "removeReplacements": "Retirer les remplacements",
+    "shape": "Clavier",
+    "shapes": {
+      "split40": "Split, 40 touches",
+      "split34": "Split, 34 touches"
+    },
+    "corpus": "Corpus",
+    "corpora": {
+      "fr": "Français",
+      "en": "Anglais"
+    },
+    "level": "Remplacements",
+    "levels": {
+      "raw": "Aucun",
+      "corrections": "Corrections",
+      "clever": "Corrections et Clever Keys"
+    },
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "reset": "Revenir à la disposition importée",
+    "hint": "Glissez un caractère sur une autre touche pour les échanger. Visez le bord droit d'une touche pour le placer après la touche morte. Ou double-cliquez sur une zone, ou appuyez sur Entrée, puis tapez un caractère.",
+    "selectedHint": "Tapez le caractère à placer dans cette zone. Échap pour annuler.",
+    "drag": {
+      "pickedUp": "{char} saisi.",
+      "over": "Au-dessus de la touche {key}.",
+      "outside": "En dehors des touches.",
+      "dropped": "Caractères échangés.",
+      "cancelled": "Déplacement annulé."
+    },
+    "space": "espace",
+    "mapLabel": "Carte du clavier",
+    "zones": {
+      "base": "seule",
+      "shift": "avec Shift",
+      "dk": "après la touche morte",
+      "dkShift": "après la touche morte, avec Shift"
+    },
+    "keyLabel": "{zone} : {char}",
+    "emptyZone": "{zone} : vide",
+    "imported": "{name} importée.",
+    "droppedReserved": "{chars} sont réservés aux touches spéciales et n'ont pas été repris.",
+    "errors": {
+      "unreadable": "Ce fichier est illisible : {detail}",
+      "noLayer": "Ce fichier ne contient pas de bloc base ni full.",
+      "unknownGeometry": "La forme {geometry} n'est pas prise en charge. Formes acceptées : ERGO, ISO, ANSI et ALT.",
+      "duplicates": "{chars} figurent sur plusieurs touches du pavé principal. L'analyseur ne pourrait pas savoir laquelle est tapée : le fichier n'a pas été importé.",
+      "replacements": "Ce fichier de remplacements n'est pas valide : {detail}"
+    }
+  },
+  "replacements": {
+    "title": "Remplacements",
+    "empty": "Aucun fichier de remplacements. Importez-en un pour analyser Repeat, Magic et les Clever Keys.",
+    "corrections": "Corrections essentielles",
+    "cleverKeys": "Clever Keys",
+    "toWrite": "Pour écrire",
+    "type": "taper"
+  },
+  "analysis": {
+    "run": "Lancer l'analyse",
+    "running": "Analyse en cours…",
+    "failed": "L'analyse a échoué. Réessayez dans un instant.",
+    "empty": "Lancez l'analyse pour voir les statistiques de cette disposition.",
+    "cleared": "La disposition a changé : les statistiques précédentes ont été effacées.",
+    "downloadNgrams": "Télécharger les n-grammes",
+    "downloadDifficulties": "Télécharger les difficultés",
+    "downloadFailed": "Le téléchargement a échoué. Réessayez."
+  },
+  "results": {
+    "fingerLoad": {
+      "title": "Charge des doigts",
+      "home": "Touches de repos",
+      "other": "Autres touches",
+      "fingers": [
+        "Auriculaire gauche",
+        "Annulaire gauche",
+        "Majeur gauche",
+        "Index gauche",
+        "Pouce gauche",
+        "Pouce droit",
+        "Index droit",
+        "Majeur droit",
+        "Annulaire droit",
+        "Auriculaire droit"
+      ],
+      "short": [
+        "Au",
+        "An",
+        "Ma",
+        "In",
+        "Po",
+        "Po",
+        "In",
+        "Ma",
+        "An",
+        "Au"
+      ],
+      "total": "Total"
+    },
+    "hands": {
+      "title": "Mains",
+      "left": "Gauche",
+      "right": "Droite",
+      "innerColumns": "Colonnes internes",
+      "outerColumns": "Colonnes externes",
+      "withoutThumbs": "Total hors pouces",
+      "overall": "Total global",
+      "homeKeys": "Touches de repos",
+      "withSpace": "Toutes les touches",
+      "withoutSpace": "Sans espace",
+      "presses": "Nombre de frappes",
+      "pressesHint": "Par rapport au corpus tapé caractère par caractère"
+    },
+    "trigrams": {
+      "title": "Trigrammes",
+      "scope": "Touches prises en compte",
+      "scopes": {
+        "pad": "Pavé principal",
+        "noSpace": "Toutes sauf espace",
+        "all": "Toutes les touches"
+      },
+      "alternation": "Alternance",
+      "rolls": "Roulements",
+      "inward": "Vers l'intérieur",
+      "outward": "Vers l'extérieur",
+      "oneHand": "3-rolls",
+      "ratio": "Ratio int/ext",
+      "redirects": "Redirections"
+    },
+    "difficulties": {
+      "title": "Difficultés",
+      "details": "Détail",
+      "items": {
+        "sfb": "Même doigt",
+        "skb": "Même touche",
+        "lsb": "Étirement latéral",
+        "fsb": "Ciseaux complets",
+        "hsb": "Demi-ciseaux",
+        "rjb": "Saut de rangée",
+        "badRedirects": "Mauvaises redirections",
+        "sfs": "Même doigt, un caractère d'écart",
+        "sts": "Même pouce, avec espace",
+        "fss": "Ciseaux, un caractère d'écart",
+        "cc": "Charge cognitive",
+        "shs": "Séquences d'une seule main"
+      },
+      "short": {
+        "sfb": "SFB",
+        "skb": "SKB",
+        "lsb": "LSB",
+        "fsb": "FSB",
+        "hsb": "HSB",
+        "rjb": "RJB",
+        "badRedirects": "Bad redir.",
+        "sfs": "SFS*",
+        "sts": "STS*",
+        "fss": "FSS*",
+        "cc": "CC",
+        "shs": "SHS"
+      },
+      "weighted": "* Les cas dont la touche du milieu est sur l'autre main comptent pour moitié.",
+      "lists": {
+        "sfb": "SFB",
+        "skb": "SKB",
+        "lsb": "LSB",
+        "fsb": "FSB",
+        "hsb": "HSB",
+        "rjb": "RJB",
+        "badRedirects": "Mauvaises redirections",
+        "sfsRedirect": "SFS, redirection",
+        "sfsAlternation": "SFS, alternance",
+        "fssRedirect": "FSS, redirection",
+        "fssAlternation": "FSS, alternance",
+        "cc": "Charge cognitive",
+        "shs4": "SHS, 4 touches",
+        "shs5": "SHS, 5 touches ou plus"
+      },
+      "emptyList": "Aucun",
+      "occurrences": "{count} fois"
+    },
+    "distribution": {
+      "title": "Répartition des difficultés",
+      "subtitle": "Scores pondérés par doigt, sans unité",
+      "distance": "Distance (SKB, SFB, SFS)",
+      "scissors": "Ciseaux",
+      "stretch": "LSB et mauvaises redirections"
+    },
+    "table": "Afficher sous forme de tableau",
+    "hideTable": "Masquer le tableau"
+  },
+  "csv": {
+    "words": "Mots",
+    "typed": "Tapé",
+    "count": "Nombre",
+    "quadrigrams": "Quadrigrammes",
+    "trigrams": "Trigrammes",
+    "bigrams": "Bigrammes",
+    "characters": "Caractères",
+    "layoutCount": "Nombre une fois tapé",
+    "corpusCount": "Nombre dans le corpus",
+    "change": "Évolution",
+    "share": "Part",
+    "lists": {
+      "sfb": "SFB",
+      "skb": "SKB",
+      "lsb": "LSB",
+      "fsb": "Ciseaux complets",
+      "hsb": "Demi-ciseaux",
+      "rjb": "RJB",
+      "badRedirects": "Mauvaise redirection",
+      "sfsRedirect": "SFS redirection",
+      "sfsAlternation": "SFS alternance",
+      "fssRedirect": "FSS redirection",
+      "fssAlternation": "FSS alternance",
+      "cc": "Charge cognitive",
+      "shs4": "SHS 4",
+      "shs5": "SHS 5+"
+    }
+  },
+  "footer": {
+    "credits": "Algorithmes repris de l'analyseur Excel Kawalyser de Kawamashi. Disposition par défaut : Propergol (licence MIT).",
+    "source": "Code source"
   }
 }
