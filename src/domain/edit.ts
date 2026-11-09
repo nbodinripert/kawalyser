@@ -138,3 +138,18 @@ export function typeIntoZone(layout: Layout, at: ZoneRef, typed: string): Layout
   }
   return setZones(layout, at.key, { [at.zone]: typed });
 }
+
+/**
+ * Empties a zone. A letter always comes with its capital, so deleting either one empties the whole layer
+ * (see `completeLetterPairs`: leaving the capital alone would bring the letter back).
+ */
+export function clearZone(layout: Layout, at: ZoneRef): Layout {
+  const chars = layout.keys[at.key];
+  const layer = layerOf(at.zone);
+  if (layerHoldsLetter(chars, layer)) {
+    const { lower, upper } = layerZones[layer];
+    return setZones(layout, at.key, { [lower]: undefined, [upper]: undefined });
+  }
+  if (chars?.[at.zone] === undefined) return layout;
+  return setZones(layout, at.key, { [at.zone]: undefined });
+}

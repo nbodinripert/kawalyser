@@ -39,7 +39,10 @@
     "reset": "Revenir à la disposition importée",
     "hint": "Glissez un caractère sur une autre touche pour les échanger. Visez le bord droit d'une touche pour le placer après la touche morte. Ou double-cliquez sur une zone, ou appuyez sur Entrée, puis tapez un caractère.",
     "selectedHint": "Tapez le caractère à placer dans cette zone. Échap pour annuler.",
+    "trash": "Corbeille",
+    "trashHint": "Déposez un caractère ici pour le supprimer. Ou sélectionnez une zone et appuyez sur Suppr ou Retour arrière.",
     "drag": {
+      "deleted": "Caractère supprimé.",
       "pickedUp": "{char} saisi.",
       "over": "Au-dessus de la touche {key}.",
       "outside": "En dehors des touches.",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dropZone, moveZone, typeIntoZone } from "./edit";
+import { clearZone, dropZone, moveZone, typeIntoZone } from "./edit";
 import { completeLetterPairs, type Layout } from "./layout";
 
 const layout: Layout = {
@@ -125,5 +125,26 @@ describe("letters always come with their other case (feedback 7)", () => {
     expect(completeLetterPairs({ base: "," })).toEqual({ base: "," });
     expect(completeLetterPairs({ base: "ß" })).toEqual({ base: "ß" });
     expect(completeLetterPairs({ base: "_", shift: "?" })).toEqual({ base: "_", shift: "?" });
+  });
+});
+
+describe("clearZone", () => {
+  it("empties a symbol and leaves its neighbour alone", () => {
+    const next = clearZone(layout, { key: "b", zone: "shift" });
+    expect(next.keys.b).toEqual({ base: "," });
+  });
+
+  it("empties a letter together with its capital, from either zone", () => {
+    expect(clearZone(layout, { key: "c", zone: "shift" }).keys.c).toEqual({});
+    expect(clearZone(layout, { key: "c", zone: "base" }).keys.c).toEqual({});
+  });
+
+  it("empties a letter of the dead key layer without touching the direct layer", () => {
+    const next = clearZone({ ...layout, keys: { ...layout.keys, a: { base: "r", shift: "R", dk: "ç", dkShift: "Ç" } } }, { key: "a", zone: "dk" });
+    expect(next.keys.a).toEqual({ base: "r", shift: "R" });
+  });
+
+  it("returns the same layout for an empty zone, so that nothing is recorded to undo", () => {
+    expect(clearZone(layout, { key: "b", zone: "dk" })).toBe(layout);
   });
 });

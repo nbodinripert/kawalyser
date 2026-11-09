@@ -15,7 +15,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { useMemo, useState, type KeyboardEvent } from "react";
-import { dropZone, moveZone, typeIntoZone, type ZoneRef } from "@/domain/edit";
+import { clearZone, dropZone, moveZone, typeIntoZone, type ZoneRef } from "@/domain/edit";
 import { shapes, type KeySlot } from "@/domain/geometry";
 import { visibleZones, type Layout, type Zone } from "@/domain/layout";
 import { SPACE } from "@/domain/symbols";
@@ -55,7 +55,9 @@ function heatScale(layout: Layout, keyPresses: Record<string, number> | null) {
   };
 }
 
-type Drag = { from: ZoneRef; char: string; target: ZoneRef | null };
+type Drag = { from: ZoneRef; char: string; target: ZoneRef | null; overTrash: boolean };
+
+const TRASH_ID = "trash";
 
 const showChar = (char: string, labels: Labels) => (char === SPACE ? labels.space : char);
 
@@ -74,6 +76,8 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
   const shape = shapes[layout.shapeId];
   const [selected, setSelected] = useState<ZoneRef | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  // Read by screen readers after a deletion made with the keyboard, which has no drag announcement.
+  const [notice, setNotice] = useState("");
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const heat = useMemo(() => heatScale(layout, keyPresses), [layout, keyPresses]);
 
@@ -91,8 +95,9 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
   const onDragStart = (event: DragStartEvent) => {
     const from = parseZoneId(String(event.active.id));
     const char = charAt(from);
-    if (char !== undefined) setDrag({ from, char, target: null });
+    if (char !== undefined) setDrag({ from, char, target: null, overTrash: false });
     setSelected(null);
+    setNotice("");
   };
 
   const onDragMove = (event: DragMoveEvent) => {
@@ -100,24 +105,40 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
     const rect = event.over?.rect;
     setDrag((current) => {
       if (!current) return current;
-      if (!rect || !event.over) return current.target ? { ...current, target: null } : current;
+      if (event.over?.id === TRASH_ID) return current.overTrash && !current.target ? current : { ...current, target: null, overTrash: true };
+      if (!rect || !event.over) return current.target || current.overTrash ? { ...current, target: null, overTrash: false } : current;
       const x = (activator.clientX + event.delta.x - rect.left) / rect.width;
       const y = (activator.clientY + event.delta.y - rect.top) / rect.height;
       const target = { key: String(event.over.id), zone: dropZone(current.from.zone, x, y) };
       const same = current.target?.key === target.key && current.target.zone === target.zone;
-      return same ? current : { ...current, target };
+      return same && !current.overTrash ? current : { ...current, target, overTrash: false };
     });
   };
 
   const onDragEnd = (event: DragEndEvent) => {
     const target = drag?.target;
-    if (drag && target && event.over) onChange(moveZone(layout, drag.from, target));
+    if (drag?.overTrash && event.over?.id === TRASH_ID) remove(drag.from);
+    else if (drag && target && event.over) onChange(moveZone(layout, drag.from, target));
     setDrag(null);
+  };
+
+  const remove = (ref: ZoneRef) => {
+    const next = clearZone(layout, ref);
+    // An empty zone gives the same layout back: nothing to record for undo.
+    if (next === layout) return;
+    onChange(next);
+    setNotice(labels.drag.deleted);
   };
 
   const onZoneKeyDown = (ref: ZoneRef, event: KeyboardEvent<HTMLButtonElement>) => {
     const isSelected = selected?.key === ref.key && selected.zone === ref.zone;
     if (event.key === "Escape") {
+      setSelected(null);
+      return;
+    }
+    if (event.key === "Delete" || event.key === "Backspace") {
+      event.preventDefault();
+      remove(ref);
       setSelected(null);
       return;
     }
@@ -142,8 +163,9 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
       const char = charAt(parseZoneId(String(active.id)));
       return char === undefined ? undefined : format(labels.drag.pickedUp, { char: showChar(char, labels) });
     },
-    onDragOver: ({ over }) => (over ? format(labels.drag.over, { key: keyName(String(over.id)) }) : labels.drag.outside),
-    onDragEnd: ({ over }) => (over ? labels.drag.dropped : labels.drag.cancelled),
+    onDragOver: ({ over }) =>
+      over?.id === TRASH_ID ? labels.trash : over ? format(labels.drag.over, { key: keyName(String(over.id)) }) : labels.drag.outside,
+    onDragEnd: ({ over }) => (over?.id === TRASH_ID ? labels.drag.deleted : over ? labels.drag.dropped : labels.drag.cancelled),
     onDragCancel: () => labels.drag.cancelled,
   };
 
@@ -187,8 +209,12 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
           ))}
         </div>
       </div>
+      <Trash label={labels.trash} active={drag?.overTrash ?? false} dragging={drag !== null} />
       <p className="mt-3 min-h-5 text-xs text-muted" aria-live="polite">
-        {selected ? labels.selectedHint : labels.hint}
+        {selected ? labels.selectedHint : labels.hint} {labels.trashHint}
+      </p>
+      <p className="sr-only" role="status">
+        {notice}
       </p>
       <DragOverlay dropAnimation={null}>
         {drag && (
@@ -328,5 +354,28 @@ function ZoneCell({ refId, char, labels, selected, highlighted, strong, interact
         </span>
       )}
     </button>
+  );
+}
+
+/** Drop target that deletes the dragged character. Always visible, so that it can be found before dragging. */
+function Trash({ label, active, dragging }: { label: string; active: boolean; dragging: boolean }) {
+  const { setNodeRef } = useDroppable({ id: TRASH_ID });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cx(
+        "mx-auto mt-3 flex w-max items-center gap-2 rounded-lg border border-dashed px-3 py-1.5 text-xs transition-colors duration-100",
+        active
+          ? "border-danger bg-danger-soft text-danger"
+          : dragging
+            ? "border-danger/60 text-danger"
+            : "border-key-border text-muted",
+      )}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
+      </svg>
+      {label}
+    </div>
   );
 }

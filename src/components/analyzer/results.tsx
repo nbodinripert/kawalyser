@@ -193,9 +193,9 @@ function Distribution({ result, dictionary, numbers }: ResultsProps) {
         categories={fingers.short}
         categoryNames={fingers.fingers}
         series={[
-          { id: "distance", label: labels.distance, color: "var(--series-1)", values: result.distribution.distance },
-          { id: "scissors", label: labels.scissors, color: "var(--series-2)", values: result.distribution.scissors },
-          { id: "stretch", label: labels.stretch, color: "var(--series-3)", values: result.distribution.stretch },
+          { id: "distance", label: labels.distance, color: "var(--distribution-1)", values: result.distribution.distance },
+          { id: "scissors", label: labels.scissors, color: "var(--distribution-2)", values: result.distribution.scissors },
+          { id: "stretch", label: labels.stretch, color: "var(--distribution-3)", values: result.distribution.stretch },
         ]}
         formatValue={numbers.integer}
         formatTick={(value) => (value >= 10000 ? `${numbers.integer(value / 1000)}k` : numbers.integer(value))}

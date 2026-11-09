@@ -3,8 +3,9 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /*
- * Light by default. The chart series were checked with the data-viz palette validator
- * (colour-blind separation, lightness band, contrast) in both modes.
+ * Light by default. Every colour apart from the background and the error red stays between green and blue,
+ * around the turquoise accent. The chart colours were picked by eye and have not been run through
+ * a colour-blind or contrast validator: they differ in lightness as well as in hue to compensate.
  */
 :root {
   color-scheme: light;
@@ -27,11 +28,11 @@
   --heat-ink: #ffffff;
   --grid: #e4ebea;
   --axis: #c5d1cf;
-  --series-home: #1baf7a;
-  --series-other: #2a78d6;
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
+  --series-home: #0e8a8c;
+  --series-other: #86bcdc;
+  --distribution-1: #256aa8;
+  --distribution-2: #1aa6a6;
+  --distribution-3: #5cbf8a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -56,11 +57,11 @@
     --heat-ink: #04201d;
     --grid: #22302e;
     --axis: #34443f;
-    --series-home: #199e70;
-    --series-other: #3987e5;
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-3: #199e70;
+    --series-home: #2fc0b4;
+    --series-other: #3f77a8;
+    --distribution-1: #6aa8f0;
+    --distribution-2: #1f9e9a;
+    --distribution-3: #7edba8;
   }
 }
 
@@ -85,11 +86,11 @@
   --heat-ink: #04201d;
   --grid: #22302e;
   --axis: #34443f;
-  --series-home: #199e70;
-  --series-other: #3987e5;
-  --series-1: #3987e5;
-  --series-2: #d95926;
-  --series-3: #199e70;
+  --series-home: #2fc0b4;
+  --series-other: #3f77a8;
+  --distribution-1: #6aa8f0;
+  --distribution-2: #1f9e9a;
+  --distribution-3: #7edba8;
 }
 
 @theme inline {

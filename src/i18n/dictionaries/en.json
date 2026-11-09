@@ -39,7 +39,10 @@
     "reset": "Back to the imported layout",
     "hint": "Drag a character onto another key to swap them. Aim at the right edge of a key to place it after the dead key. Or double-click a zone, or press Enter on it, then type a character.",
     "selectedHint": "Type the character to place in this zone. Press Escape to cancel.",
+    "trash": "Trash",
+    "trashHint": "Drop a character here to delete it. Or select a zone and press Delete or Backspace.",
     "drag": {
+      "deleted": "Character deleted.",
       "pickedUp": "Picked up {char}.",
       "over": "Over the {key} key.",
       "outside": "Not over a key.",
