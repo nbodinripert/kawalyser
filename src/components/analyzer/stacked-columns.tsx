@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { cx } from "../ui";
 
 export type Series = { id: string; label: string; color: string; values: number[] };
@@ -78,6 +78,22 @@ export function StackedColumns({
 
   const activeTotal = active === null ? 0 : (totals[active] ?? 0);
 
+  // The tooltip sits under the bars, where it can never hide one, centred on its bar.
+  const barCenter = active === null ? null : MARGIN.left + band * active + band / 2;
+
+  // Its width is only known once rendered, so it is placed before the browser paints. Near the edges
+  // it shifts just enough to stay inside the chart, while its pointer stays under the bar.
+  const tooltip = useRef<HTMLDivElement>(null);
+  const pointer = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const element = tooltip.current;
+    if (!element || barCenter === null) return;
+    const width = element.offsetWidth;
+    const left = Math.min(Math.max(barCenter - width / 2, 0), Math.max(0, WIDTH - width));
+    element.style.left = `${left}px`;
+    if (pointer.current) pointer.current.style.left = `${barCenter - left}px`;
+  });
+
   return (
     <div>
       <ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
@@ -149,12 +165,18 @@ export function StackedColumns({
           })}
         </svg>
 
-        {active !== null && (
+        {active !== null && barCenter !== null && (
           <div
             role="tooltip"
-            className="pointer-events-none absolute top-0 z-10 min-w-44 -translate-x-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-lg"
-            style={{ left: `${((MARGIN.left + band * active + band / 2) / WIDTH) * 100}%` }}
+            ref={tooltip}
+            className="pointer-events-none absolute z-10 min-w-44 rounded-lg border border-border bg-surface px-3 py-2 text-xs whitespace-nowrap shadow-lg"
+            style={{ top: HEIGHT + 8, left: barCenter }}
           >
+            <span
+              ref={pointer}
+              aria-hidden
+              className="absolute -top-[5px] size-2.5 -translate-x-1/2 rotate-45 border-t border-l border-border bg-surface"
+            />
             <p className="mb-1.5 font-medium text-foreground">{categoryNames[active]}</p>
             {series.map((s) => (
               <p key={s.id} className="flex items-center justify-between gap-4">

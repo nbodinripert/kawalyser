@@ -35,10 +35,10 @@ export type Action =
   | { type: "setLevel"; level: AnalysisLevel }
   | { type: "setLanguage"; language: CorpusLanguage }
   | { type: "setShape"; shapeId: ShapeId }
-  | { type: "restore"; saved: SavedState | null }
+  | { type: "restore"; saved: SavedState | null; result: AnalysisResult | null }
   | { type: "notice"; notice: Notice | null }
   | { type: "analysisStarted" }
-  | { type: "analysisSucceeded"; result: AnalysisResult }
+  | { type: "analysisSucceeded"; result: AnalysisResult; key: string }
   | { type: "analysisFailed" };
 
 const HISTORY_LIMIT = 100;
@@ -116,12 +116,14 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
       };
     case "restore":
       if (!action.saved) return { ...state, hydrated: true };
-      return { ...state, ...action.saved, past: [], future: [], result: null, status: "idle", cleared: false, notice: null, hydrated: true };
+      return { ...state, ...action.saved, past: [], future: [], result: action.result, status: "idle", cleared: false, notice: null, hydrated: true };
     case "notice":
       return { ...state, notice: action.notice };
     case "analysisStarted":
       return { ...state, status: "running", cleared: false };
     case "analysisSucceeded":
+      // A result that comes back after the layout, corpus or replacements changed no longer applies.
+      if (action.key !== requestKey(state)) return { ...state, status: "idle" };
       return { ...state, status: "idle", result: action.result };
     case "analysisFailed":
       return { ...state, status: "failed" };
@@ -136,3 +138,26 @@ export function toSaved(state: AnalyzerState): SavedState {
   const { layout, imported, replacements, replacementsName, level, language } = state;
   return { layout, imported, replacements, replacementsName, level, language };
 }
+
+/** JSON with object keys sorted, so that the same content always gives the same text. */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, item]) => item !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${stableStringify(item)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Identifies what an analysis was run on: a result only applies to this exact layout, corpus and replacements.
+ * Key order is ignored, since a session read back from storage may list the same fields in another order.
+ */
+export function requestKey(state: Pick<AnalyzerState, "layout" | "replacements" | "level" | "language">): string {
+  const { layout, replacements, level, language } = state;
+  return stableStringify({ layout, replacements, level, language });
+}
+
+export const resultStorageKey = "kawalyser-result-v1";

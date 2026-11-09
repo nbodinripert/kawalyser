@@ -17,7 +17,7 @@ import { KeyboardMap } from "./keyboard-map";
 import { formatters } from "./numbers";
 import { ReplacementsPanel } from "./replacements-panel";
 import { Results } from "./results";
-import { initialState, reducer, storageKey, toSaved, type SavedState } from "./state";
+import { initialState, reducer, requestKey, resultStorageKey, storageKey, toSaved, type SavedState } from "./state";
 
 type AnalyzerProps = { dictionary: Dictionary; locale: Locale; defaultLayout: Layout };
 
@@ -49,6 +49,29 @@ function writeSaved(saved: SavedState) {
   }
 }
 
+/**
+ * The last result is kept for the browser tab, so that switching the interface language,
+ * which loads the other page, does not wipe an analysis that still applies.
+ */
+function readSavedResult(key: string): AnalysisResult | null {
+  try {
+    const raw = sessionStorage.getItem(resultStorageKey);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as { key?: unknown; result?: AnalysisResult };
+    return saved.key === key && saved.result?.keyPresses && saved.result.trigrams ? saved.result : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSavedResult(key: string, result: AnalysisResult) {
+  try {
+    sessionStorage.setItem(resultStorageKey, JSON.stringify({ key, result }));
+  } catch {
+    // Without storage, the result simply does not survive a page change.
+  }
+}
+
 function importProblemText(problem: ImportProblem, labels: Dictionary["layout"]["errors"]): string {
   switch (problem.kind) {
     case "unreadable":
@@ -77,7 +100,8 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
 
   // The saved session is read after hydration, since the server cannot see it.
   useEffect(() => {
-    dispatch({ type: "restore", saved: readSaved() });
+    const saved = readSaved();
+    dispatch({ type: "restore", saved, result: saved ? readSavedResult(requestKey(saved)) : null });
   }, []);
 
   useEffect(() => {
@@ -141,6 +165,7 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
 
   const runAnalysis = async () => {
     const body = analysisRequestSchema.parse(request);
+    const key = requestKey(request);
     dispatch({ type: "analysisStarted" });
     try {
       const response = await fetch("/api/analyse", {
@@ -149,7 +174,9 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
         body: JSON.stringify(body),
       });
       if (!response.ok) throw new Error(String(response.status));
-      dispatch({ type: "analysisSucceeded", result: (await response.json()) as AnalysisResult });
+      const result = (await response.json()) as AnalysisResult;
+      writeSavedResult(key, result);
+      dispatch({ type: "analysisSucceeded", result, key });
     } catch {
       dispatch({ type: "analysisFailed" });
     }
@@ -288,7 +315,8 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
           </div>
         ) : (
           state.status !== "failed" && (
-            <div className="rounded-2xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted">
+            // Hidden until the saved session is read, so that restored statistics do not flash this message first.
+            <div className={cx("rounded-2xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted", !state.hydrated && "invisible")}>
               {state.cleared ? dictionary.analysis.cleared : dictionary.analysis.empty}
             </div>
           )

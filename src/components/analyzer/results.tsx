@@ -153,7 +153,8 @@ function Difficulties({ result, dictionary, numbers }: ResultsProps) {
             <section key={id} className="w-48 shrink-0 snap-start rounded-xl border border-border">
               <header className="flex items-baseline justify-between gap-2 border-b border-border px-3 py-2">
                 <h4 className="truncate text-xs font-semibold">{labels.lists[id]}</h4>
-                <span className="tabular text-xs text-muted">{numbers.integer(list.total)}</span>
+                {/* Same unit as the totals above; the SHS lists have no share, as in the Excel analyser. */}
+                <span className="tabular text-xs text-muted">{showShare ? numbers.percent(list.share) : numbers.integer(list.total)}</span>
               </header>
               {list.entries.length === 0 ? (
                 <p className="px-3 py-2 text-xs text-faint">{labels.emptyList}</p>

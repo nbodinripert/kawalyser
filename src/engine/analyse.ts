@@ -74,7 +74,8 @@ export type AnalysisResult = {
   trigrams: Record<TrigramScope, TrigramStats>;
   difficulties: Record<DifficultyId, number>;
   distribution: { distance: number[]; scissors: number[]; stretch: number[] };
-  lists: Record<ListId, { total: number; entries: ListEntry[] }>;
+  /** Each list's total, its share of the list's own denominator, and its first entries. */
+  lists: Record<ListId, { total: number; share: number; entries: ListEntry[] }>;
   totals: { characters: number; corpusPresses: number; words: number };
 };
 
@@ -112,6 +113,7 @@ function toList(map: Map<string, number>, denominator: number, labelOf: (gram: s
   for (const [, count] of entries) total += count;
   return {
     total,
+    share: ratio(total, denominator),
     entries: entries.slice(0, LIST_LIMIT).map(([gram, count]) => ({ gram: labelOf(gram), count, share: ratio(count, denominator) })),
   };
 }
