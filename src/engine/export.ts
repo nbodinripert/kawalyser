@@ -30,7 +30,7 @@ function cellLabel(char: string): string {
 
 function gramLabel(gram: string): string {
   if (gram === " ") return "espace";
-  return Array.from(gram, (char) => (char === " " ? "_" : tokenLabel(char))).join("");
+  return Array.from(gram, tokenLabel).join("");
 }
 
 function escape(value: string | number, separator: string): string {

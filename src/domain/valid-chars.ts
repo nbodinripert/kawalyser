@@ -5,8 +5,8 @@ export type CorpusLanguage = (typeof corpusLanguages)[number];
 
 // Kawamashi's lists, by decreasing frequency. "&" stands for the dead key in the Excel analyser.
 const rawLists: Record<CorpusLanguage, string> = {
-  fr: "esaitnrouldcpméqv&.f,gjhxwy-è'bàçêkzôûîâ…ïœ@æ:!?",
-  en: "etaionsrhdlm&uycwgpf.v,jx-qéèbk'z…@çâïàæ:!?",
+  fr: "esaitnrouldcpméqv&.f,gjhxwy-è'bàçêkzôûîâ…ïœ@æ:!?ù_",
+  en: "etaionsrhdlm&uycwgpf.v,jx-qéèbk'z…@çâïàæ:!?_",
 };
 
 export const validChars: Record<CorpusLanguage, ReadonlySet<string>> = {

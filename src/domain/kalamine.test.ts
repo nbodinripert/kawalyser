@@ -18,7 +18,8 @@ describe("importKalamine with propergol.toml", () => {
 
   it("places the green keys on the main pad, with all four zones", () => {
     expect(keys[mainKeyId(0, 1)]).toEqual({ base: "-", shift: "!" });
-    expect(keys[mainKeyId(0, 2)]).toEqual({ base: "é", shift: "É", dk: "œ" });
+    // Dead key letters come with their capital, like every letter on the map.
+    expect(keys[mainKeyId(0, 2)]).toEqual({ base: "é", shift: "É", dk: "œ", dkShift: "Œ" });
     expect(keys[mainKeyId(0, 5)]).toEqual({ base: ",", shift: "?", dk: "@", dkShift: "¿" });
     expect(keys[mainKeyId(0, 6)]).toEqual({ base: "v", shift: "V", dk: "„", dkShift: '"' });
     expect(keys[mainKeyId(1, 5)]).toEqual({ base: ".", shift: ":", dk: "…", dkShift: "·" });
@@ -36,7 +37,7 @@ describe("importKalamine with propergol.toml", () => {
     expect(keys[mainKeyId(1, 11)]?.base).toBe("-");
     expect(keys[mainKeyId(2, 11)]?.base).toBe("'");
     expect(keys[mainKeyId(0, 0)]).toBeUndefined();
-    expect(keys[thumbKeyIds.leftOuter]).toEqual({ base: "e", shift: "E", dk: "ê" });
+    expect(keys[thumbKeyIds.leftOuter]).toEqual({ base: "e", shift: "E", dk: "ê", dkShift: "Ê" });
   });
 
   it("fills the other thumbs and reads the space bar section", () => {

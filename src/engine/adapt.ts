@@ -5,7 +5,8 @@ import { keysToTokens, REPEAT, type KeyMap } from "./keymap";
 
 /**
  * Turns the corpus into what is really typed, word by word, as the Excel analyser does:
- * Clever Keys first, then the dead key strings, Repeat and essential corrections, then the dead key layer.
+ * optional corrections (Clever Keys) first, then the dead key strings, Repeat and essential corrections,
+ * then the dead key layer.
  */
 
 type Rule = {
@@ -66,7 +67,7 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
 
   const cleverRules: Rule[] =
     level === "clever"
-      ? replacements.cleverKeys.map((rule) =>
+      ? replacements.optionalCorrections.map((rule) =>
           register({
             pattern: rule.text,
             replacement: keysToTokens(rule.keys),
@@ -101,7 +102,7 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
         : [];
     for (const char of repeatable) correctionRules.push(register({ pattern: char + char, replacement: char + REPEAT }));
 
-    for (const rule of replacements.corrections) {
+    for (const rule of replacements.essentialCorrections) {
       correctionRules.push(register({ pattern: rule.text, replacement: keysToTokens(rule.keys) }));
     }
   }

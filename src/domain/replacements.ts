@@ -9,23 +9,25 @@ const correction = z.object({
   keys: z.string(),
 });
 
-const cleverKey = correction.extend({
+const optionalCorrection = correction.extend({
   noLetterBefore: z.boolean().optional(),
   noLetterAfter: z.boolean().optional(),
   allowedBefore: charList.optional(),
   allowedAfter: charList.optional(),
 });
 
-export const replacementsSchema = z.object({
-  corrections: z.array(correction).default([]),
-  cleverKeys: z.array(cleverKey).default([]),
+const replacementsObject = z.object({
+  essentialCorrections: z.array(correction).default([]),
+  optionalCorrections: z.array(optionalCorrection).default([]),
 });
 
-export type Correction = z.infer<typeof correction>;
-export type CleverKey = z.infer<typeof cleverKey>;
-export type Replacements = z.infer<typeof replacementsSchema>;
+export const replacementsSchema = replacementsObject;
 
-export const emptyReplacements: Replacements = { corrections: [], cleverKeys: [] };
+export type Correction = z.infer<typeof correction>;
+export type OptionalCorrection = z.infer<typeof optionalCorrection>;
+export type Replacements = z.output<typeof replacementsObject>;
+
+export const emptyReplacements: Replacements = { essentialCorrections: [], optionalCorrections: [] };
 
 export type ParsedReplacements = { ok: true; replacements: Replacements } | { ok: false; detail: string };
 

@@ -31,8 +31,8 @@
     "level": "Replacements",
     "levels": {
       "raw": "None",
-      "corrections": "Corrections",
-      "clever": "Corrections and Clever Keys"
+      "corrections": "Essential corrections",
+      "clever": "Optional corrections"
     },
     "undo": "Undo",
     "redo": "Redo",
@@ -68,9 +68,10 @@
   },
   "replacements": {
     "title": "Replacements",
-    "empty": "No replacement file. Import one to analyse Repeat, Magic and Clever Keys.",
-    "corrections": "Essential corrections",
-    "cleverKeys": "Clever Keys",
+    "empty": "No replacement file. Import one to analyse Repeat, Magic, and the essential and optional corrections.",
+    "hidden": "No replacement is applied: pick corrections in the Replacements selector to show them.",
+    "essential": "Essential corrections",
+    "optional": "Optional corrections",
     "toWrite": "To write",
     "type": "type"
   },
@@ -147,6 +148,8 @@
     },
     "difficulties": {
       "title": "Difficulties",
+      "total": "Total",
+      "totalHint": "Sum of the 12 difficulties",
       "details": "Details",
       "items": {
         "sfb": "Same-finger bigrams",

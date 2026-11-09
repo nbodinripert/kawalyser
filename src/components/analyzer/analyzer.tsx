@@ -5,7 +5,7 @@ import { z } from "zod";
 import { findBlockingDuplicates } from "@/domain/duplicates";
 import { shapeIds } from "@/domain/geometry";
 import { importKalamine, type ImportProblem } from "@/domain/kalamine";
-import type { Layout } from "@/domain/layout";
+import { completeLayoutPairs, type Layout } from "@/domain/layout";
 import { analysisLevels, emptyReplacements, parseReplacements, replacementsSchema } from "@/domain/replacements";
 import { analysisRequestSchema, layoutSchema, type AnalysisRequest } from "@/domain/schemas";
 import { corpusLanguages } from "@/domain/valid-chars";
@@ -35,7 +35,10 @@ function readSaved(): SavedState | null {
     const raw = localStorage.getItem(storageKey);
     if (!raw) return null;
     const parsed = savedSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? (parsed.data as SavedState) : null;
+    if (!parsed.success) return null;
+    // Sessions saved before letters were always paired get the same treatment as new edits.
+    const saved = parsed.data as SavedState;
+    return { ...saved, layout: completeLayoutPairs(saved.layout), imported: completeLayoutPairs(saved.imported) };
   } catch {
     return null;
   }
@@ -241,43 +244,32 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
           </p>
         )}
 
-        <div className="mb-4 flex flex-wrap items-end gap-3">
-          <Select label={labels.shape} value={state.layout.shapeId} onChange={(event) => dispatch({ type: "setShape", shapeId: event.target.value as (typeof shapeIds)[number] })}>
-            {shapeIds.map((id) => (
-              <option key={id} value={id}>
-                {labels.shapes[id]}
-              </option>
-            ))}
-          </Select>
-          <Select label={labels.corpus} value={state.language} onChange={(event) => dispatch({ type: "setLanguage", language: event.target.value as (typeof corpusLanguages)[number] })}>
-            {corpusLanguages.map((id) => (
-              <option key={id} value={id}>
-                {labels.corpora[id]}
-              </option>
-            ))}
-          </Select>
-          <Select label={labels.level} value={state.level} onChange={(event) => dispatch({ type: "setLevel", level: event.target.value as (typeof analysisLevels)[number] })}>
-            {analysisLevels.map((id) => (
-              <option key={id} value={id}>
-                {labels.levels[id]}
-              </option>
-            ))}
-          </Select>
-          <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" onClick={() => dispatch({ type: "undo" })} disabled={state.past.length === 0}>
-              {labels.undo}
-            </Button>
-            <Button variant="ghost" onClick={() => dispatch({ type: "redo" })} disabled={state.future.length === 0}>
-              {labels.redo}
-            </Button>
-            <Button variant="ghost" onClick={() => dispatch({ type: "reset" })} disabled={state.layout === state.imported}>
-              {labels.reset}
-            </Button>
-          </div>
-        </div>
-
+        {/* The replacements column starts level with the selectors; the history buttons sit under the map's help text. */}
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
           <div className="min-w-0">
+            <div className="mb-4 flex flex-wrap items-end gap-3">
+              <Select label={labels.shape} value={state.layout.shapeId} onChange={(event) => dispatch({ type: "setShape", shapeId: event.target.value as (typeof shapeIds)[number] })}>
+                {shapeIds.map((id) => (
+                  <option key={id} value={id}>
+                    {labels.shapes[id]}
+                  </option>
+                ))}
+              </Select>
+              <Select label={labels.corpus} value={state.language} onChange={(event) => dispatch({ type: "setLanguage", language: event.target.value as (typeof corpusLanguages)[number] })}>
+                {corpusLanguages.map((id) => (
+                  <option key={id} value={id}>
+                    {labels.corpora[id]}
+                  </option>
+                ))}
+              </Select>
+              <Select label={labels.level} disabled={!state.replacementsName} value={state.level} onChange={(event) => dispatch({ type: "setLevel", level: event.target.value as (typeof analysisLevels)[number] })}>
+                {(state.replacementsName ? analysisLevels : analysisLevels.slice(0, 1)).map((id) => (
+                  <option key={id} value={id}>
+                    {labels.levels[id]}
+                  </option>
+                ))}
+              </Select>
+            </div>
             <KeyboardMap
               layout={state.layout}
               language={state.language}
@@ -285,8 +277,19 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
               labels={labels}
               onChange={(layout) => dispatch({ type: "edit", layout })}
             />
+            <div className="mt-2 -ml-3.5 flex flex-wrap items-center gap-1">
+              <Button variant="ghost" onClick={() => dispatch({ type: "undo" })} disabled={state.past.length === 0}>
+                {labels.undo}
+              </Button>
+              <Button variant="ghost" onClick={() => dispatch({ type: "redo" })} disabled={state.future.length === 0}>
+                {labels.redo}
+              </Button>
+              <Button variant="ghost" onClick={() => dispatch({ type: "reset" })} disabled={state.layout === state.imported}>
+                {labels.reset}
+              </Button>
+            </div>
           </div>
-          <ReplacementsPanel replacements={state.replacements} name={state.replacementsName} labels={dictionary.replacements} />
+          <ReplacementsPanel replacements={state.replacements} level={state.level} name={state.replacementsName} labels={dictionary.replacements} />
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-5">

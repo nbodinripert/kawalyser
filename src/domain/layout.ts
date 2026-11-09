@@ -39,6 +39,32 @@ export function isPair(lower: string | undefined, upper: string | undefined): bo
   );
 }
 
+/**
+ * A letter alone in a layer gets its other case, so that it behaves like every other letter:
+ * shown as a capital, typed without Shift, and moved with its capital. Without this, "è" placed
+ * alone stayed in the corner it landed in, and was ignored by the analysis if it sat on the Shift side.
+ */
+export function completeLetterPairs(chars: KeyChars): KeyChars {
+  const result = { ...chars };
+  for (const layer of ["direct", "dk"] as const) {
+    const { lower, upper } = layerZones[layer];
+    const lowerChar = result[lower];
+    const upperChar = result[upper];
+    if (lowerChar !== undefined && upperChar === undefined && isPair(lowerChar, lowerChar.toUpperCase())) {
+      result[upper] = lowerChar.toUpperCase();
+    } else if (upperChar !== undefined && lowerChar === undefined && isPair(upperChar.toLowerCase(), upperChar)) {
+      result[lower] = upperChar.toLowerCase();
+    }
+  }
+  return result;
+}
+
+export function completeLayoutPairs(layout: Layout): Layout {
+  const keys: Record<string, KeyChars> = {};
+  for (const [id, chars] of Object.entries(layout.keys)) keys[id] = completeLetterPairs(chars);
+  return { ...layout, keys };
+}
+
 export function layerUnits(key: string, chars: KeyChars, layer: Layer): Unit[] {
   const { lower, upper } = layerZones[layer];
   const lowerChar = chars[lower];

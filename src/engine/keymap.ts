@@ -39,10 +39,10 @@ export function tokenLabel(token: string): string {
       return REPEAT_KEY;
     case MAGIC:
       return MAGIC_KEY;
+    // "_" marks the unknown middle character of skipgrams, and is now a typeable character too.
     case DK_SPACE:
-      return "_";
     case SPACE:
-      return "_";
+      return "␣";
     default:
       return token;
   }

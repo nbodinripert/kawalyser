@@ -121,3 +121,26 @@ body {
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * A scrollbar that stays visible, even where the system hides them until scrolling (macOS),
+ * so that content past the visible part is not overlooked. Firefox only allows a thin bar.
+ */
+.scrollbar-visible::-webkit-scrollbar {
+  width: 10px;
+}
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: var(--surface-muted);
+  border-radius: 10px;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: var(--faint);
+  border: 2px solid var(--surface-muted);
+  border-radius: 10px;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .scrollbar-visible {
+    scrollbar-width: thin;
+    scrollbar-color: var(--faint) var(--surface-muted);
+  }
+}

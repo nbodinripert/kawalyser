@@ -10,8 +10,8 @@ if (!imported.ok) throw new Error("default layout should import");
 const layout = imported.layout;
 
 const replacements: Replacements = {
-  corrections: [{ text: "qu", keys: "q" }],
-  cleverKeys: [
+  essentialCorrections: [{ text: "qu", keys: "q" }],
+  optionalCorrections: [
     { text: "quand", keys: "qn" },
     { text: "ment", keys: "m#", noLetterAfter: true, allowedAfter: ["s"] },
     { text: "pas", keys: "pc", noLetterBefore: true, noLetterAfter: true },
@@ -59,16 +59,35 @@ describe("createAdapter", () => {
 
 describe("parseReplacements", () => {
   it("accepts a single allowed character or a list", () => {
-    const parsed = parseReplacements('{"cleverKeys":[{"text":"ment","keys":"m#","allowedAfter":"s"},{"text":"pas","keys":"pc","allowedBefore":["x","y"]}]}');
-    expect(parsed.ok && parsed.replacements.cleverKeys.map((rule) => [rule.allowedAfter, rule.allowedBefore])).toEqual([
+    const parsed = parseReplacements('{"optionalCorrections":[{"text":"ment","keys":"m#","allowedAfter":"s"},{"text":"pas","keys":"pc","allowedBefore":["x","y"]}]}');
+    expect(parsed.ok && parsed.replacements.optionalCorrections.map((rule) => [rule.allowedAfter, rule.allowedBefore])).toEqual([
       [["s"], undefined],
       [undefined, ["x", "y"]],
     ]);
   });
 
   it("explains what is wrong", () => {
-    const parsed = parseReplacements('{"corrections":[{"keys":"q"}]}');
+    const parsed = parseReplacements('{"essentialCorrections":[{"keys":"q"}]}');
     expect(parsed.ok).toBe(false);
-    expect(!parsed.ok && parsed.detail).toContain("corrections.0.text");
+    expect(!parsed.ok && parsed.detail).toContain("essentialCorrections.0.text");
+  });
+});
+
+describe("labels (feedback 6)", () => {
+  it("shows the space as ␣, so that _ keeps meaning the skipped middle character", async () => {
+    const { tokenLabel, DK_SPACE } = await import("./keymap");
+    expect(tokenLabel(" ")).toBe("␣");
+    expect(tokenLabel(DK_SPACE)).toBe("␣");
+    expect(tokenLabel("_")).toBe("_");
+  });
+});
+
+describe("valid characters (feedback 4)", () => {
+  it("accepts ù in French and _ in both languages", async () => {
+    const { isValidChar } = await import("@/domain/valid-chars");
+    expect(isValidChar("ù", "fr")).toBe(true);
+    expect(isValidChar("Ù", "fr")).toBe(true);
+    expect(isValidChar("_", "fr")).toBe(true);
+    expect(isValidChar("_", "en")).toBe(true);
   });
 });

@@ -51,7 +51,7 @@ export function initialState(layout: Layout): AnalyzerState {
     future: [],
     replacements: emptyReplacements,
     replacementsName: null,
-    level: "clever",
+    level: "raw",
     language: "en",
     result: null,
     status: "idle",
@@ -102,7 +102,15 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
         notice: action.notice,
       };
     case "setReplacements":
-      return { ...state, ...invalidate(state), replacements: action.replacements, replacementsName: action.name, notice: action.notice };
+      return {
+        ...state,
+        ...invalidate(state),
+        replacements: action.replacements,
+        replacementsName: action.name,
+        // Without a file, "None" is the only possible level; a new file starts with everything on.
+        level: action.name ? "clever" : "raw",
+        notice: action.notice,
+      };
     case "setLevel":
       return { ...state, ...invalidate(state), level: action.level };
     case "setLanguage":
@@ -116,7 +124,7 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
       };
     case "restore":
       if (!action.saved) return { ...state, hydrated: true };
-      return { ...state, ...action.saved, past: [], future: [], result: action.result, status: "idle", cleared: false, notice: null, hydrated: true };
+      return { ...state, ...action.saved, level: action.saved.replacementsName ? action.saved.level : "raw", past: [], future: [], result: action.result, status: "idle", cleared: false, notice: null, hydrated: true };
     case "notice":
       return { ...state, notice: action.notice };
     case "analysisStarted":

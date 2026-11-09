@@ -49,8 +49,8 @@ export function layoutFromFixture(fixture: ExcelFixture): Layout {
 
 export function replacementsFromFixture(fixture: ExcelFixture): Replacements {
   return {
-    corrections: fixture.corrections.map((rule) => ({ text: rule.text, keys: fromExcelKeys(rule.keys) })),
-    cleverKeys: fixture.cleverKeys.map((rule) => ({
+    essentialCorrections: fixture.corrections.map((rule) => ({ text: rule.text, keys: fromExcelKeys(rule.keys) })),
+    optionalCorrections: fixture.cleverKeys.map((rule) => ({
       text: rule.text,
       keys: fromExcelKeys(rule.keys),
       ...(rule.before ? { noLetterBefore: true, allowedBefore: [rule.before] } : {}),

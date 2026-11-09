@@ -26,6 +26,15 @@ describe("reducer", () => {
     expect(state.layout).toBe(first);
   });
 
+  it("offers only \"None\" without a replacements file (feedback 11)", () => {
+    const start = initialState(first);
+    expect(start.level).toBe("raw");
+    const loaded = reducer(start, { type: "setReplacements", replacements: start.replacements, name: "r.json", notice: null });
+    expect(loaded.level).toBe("clever");
+    const removed = reducer(loaded, { type: "setReplacements", replacements: start.replacements, name: null, notice: null });
+    expect(removed.level).toBe("raw");
+  });
+
   it("keeps the session untouched until it has been restored", () => {
     const state = initialState(first);
     expect(state.hydrated).toBe(false);

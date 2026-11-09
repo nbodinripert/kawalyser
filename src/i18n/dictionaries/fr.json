@@ -31,8 +31,8 @@
     "level": "Remplacements",
     "levels": {
       "raw": "Aucun",
-      "corrections": "Corrections",
-      "clever": "Corrections et Clever Keys"
+      "corrections": "Corrections essentielles",
+      "clever": "Corrections optionnelles"
     },
     "undo": "Annuler",
     "redo": "Rétablir",
@@ -68,9 +68,10 @@
   },
   "replacements": {
     "title": "Remplacements",
-    "empty": "Aucun fichier de remplacements. Importez-en un pour analyser Repeat, Magic et les Clever Keys.",
-    "corrections": "Corrections essentielles",
-    "cleverKeys": "Clever Keys",
+    "empty": "Aucun fichier de remplacements. Importez-en un pour analyser Repeat, Magic, et les corrections essentielles et optionnelles.",
+    "hidden": "Aucun remplacement n'est appliqué : choisissez des corrections dans le sélecteur « Remplacements » pour les afficher.",
+    "essential": "Corrections essentielles",
+    "optional": "Corrections optionnelles",
     "toWrite": "Pour écrire",
     "type": "taper"
   },
@@ -147,6 +148,8 @@
     },
     "difficulties": {
       "title": "Difficultés",
+      "total": "Total",
+      "totalHint": "Somme des 12 difficultés",
       "details": "Détail",
       "items": {
         "sfb": "Même doigt",

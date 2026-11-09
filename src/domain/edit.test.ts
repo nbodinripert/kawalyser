@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dropZone, moveZone, typeIntoZone } from "./edit";
-import type { Layout } from "./layout";
+import { completeLetterPairs, type Layout } from "./layout";
 
 const layout: Layout = {
   name: "",
@@ -14,21 +14,28 @@ const layout: Layout = {
 
 describe("moveZone", () => {
   it("swaps two single characters", () => {
+    const next = moveZone(layout, { key: "b", zone: "shift" }, { key: "c", zone: "dk" });
+    expect(next.keys.b).toEqual({ base: "," });
+    expect(next.keys.c).toEqual({ base: "l", shift: "L", dk: "?" });
+  });
+
+  it("swaps whole layers when a letter is involved, since a letter keeps its capital", () => {
     const next = moveZone(layout, { key: "b", zone: "shift" }, { key: "a", zone: "dk" });
-    expect(next.keys.b).toEqual({ base: ",", shift: "ç" });
-    expect(next.keys.a).toEqual({ base: "r", shift: "R", dk: "?" });
+    expect(next.keys.b).toEqual({ base: "ç", shift: "Ç" });
+    expect(next.keys.a).toEqual({ base: "r", shift: "R", dk: ",", dkShift: "?" });
   });
 
   it("moves a letter with its capital and swaps whole layers", () => {
     const next = moveZone(layout, { key: "a", zone: "shift" }, { key: "c", zone: "base" });
-    expect(next.keys.a).toEqual({ base: "l", shift: "L", dk: "ç" });
+    // The letter alone in the dead key layer now carries its capital too.
+    expect(next.keys.a).toEqual({ base: "l", shift: "L", dk: "ç", dkShift: "Ç" });
     expect(next.keys.c).toEqual({ base: "r", shift: "R" });
   });
 
   it("moves into an empty zone", () => {
     const next = moveZone(layout, { key: "a", zone: "dk" }, { key: "c", zone: "dk" });
     expect(next.keys.a).toEqual({ base: "r", shift: "R" });
-    expect(next.keys.c).toEqual({ base: "l", shift: "L", dk: "ç" });
+    expect(next.keys.c).toEqual({ base: "l", shift: "L", dk: "ç", dkShift: "Ç" });
   });
 
   it("does nothing when dropped on itself or from an empty zone", () => {
@@ -75,7 +82,7 @@ describe("typeIntoZone (question 25 of the specs)", () => {
 
   it("replaces the character when the typed one is not on the map", () => {
     const next = typeIntoZone(layout, { key: "a", zone: "base" }, "k");
-    expect(next.keys.a).toEqual({ base: "k", shift: "K", dk: "ç" });
+    expect(next.keys.a).toEqual({ base: "k", shift: "K", dk: "ç", dkShift: "Ç" });
   });
 
   it("types a symbol in a single zone", () => {
@@ -86,5 +93,37 @@ describe("typeIntoZone (question 25 of the specs)", () => {
   it("replaces a letter pair with a symbol", () => {
     const next = typeIntoZone(layout, { key: "c", zone: "base" }, "/");
     expect(next.keys.c).toEqual({ base: "/" });
+  });
+});
+
+describe("letters always come with their other case (feedback 7)", () => {
+  const withAccents: Layout = {
+    name: "",
+    shapeId: "split40",
+    keys: {
+      z: { base: "z", shift: "Z", dk: "è" },
+      empty: {},
+      comma: { base: ",", shift: "?" },
+    },
+  };
+
+  it("pairs è with È when it moves to the direct layer of a key", () => {
+    const next = moveZone(withAccents, { key: "z", zone: "dk" }, { key: "empty", zone: "base" });
+    expect(next.keys.empty).toEqual({ base: "è", shift: "È" });
+  });
+
+  it("pairs a typed è with È, like any other letter", () => {
+    const next = typeIntoZone({ ...withAccents, keys: { ...withAccents.keys, z: { base: "z", shift: "Z" } } }, { key: "empty", zone: "base" }, "è");
+    expect(next.keys.empty).toEqual({ base: "è", shift: "È" });
+  });
+
+  it("fills the missing small letter when a capital lands alone, so the analysis sees it", () => {
+    expect(completeLetterPairs({ shift: "È" })).toEqual({ base: "è", shift: "È" });
+  });
+
+  it("leaves symbols and letters without a single-character capital alone", () => {
+    expect(completeLetterPairs({ base: "," })).toEqual({ base: "," });
+    expect(completeLetterPairs({ base: "ß" })).toEqual({ base: "ß" });
+    expect(completeLetterPairs({ base: "_", shift: "?" })).toEqual({ base: "_", shift: "?" });
   });
 });

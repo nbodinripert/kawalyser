@@ -1,6 +1,6 @@
 import { parse as parseToml } from "smol-toml";
 import { mainKeyId, shapes, thumbKeyIds, type ShapeId } from "./geometry";
-import type { KeyChars, Layout } from "./layout";
+import { completeLayoutPairs, type KeyChars, type Layout } from "./layout";
 import { DEAD_KEY, isSpecialKey, MAGIC_KEY, REPEAT_KEY, SPACE } from "./symbols";
 
 /**
@@ -183,5 +183,6 @@ export function importKalamine(source: string, shapeId: ShapeId): ImportedLayout
   keys[thumbKeyIds.rightOuter] = space;
 
   const name = typeof document.name === "string" ? document.name : "";
-  return { ok: true, layout: { name, shapeId, keys }, droppedReserved: [...dropped] };
+  // Kalamine writes a dead key letter without its capital; on the map every letter comes with it.
+  return { ok: true, layout: completeLayoutPairs({ name, shapeId, keys }), droppedReserved: [...dropped] };
 }

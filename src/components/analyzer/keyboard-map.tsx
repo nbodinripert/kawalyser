@@ -128,7 +128,9 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
       }
       return;
     }
-    if (event.key.length === 1 && event.key !== " " && !event.metaKey && !event.ctrlKey && !event.altKey) {
+    // Option (Mac) and AltGr (Ctrl + Alt on Windows) type accented capitals such as "È": only Cmd and Ctrl shortcuts are left alone.
+    const shortcut = event.metaKey || (event.ctrlKey && !event.altKey);
+    if (event.key.length === 1 && event.key !== " " && !shortcut) {
       event.preventDefault();
       onChange(typeIntoZone(layout, ref, event.key));
       setSelected(null);
@@ -286,6 +288,8 @@ function ZoneCell({ refId, char, labels, selected, highlighted, strong, interact
       type="button"
       {...attributes}
       {...listeners}
+      // An empty zone has nothing to drag but still takes a typed character, so it is not disabled.
+      aria-disabled={undefined}
       aria-label={ariaLabel}
       aria-pressed={selected}
       onDoubleClick={onSelect}

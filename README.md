@@ -69,8 +69,8 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 
 ```json
 {
-  "corrections": [{ "text": "qu", "keys": "q" }],
-  "cleverKeys": [
+  "essentialCorrections": [{ "text": "qu", "keys": "q" }],
+  "optionalCorrections": [
     { "text": "quand", "keys": "qn" },
     { "text": "ment", "keys": "m#", "noLetterAfter": true, "allowedAfter": ["s"] },
     { "text": "pour", "keys": "pj", "noLetterBefore": true, "noLetterAfter": true }
@@ -78,4 +78,4 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 }
 ```
 
-Chaque ligne se lit « pour écrire `text`, taper `keys` ». Dans `keys`, `*` est la touche morte, `$` la touche Repeat et `#` la touche Magic.
+Chaque ligne se lit « pour écrire `text`, taper `keys` ». Dans `keys`, `*` est la touche morte, `$` la touche Repeat et `#` la touche Magic. Les corrections essentielles s'appliquent à partir du niveau « Corrections essentielles », les optionnelles (les Clever Keys de l'Excel) seulement au niveau « Corrections optionnelles ».

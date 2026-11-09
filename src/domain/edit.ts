@@ -1,4 +1,4 @@
-import { isPair, layerZones, type KeyChars, type Layer, type Layout, type Zone } from "./layout";
+import { completeLetterPairs, isPair, layerZones, type KeyChars, type Layer, type Layout, type Zone } from "./layout";
 
 export type ZoneRef = { key: string; zone: Zone };
 
@@ -11,12 +11,22 @@ function layerIsPair(chars: KeyChars | undefined, layer: Layer): boolean {
   return isPair(chars?.[lower], chars?.[upper]);
 }
 
+/** A letter with a one-character capital: it always fills its whole layer. */
+function isPairableLetter(char: string | undefined): boolean {
+  return char !== undefined && isPair(char.toLowerCase(), char.toUpperCase());
+}
+
+function layerHoldsLetter(chars: KeyChars | undefined, layer: Layer): boolean {
+  const { lower, upper } = layerZones[layer];
+  return isPairableLetter(chars?.[lower]) || isPairableLetter(chars?.[upper]);
+}
+
 function withChars(layout: Layout, key: string, chars: KeyChars): Layout {
   const cleaned: KeyChars = {};
   for (const [zone, char] of Object.entries(chars) as Array<[Zone, string | undefined]>) {
     if (char !== undefined && char !== "") cleaned[zone] = char;
   }
-  return { ...layout, keys: { ...layout.keys, [key]: cleaned } };
+  return { ...layout, keys: { ...layout.keys, [key]: completeLetterPairs(cleaned) } };
 }
 
 function setZones(layout: Layout, key: string, values: Partial<Record<Zone, string | undefined>>): Layout {
@@ -40,7 +50,8 @@ function swapLayers(layout: Layout, a: { key: string; layer: Layer }, b: { key: 
 
 /**
  * Moves what sits in one zone to another zone, swapping with what was there.
- * A letter and its capital always travel together, so a move that involves one swaps whole layers.
+ * A letter always fills its whole layer with its capital, so a move that involves a letter swaps whole layers,
+ * even when the layer also holds a character hidden for the current language.
  */
 export function moveZone(layout: Layout, from: ZoneRef, to: ZoneRef): Layout {
   if (from.key === to.key && from.zone === to.zone) return layout;
@@ -50,7 +61,7 @@ export function moveZone(layout: Layout, from: ZoneRef, to: ZoneRef): Layout {
   const fromLayer = layerOf(from.zone);
   const toLayer = layerOf(to.zone);
 
-  if (layerIsPair(fromChars, fromLayer) || layerIsPair(layout.keys[to.key], toLayer)) {
+  if (layerHoldsLetter(fromChars, fromLayer) || layerHoldsLetter(layout.keys[to.key], toLayer)) {
     if (from.key === to.key && fromLayer === toLayer) return layout;
     return swapLayers(layout, { key: from.key, layer: fromLayer }, { key: to.key, layer: toLayer });
   }
@@ -116,14 +127,13 @@ export function typeIntoZone(layout: Layout, at: ZoneRef, typed: string): Layout
   const layer = layerOf(at.zone);
   const { lower, upper } = layerZones[layer];
   const chars = layout.keys[at.key];
-  const otherZone = at.zone === lower ? upper : lower;
-  const layerHeldPair = layerIsPair(chars, layer);
-  const otherIsFree = layerHeldPair || chars?.[otherZone] === undefined;
 
-  if (isLetter(typed) && otherIsFree) {
+  // A typed letter fills the whole layer with its capital, like every letter on the map.
+  if (isPairableLetter(typed)) {
     return setZones(layout, at.key, { [lower]: typed.toLowerCase(), [upper]: typed.toUpperCase() });
   }
-  if (layerHeldPair) {
+  // A symbol typed over a letter replaces the letter and its capital.
+  if (layerHoldsLetter(chars, layer)) {
     return setZones(layout, at.key, { [lower]: undefined, [upper]: undefined, [at.zone]: typed });
   }
   return setZones(layout, at.key, { [at.zone]: typed });
