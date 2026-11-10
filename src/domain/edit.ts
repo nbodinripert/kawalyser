@@ -1,3 +1,4 @@
+import { isSpecialKey } from "./symbols";
 import { completeLetterPairs, isPair, layerZones, type KeyChars, type Layer, type Layout, type Zone } from "./layout";
 
 export type ZoneRef = { key: string; zone: Zone };
@@ -48,16 +49,55 @@ function swapLayers(layout: Layout, a: { key: string; layer: Layer }, b: { key: 
   return next;
 }
 
+/** The outcome of an edit. `refused` names the special key the edit would have sent where it does nothing. */
+export type EditResult = { layout: Layout; refused?: string };
+
 /**
  * Moves what sits in one zone to another zone, swapping with what was there.
  * A letter always fills its whole layer with its capital, so a move that involves a letter swaps whole layers,
  * even when the layer also holds a character hidden for the current language.
  */
 export function moveZone(layout: Layout, from: ZoneRef, to: ZoneRef): Layout {
-  if (from.key === to.key && from.zone === to.zone) return layout;
-  const fromChars = layout.keys[from.key];
-  if (fromChars?.[from.zone] === undefined && !layerIsPair(fromChars, layerOf(from.zone))) return layout;
+  return tryMove(layout, from, to).layout;
+}
 
+/** Like `moveZone`, and says which special key made it refuse the move. */
+export function tryMove(layout: Layout, from: ZoneRef, to: ZoneRef): EditResult {
+  // A special key only works in the base zone, so it lands there wherever it is dropped on the key.
+  if (isSpecialKey(layout.keys[from.key]?.[from.zone])) to = { key: to.key, zone: "base" };
+  if (from.key === to.key && from.zone === to.zone) return { layout };
+  const fromChars = layout.keys[from.key];
+  if (fromChars?.[from.zone] === undefined && !layerIsPair(fromChars, layerOf(from.zone))) return { layout };
+  const next = swap(layout, from, to);
+  const refused = newlyMisplaced(layout, next);
+  return refused === undefined ? { layout: next } : { layout, refused };
+}
+
+/** The special keys that sit where the engine ignores them: anywhere but the base zone. */
+function misplacedSpecialKeys(layout: Layout): string[] {
+  const found: string[] = [];
+  for (const chars of Object.values(layout.keys)) {
+    for (const zone of ["shift", "dk", "dkShift"] as const) {
+      const char = chars[zone];
+      if (char !== undefined && isSpecialKey(char)) found.push(char);
+    }
+  }
+  return found;
+}
+
+/**
+ * A swap can send the special key that was in the way to the zone the moved character came from.
+ * If that zone is not a base zone, the swap is refused, so that a special key never ends up ignored.
+ */
+function newlyMisplaced(before: Layout, after: Layout): string | undefined {
+  const was = misplacedSpecialKeys(before);
+  const now = misplacedSpecialKeys(after);
+  if (now.length <= was.length) return undefined;
+  return now.find((char) => !was.includes(char)) ?? now[0];
+}
+
+function swap(layout: Layout, from: ZoneRef, to: ZoneRef): Layout {
+  const fromChars = layout.keys[from.key];
   const fromLayer = layerOf(from.zone);
   const toLayer = layerOf(to.zone);
 
@@ -116,12 +156,18 @@ export function findChar(layout: Layout, char: string): ZoneRef | undefined {
  * otherwise it replaces what was there, which leaves the map.
  */
 export function typeIntoZone(layout: Layout, at: ZoneRef, typed: string): Layout {
-  if (typed.length === 0) return layout;
+  return tryType(layout, at, typed).layout;
+}
+
+/** Like `typeIntoZone`, and says which special key made it refuse the edit. */
+export function tryType(layout: Layout, at: ZoneRef, typed: string): EditResult {
+  if (typed.length === 0) return { layout };
+  if (isSpecialKey(typed)) at = { key: at.key, zone: "base" };
   const existing = findChar(layout, typed);
   if (existing) {
     const sameLayer = existing.key === at.key && layerOf(existing.zone) === layerOf(at.zone);
-    if (sameLayer && (existing.zone === at.zone || layerIsPair(layout.keys[at.key], layerOf(at.zone)))) return layout;
-    return moveZone(layout, existing, at);
+    if (sameLayer && (existing.zone === at.zone || layerIsPair(layout.keys[at.key], layerOf(at.zone)))) return { layout };
+    return tryMove(layout, existing, at);
   }
 
   const layer = layerOf(at.zone);
@@ -130,13 +176,13 @@ export function typeIntoZone(layout: Layout, at: ZoneRef, typed: string): Layout
 
   // A typed letter fills the whole layer with its capital, like every letter on the map.
   if (isPairableLetter(typed)) {
-    return setZones(layout, at.key, { [lower]: typed.toLowerCase(), [upper]: typed.toUpperCase() });
+    return { layout: setZones(layout, at.key, { [lower]: typed.toLowerCase(), [upper]: typed.toUpperCase() }) };
   }
   // A symbol typed over a letter replaces the letter and its capital.
   if (layerHoldsLetter(chars, layer)) {
-    return setZones(layout, at.key, { [lower]: undefined, [upper]: undefined, [at.zone]: typed });
+    return { layout: setZones(layout, at.key, { [lower]: undefined, [upper]: undefined, [at.zone]: typed }) };
   }
-  return setZones(layout, at.key, { [at.zone]: typed });
+  return { layout: setZones(layout, at.key, { [at.zone]: typed }) };
 }
 
 /**

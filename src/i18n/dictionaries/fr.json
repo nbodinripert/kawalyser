@@ -36,6 +36,8 @@
     },
     "undo": "Annuler",
     "redo": "Rétablir",
+    "undoShortcut": "Ctrl+Z ou ⌘Z",
+    "redoShortcut": "Ctrl+Maj+Z ou ⌘⇧Z",
     "reset": "Revenir à la disposition importée",
     "hint": "Glissez un caractère sur une autre touche pour les échanger. Visez le bord droit d'une touche pour le placer après la touche morte. Ou double-cliquez sur une zone, ou appuyez sur Entrée, puis tapez un caractère.",
     "selectedHint": "Tapez le caractère à placer dans cette zone, ou appuyez sur Suppr pour la vider. Échap pour annuler.",
@@ -44,12 +46,15 @@
       "dead": "Touche morte 1DK",
       "repeat": "Repeat",
       "magic": "Magic",
-      "notPlaced": "non placée"
+      "notPlaced": "non placée",
+      "dragHint": "Glissez-la sur une touche pour la placer"
     },
+    "refused": "Impossible : {char} doit rester en bas à gauche d'une touche, seul endroit lu par l'analyse.",
     "trash": "Corbeille",
     "trashHint": "Pour supprimer un caractère, glissez-le sur la corbeille, ou sélectionnez sa zone et appuyez sur Suppr ou Retour arrière.",
     "drag": {
       "deleted": "Caractère supprimé.",
+      "placed": "Touche placée.",
       "pickedUp": "{char} saisi.",
       "over": "Au-dessus de la touche {key}.",
       "outside": "En dehors des touches.",
@@ -82,6 +87,8 @@
     "hidden": "Aucun remplacement n'est appliqué : choisissez des corrections dans le sélecteur « Remplacements » pour les afficher.",
     "essential": "Corrections essentielles",
     "optional": "Corrections optionnelles",
+    "ignored": "Les remplacements barrés sont ignorés par l'analyse : il manque {keys} sur la carte.",
+    "ignoredRule": "ignoré : une touche manque sur la carte",
     "toWrite": "Pour écrire",
     "type": "taper"
   },
@@ -158,8 +165,6 @@
     },
     "difficulties": {
       "title": "Difficultés",
-      "total": "Total",
-      "totalHint": "Somme des 12 difficultés",
       "details": "Détail",
       "items": {
         "sfb": "Même doigt",
@@ -214,7 +219,9 @@
       "subtitle": "Scores pondérés par doigt, sans unité",
       "distance": "Distance (SKB, SFB, SFS)",
       "scissors": "Ciseaux",
-      "stretch": "LSB et mauvaises redirections"
+      "stretch": "LSB et mauvaises redirections",
+      "total": "Total",
+      "totalHint": "Somme des scores du tableau"
     },
     "table": "Afficher sous forme de tableau",
     "hideTable": "Masquer le tableau"

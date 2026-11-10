@@ -43,6 +43,19 @@ describe("createAdapter", () => {
     }
   });
 
+  it("does not use Repeat for a character typed with the dead key, as Repeat would repeat the last press only", () => {
+    // In Propergol, "ô" is typed "*o": "ôô" takes "*o*o", since "*o$" would type "ôo".
+    expect(typed("ôô")).toBe(`${DK}o${DK}o`);
+    // "é" has its own key: Repeat applies.
+    expect(typed("créé")).toBe(`cré${REPEAT}`);
+  });
+
+  it("does not use Repeat for a character missing from the map", () => {
+    const withoutZ: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "z")) };
+    const adapter = createAdapter(buildKeyMap(withoutZ, { language: "fr" }), replacements, { level: "raw", language: "fr" });
+    expect(adapter.adaptLine("pizza").adapted.join(" ")).toBe("pizza");
+  });
+
   it("keeps the Excel behaviour in compat mode: Repeat only from the corrections level, key or not", () => {
     const keyMap = buildKeyMap(layout, { language: "fr" });
     expect(createAdapter(keyMap, replacements, { level: "raw", language: "fr", compat: true }).adaptLine("elle").adapted.join(" ")).toBe("elle");
@@ -60,6 +73,26 @@ describe("createAdapter", () => {
     expect(typed("mentir")).toBe("mentir");
     expect(typed("pas")).toBe("pc");
     expect(typed("repas")).toBe("repas");
+  });
+
+  it("ignores a rule that needs a key missing from the map (feedback on untypeable rules)", () => {
+    const withoutMagic: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "#")) };
+    const adapter = createAdapter(buildKeyMap(withoutMagic, { language: "fr" }), replacements, { level: "clever", language: "fr" });
+    // "ment" needs Magic: left as it is, and not counted in the cognitive load. "quand" can still be typed.
+    expect(adapter.adaptLine("rapidement quand").adapted).toEqual(["rapidement", "qn"]);
+    expect(adapter.usage.has("ment")).toBe(false);
+  });
+
+  it("ignores an essential correction that needs a character missing from the map", () => {
+    const withoutQ: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "q")) };
+    const adapter = createAdapter(buildKeyMap(withoutQ, { language: "fr" }), replacements, { level: "corrections", language: "fr" });
+    expect(adapter.adaptLine("quoi").adapted).toEqual(["quoi"]);
+  });
+
+  it("applies every rule in compat mode, as the Excel analyser does", () => {
+    const withoutMagic: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "#")) };
+    const adapter = createAdapter(buildKeyMap(withoutMagic, { language: "fr" }), replacements, { level: "clever", language: "fr", compat: true });
+    expect(adapter.adaptLine("rapidement").adapted).toEqual([`rapide${"m" + MAGIC}`]);
   });
 
   it("treats every accented letter as a letter (question 13 of the specs)", () => {

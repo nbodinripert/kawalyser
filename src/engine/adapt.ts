@@ -1,7 +1,6 @@
 import type { AnalysisLevel, Replacements } from "@/domain/replacements";
 import { validChars, type CorpusLanguage } from "@/domain/valid-chars";
-import { DEAD_KEY } from "@/domain/symbols";
-import { keysToTokens, REPEAT, type KeyMap } from "./keymap";
+import { canType, keysToTokens, REPEAT, type KeyMap } from "./keymap";
 
 /**
  * Turns the corpus into what is really typed, word by word, as the Excel analyser does:
@@ -65,9 +64,13 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
     return rule;
   };
 
+  // The Excel analyser applies every rule. Now a rule that needs a key missing from the map is ignored, since it cannot
+  // be typed (feedback on untypeable rules): applied, its key presses fell out of the statistics.
+  const typeable = (rule: { keys: string }) => compat || canType(keyMap, rule.keys);
+
   const cleverRules: Rule[] =
     level === "clever"
-      ? replacements.optionalCorrections.map((rule) =>
+      ? replacements.optionalCorrections.filter(typeable).map((rule) =>
           register({
             pattern: rule.text,
             replacement: keysToTokens(rule.keys),
@@ -91,11 +94,14 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
   }
 
   // Repeat: the Excel analyser applies it from the "corrections" level, to "aa" to "zz", even without the key.
-  // Now the key alone decides (feedback on Repeat): placed on the map, every valid doubled character uses it, at every level.
+  // Now the key alone decides (feedback on Repeat): placed on the map, it serves at every level, for every doubled
+  // character typed with one key press. Repeat repeats the last press, so after "*o" it types "o", not "ô":
+  // a character of the dead key layer, or one missing from the map, is left as it is. A firmware can be taught to repeat
+  // the dead key character, but Kawamashi finds these doubles rare enough to keep the plain behaviour.
   const repeatable = compat
     ? Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i))
     : keyMap.slotOf.has(REPEAT)
-      ? [...validChars[language]].filter((char) => char !== DEAD_KEY)
+      ? [...validChars[language]].filter((char) => keyMap.slotOf.has(char))
       : [];
   const repeatRules = repeatable.map((char) => register({ pattern: char + char, replacement: char + REPEAT }));
 
@@ -103,7 +109,7 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
   if (level !== "raw") correctionRules.push(...multiDeadKeyRules);
   if (!compat || level !== "raw") correctionRules.push(...repeatRules);
   if (level !== "raw") {
-    for (const rule of replacements.essentialCorrections) {
+    for (const rule of replacements.essentialCorrections.filter(typeable)) {
       correctionRules.push(register({ pattern: rule.text, replacement: keysToTokens(rule.keys) }));
     }
   }

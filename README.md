@@ -58,12 +58,13 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 
 | Comportement de l'Excel | Sur le site |
 | --- | --- |
-| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Corrections essentielles » | Tous les caractères valides doublés, seulement si `$` est placé, quel que soit le niveau |
+| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Corrections essentielles » | Tous les caractères valides doublés tapés d'une seule frappe (pas ceux de la couche morte : Repeat répète la dernière frappe), seulement si `$` est placé, quel que soit le niveau |
 | « Pas de lettre avant ou après » ne reconnaît que `a` à `z` et `é` | Toutes les lettres |
 | Les barres de charge des index oublient `B` et `K` | Toutes les touches comptent |
 | « Sans espace » retire aussi la touche voisine d'espace | Seule la touche espace est retirée |
 | La règle « majeur en haut, annulaire en bas » des ciseaux ne s'applique jamais (comparaison texte/nombre en VBA) | La règle s'applique |
 | `#` n'est pas retiré du corpus | `#` est retiré, car il note la touche Magic |
+| Toutes les règles de remplacement s'appliquent, même celles qui demandent une touche absente de la carte (Magic, Repeat, touche morte ou caractère) | Ces règles sont ignorées, car elles ne peuvent pas être tapées ; le panneau des remplacements les barre |
 
 ## Format des remplacements
 
@@ -78,4 +79,4 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 }
 ```
 
-Chaque ligne se lit « pour écrire `text`, taper `keys` ». Dans `keys`, `*` est la touche morte, `$` la touche Repeat et `#` la touche Magic. Les corrections essentielles s'appliquent à partir du niveau « Corrections essentielles », les optionnelles (les Clever Keys de l'Excel) seulement au niveau « Corrections optionnelles ».
+Chaque ligne se lit « pour écrire `text`, taper `keys` ». Dans `keys`, `*` est la touche morte, `$` la touche Repeat et `#` la touche Magic. Une règle qui demande une touche absente de la carte est ignorée. Les corrections essentielles s'appliquent à partir du niveau « Corrections essentielles », les optionnelles (les Clever Keys de l'Excel) seulement au niveau « Corrections optionnelles ».

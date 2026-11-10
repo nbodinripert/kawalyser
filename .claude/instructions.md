@@ -35,6 +35,10 @@ L'utilisateur est développeur React confirmé mais débute sur les claviers. Ka
 | Magic | `#` | Sa sortie dépend de la frappe précédente ; ses effets sont décrits dans le fichier de remplacements. |
 | Clever Keys | — | Règles contextuelles du firmware : taper `keys` produit `text`, avec des conditions sur la lettre avant ou après. Ce sont les `optionalCorrections`. |
 
+Le moteur ne lit que la zone `base` d'une touche : `*`, `$`, `#` et l'espace n'y comptent que là. Comme les lettres appariées, `edit.ts` les y replace quel que soit l'endroit où on les dépose ou les tape, et refuse un échange qui les enverrait ailleurs (`tryMove` et `tryType` nomment la touche en cause, pour l'expliquer). On peut aussi glisser `*`, `$` et `#` depuis la légende sous la carte.
+
+Repeat ne sert que pour un caractère tapé en une frappe : `ôô` reste `*o*o`. Une règle de remplacement qu'on ne peut pas taper sur la carte (touche spéciale ou caractère absent) est ignorée hors `compat`, et le panneau la barre (`missingKeys` dans `keymap.ts`).
+
 Doublons : un caractère présent deux fois sur la grille principale dans la même couche fait refuser l'import du `.toml` (`duplicates.ts`). Sinon la priorité est grille > pouces > colonnes extérieures, puis couche directe > couche morte (question 24).
 
 ### Les niveaux d'analyse

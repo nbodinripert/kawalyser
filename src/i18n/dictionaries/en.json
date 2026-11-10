@@ -36,6 +36,8 @@
     },
     "undo": "Undo",
     "redo": "Redo",
+    "undoShortcut": "Ctrl+Z or ⌘Z",
+    "redoShortcut": "Ctrl+Shift+Z or ⌘⇧Z",
     "reset": "Back to the imported layout",
     "hint": "Drag a character onto another key to swap them. Aim at the right edge of a key to place it after the dead key. Or double-click a zone, or press Enter on it, then type a character.",
     "selectedHint": "Type the character to place in this zone, or press Delete to empty it. Press Escape to cancel.",
@@ -44,12 +46,15 @@
       "dead": "1DK dead key",
       "repeat": "Repeat",
       "magic": "Magic",
-      "notPlaced": "not placed"
+      "notPlaced": "not placed",
+      "dragHint": "Drag it onto a key to place it"
     },
+    "refused": "Not possible: {char} must stay in the lower-left corner of a key, the only place the analysis reads it.",
     "trash": "Trash",
     "trashHint": "To delete a character, drag it onto the trash, or select its zone and press Delete or Backspace.",
     "drag": {
       "deleted": "Character deleted.",
+      "placed": "Key placed.",
       "pickedUp": "Picked up {char}.",
       "over": "Over the {key} key.",
       "outside": "Not over a key.",
@@ -82,6 +87,8 @@
     "hidden": "No replacement is applied: pick corrections in the Replacements selector to show them.",
     "essential": "Essential corrections",
     "optional": "Optional corrections",
+    "ignored": "The replacements struck through are ignored by the analysis: the map lacks {keys}.",
+    "ignoredRule": "ignored: a key is missing from the map",
     "toWrite": "To write",
     "type": "type"
   },
@@ -158,8 +165,6 @@
     },
     "difficulties": {
       "title": "Difficulties",
-      "total": "Total",
-      "totalHint": "Sum of the 12 difficulties",
       "details": "Details",
       "items": {
         "sfb": "Same-finger bigrams",
@@ -214,7 +219,9 @@
       "subtitle": "Weighted scores per finger, without unit",
       "distance": "Distance (SKB, SFB, SFS)",
       "scissors": "Scissors",
-      "stretch": "LSB and bad redirects"
+      "stretch": "LSB and bad redirects",
+      "total": "Total",
+      "totalHint": "Sum of the scores in the table"
     },
     "table": "Show as a table",
     "hideTable": "Hide the table"

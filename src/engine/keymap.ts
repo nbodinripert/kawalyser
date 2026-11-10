@@ -57,6 +57,21 @@ export type KeyMap = {
   symbolOf: Map<string, string>;
 };
 
+/**
+ * The key presses of a replacement that this map cannot make, as written in the file. A press can be made
+ * on a key, or as a character typed after the dead key. Magic, Repeat or the dead key may be missing too.
+ */
+export function missingKeys(keyMap: KeyMap, keys: string): string[] {
+  return Array.from(keys).filter((char) => {
+    const token = toToken(char);
+    return !keyMap.slotOf.has(token) && !keyMap.deadKeySequences.has(token);
+  });
+}
+
+export function canType(keyMap: KeyMap, keys: string): boolean {
+  return missingKeys(keyMap, keys).length === 0;
+}
+
 export type KeyMapOptions = { language: CorpusLanguage; compat?: boolean };
 
 const rolePriority = { pad: 0, thumb: 1, outer: 2 } as const;

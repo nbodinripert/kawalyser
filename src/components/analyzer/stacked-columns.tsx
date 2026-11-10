@@ -15,8 +15,8 @@ type StackedColumnsProps = {
   tableLabel: string;
   hideTableLabel: string;
   totalLabel?: string;
-  /** A figure that belongs to the whole chart, shown as the first row of the table. */
-  summary?: { label: string; value: string; hint?: string };
+  /** A first row of the table with the sum of each column, and of the whole table. */
+  summary?: { label: string; hint?: string };
   /** Prints each column's total above it. */
   showTotals?: boolean;
 };
@@ -26,6 +26,8 @@ const MARGIN = { top: 22, right: 8, bottom: 26, left: 44 };
 const BAR = 24;
 const GAP = 2;
 const RADIUS = 4;
+
+const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
 function niceStep(max: number): number {
   const raw = max / 4;
@@ -224,14 +226,17 @@ export function StackedColumns({
             </thead>
             <tbody className="tabular">
               {summary && (
-                <tr className="bg-accent-soft">
-                  <th className="px-3 py-1.5 text-left font-semibold text-foreground">
+                <tr className="bg-accent-soft font-semibold">
+                  <th className="px-3 py-1.5 text-left text-foreground">
                     {summary.label}
                     {summary.hint && <span className="block text-[0.7rem] font-normal text-muted">{summary.hint}</span>}
                   </th>
-                  <td colSpan={series.length + (totalLabel ? 1 : 0)} className="px-3 py-1.5 text-right text-sm font-semibold">
-                    {summary.value}
-                  </td>
+                  {series.map((s) => (
+                    <td key={s.id} className="px-3 py-1.5 text-right">
+                      {formatValue(sum(s.values))}
+                    </td>
+                  ))}
+                  {totalLabel && <td className="px-3 py-1.5 text-right">{formatValue(sum(totals))}</td>}
                 </tr>
               )}
               {categoryNames.map((name, index) => (

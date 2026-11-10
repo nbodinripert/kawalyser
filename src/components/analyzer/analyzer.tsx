@@ -5,13 +5,14 @@ import { z } from "zod";
 import { findBlockingDuplicates } from "@/domain/duplicates";
 import { shapeIds } from "@/domain/geometry";
 import { importKalamine, type ImportProblem } from "@/domain/kalamine";
-import { completeLayoutPairs, type Layout } from "@/domain/layout";
+import { completeLayoutPairs, sameLayout, type Layout } from "@/domain/layout";
 import { analysisLevels, emptyReplacements, parseReplacements, replacementsSchema } from "@/domain/replacements";
 import { analysisRequestSchema, layoutSchema, type AnalysisRequest } from "@/domain/schemas";
 import { corpusLanguages } from "@/domain/valid-chars";
 import type { AnalysisResult } from "@/engine/analyse";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { RedoIcon, ResetIcon, UndoIcon } from "../icons";
 import { Button, Card, Select, cx, format } from "../ui";
 import { KeyboardMap } from "./keyboard-map";
 import { formatters } from "./numbers";
@@ -278,18 +279,42 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
               onChange={(layout) => dispatch({ type: "edit", layout })}
             />
             <div className="mt-2 -ml-3.5 flex flex-wrap items-center gap-1">
-              <Button variant="ghost" onClick={() => dispatch({ type: "undo" })} disabled={state.past.length === 0}>
+              {/* The shortcuts are handled above, on the whole page. */}
+              <Button
+                variant="ghost"
+                onClick={() => dispatch({ type: "undo" })}
+                disabled={state.past.length === 0}
+                title={`${labels.undo} (${labels.undoShortcut})`}
+                aria-keyshortcuts="Control+Z Meta+Z"
+              >
+                <UndoIcon />
                 {labels.undo}
               </Button>
-              <Button variant="ghost" onClick={() => dispatch({ type: "redo" })} disabled={state.future.length === 0}>
+              <Button
+                variant="ghost"
+                onClick={() => dispatch({ type: "redo" })}
+                disabled={state.future.length === 0}
+                title={`${labels.redo} (${labels.redoShortcut})`}
+                aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+              >
+                <RedoIcon />
                 {labels.redo}
               </Button>
-              <Button variant="ghost" onClick={() => dispatch({ type: "reset" })} disabled={state.layout === state.imported}>
+              <Button variant="ghost" onClick={() => dispatch({ type: "reset" })} disabled={sameLayout(state.layout, state.imported)}>
+                <ResetIcon />
                 {labels.reset}
               </Button>
             </div>
           </div>
-          <ReplacementsPanel replacements={state.replacements} level={state.level} name={state.replacementsName} labels={dictionary.replacements} />
+          <ReplacementsPanel
+            replacements={state.replacements}
+            level={state.level}
+            name={state.replacementsName}
+            layout={state.layout}
+            language={state.language}
+            labels={dictionary.replacements}
+            legend={labels.legend}
+          />
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-5">

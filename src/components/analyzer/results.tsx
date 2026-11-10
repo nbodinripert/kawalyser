@@ -179,15 +179,15 @@ function Difficulties({ result, dictionary, numbers }: ResultsProps) {
 function Distribution({ result, dictionary, numbers }: ResultsProps) {
   const labels = dictionary.results.distribution;
   const fingers = dictionary.results.fingerLoad;
-  const difficulties = dictionary.results.difficulties;
-  const total = numbers.percent(difficultyIds.reduce((sum, id) => sum + result.difficulties[id], 0));
+  // Every score of the table, in its own unit: the grand total of the table's first row.
+  const total = numbers.integer(Object.values(result.distribution).flat().reduce((sum, value) => sum + value, 0));
   return (
     <Card
       title={labels.title}
       // The total stays in sight, as the table below can be hidden; it is also its first row.
       actions={
-        <p title={difficulties.totalHint} className="rounded-lg bg-accent-soft px-3 py-1 text-sm">
-          <span className="text-muted">{difficulties.total}</span> <span className="tabular font-semibold">{total}</span>
+        <p title={labels.totalHint} className="rounded-lg bg-accent-soft px-3 py-1 text-sm">
+          <span className="text-muted">{labels.total}</span> <span className="tabular font-semibold">{total}</span>
         </p>
       }
     >
@@ -203,7 +203,7 @@ function Distribution({ result, dictionary, numbers }: ResultsProps) {
         formatValue={numbers.integer}
         formatTick={(value) => (value >= 10000 ? `${numbers.integer(value / 1000)}k` : numbers.integer(value))}
         totalLabel={fingers.total}
-        summary={{ label: difficulties.total, value: total, hint: difficulties.totalHint }}
+        summary={{ label: labels.total, hint: labels.totalHint }}
         tableLabel={dictionary.results.table}
         hideTableLabel={dictionary.results.hideTable}
       />

@@ -1,5 +1,5 @@
 import type { ShapeId } from "@/domain/geometry";
-import type { Layout } from "@/domain/layout";
+import { sameLayout, type Layout } from "@/domain/layout";
 import { emptyReplacements, type AnalysisLevel, type Replacements } from "@/domain/replacements";
 import type { CorpusLanguage } from "@/domain/valid-chars";
 import type { AnalysisResult } from "@/engine/analyse";
@@ -89,7 +89,7 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
       return { ...state, ...invalidate(state), layout: next, past: [...state.past, state.layout], future: state.future.slice(1) };
     }
     case "reset":
-      if (state.layout === state.imported) return state;
+      if (sameLayout(state.layout, state.imported)) return state;
       return { ...state, ...invalidate(state), layout: state.imported, past: [...state.past, state.layout], future: [] };
     case "importLayout":
       return {

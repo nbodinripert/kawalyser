@@ -102,6 +102,35 @@ export function visibleZones(chars: KeyChars, language: CorpusLanguage): Partial
   return result;
 }
 
+/**
+ * What the keys of the current shape type alone: all the engine reads (`buildKeyMap`).
+ * A special key elsewhere, or on an outer key hidden by the 34-key shape, does nothing.
+ */
+export function baseCharsOnMap(layout: Layout): Set<string> {
+  const chars = new Set<string>();
+  for (const slot of shapes[layout.shapeId].keys) {
+    const base = layout.keys[slot.id]?.base;
+    if (base !== undefined) chars.add(base);
+  }
+  return chars;
+}
+
+const allZones = ["base", "shift", "dk", "dkShift"] as const;
+
+/**
+ * Whether two layouts put the same characters on the same keys. Compared by content, not by reference:
+ * a session read back from storage gives two distinct objects for the same layout.
+ * A key left empty by edits counts as a missing key.
+ */
+export function sameLayout(a: Layout, b: Layout): boolean {
+  if (a === b) return true;
+  if (a.shapeId !== b.shapeId) return false;
+  for (const id of new Set([...Object.keys(a.keys), ...Object.keys(b.keys)])) {
+    for (const zone of allZones) if (a.keys[id]?.[zone] !== b.keys[id]?.[zone]) return false;
+  }
+  return true;
+}
+
 export function roleOf(layout: Layout, keyId: string): KeyRole | undefined {
   return shapes[layout.shapeId].keys.find((key) => key.id === keyId)?.role;
 }

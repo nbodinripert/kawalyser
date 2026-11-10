@@ -15,10 +15,10 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { useMemo, useState, type KeyboardEvent } from "react";
-import { clearZone, dropZone, moveZone, typeIntoZone, type ZoneRef } from "@/domain/edit";
+import { clearZone, dropZone, tryMove, tryType, type EditResult, type ZoneRef } from "@/domain/edit";
 import { shapes, type KeySlot } from "@/domain/geometry";
-import { visibleZones, type Layout, type Zone } from "@/domain/layout";
-import { DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
+import { baseCharsOnMap, visibleZones, type Layout, type Zone } from "@/domain/layout";
+import { actionKeys, DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
 import type { CorpusLanguage } from "@/domain/valid-chars";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx, format } from "../ui";
@@ -55,21 +55,26 @@ function heatScale(layout: Layout, keyPresses: Record<string, number> | null) {
   };
 }
 
-type Drag = { from: ZoneRef; char: string; target: ZoneRef | null; overTrash: boolean };
+/** `from` is null for a special key dragged from the legend, which is not on the map yet or is moved from wherever it sits. */
+type Drag = { from: ZoneRef | null; char: string; target: ZoneRef | null; overTrash: boolean };
+
+const LEGEND_PREFIX = "legend:";
+
+/** What dropping on a zone does: a character of the map moves, a key of the legend is typed there. */
+const dropResult = (layout: Layout, drag: Drag, target: ZoneRef): EditResult =>
+  drag.from ? tryMove(layout, drag.from, target) : tryType(layout, target, drag.char);
 
 const TRASH_ID = "trash";
 
-const specialName = (char: string, labels: Labels): string | undefined =>
-  char === DEAD_KEY ? labels.legend.dead : char === REPEAT_KEY ? labels.legend.repeat : char === MAGIC_KEY ? labels.legend.magic : undefined;
+export const specialName = (char: string, legend: Labels["legend"]): string | undefined =>
+  char === DEAD_KEY ? legend.dead : char === REPEAT_KEY ? legend.repeat : char === MAGIC_KEY ? legend.magic : undefined;
 
 /** What is said or written for a character: the special keys carry their name, since a bare symbol means nothing. */
-const showChar = (char: string, labels: Labels) => {
+const showChar =(char: string, labels: Labels) => {
   if (char === SPACE) return labels.space;
-  const name = specialName(char, labels);
+  const name = specialName(char, labels.legend);
   return name === undefined ? char : `${char} (${name})`;
 };
-
-const legendKeys = [DEAD_KEY, REPEAT_KEY, MAGIC_KEY] as const;
 
 /** The zones a move would change, to highlight them while the user is still dragging. */
 function changedZones(before: Layout, after: Layout, keys: string[], language: CorpusLanguage): Set<string> {
@@ -88,12 +93,16 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
   const [drag, setDrag] = useState<Drag | null>(null);
   // Read by screen readers after a deletion made with the keyboard, which has no drag announcement.
   const [notice, setNotice] = useState("");
+  // The special key that made the last edit fail. Kept with its layout, so that it goes away once the layout changes.
+  const [refusal, setRefusal] = useState<{ char: string; layout: Layout } | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const heat = useMemo(() => heatScale(layout, keyPresses), [layout, keyPresses]);
 
-  // While dragging over a key, the map already shows the result of the drop.
-  const preview = drag?.target ? moveZone(layout, drag.from, drag.target) : layout;
-  const changed = drag?.target ? changedZones(layout, preview, [drag.from.key, drag.target.key], language) : new Set<string>();
+  // While dragging over a key, the map already shows the result of the drop, or why it is refused.
+  const drop = drag?.target ? dropResult(layout, drag, drag.target) : null;
+  const preview = drop?.layout ?? layout;
+  const changed = drop ? changedZones(layout, preview, shape.keys.map((slot) => slot.id), language) : new Set<string>();
+  const refused = drop ? drop.refused : refusal?.layout === layout ? refusal.char : undefined;
 
   const charAt = (ref: ZoneRef) => visibleZones(layout.keys[ref.key] ?? {}, language)[ref.zone];
   const keyName = (key: string) => {
@@ -102,12 +111,16 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
     return main === undefined ? "" : showChar(main, labels);
   };
 
+  /** The character being dragged, from the map or from the legend. */
+  const draggedChar = (id: string) => (id.startsWith(LEGEND_PREFIX) ? id.slice(LEGEND_PREFIX.length) : charAt(parseZoneId(id)));
+
   const onDragStart = (event: DragStartEvent) => {
-    const from = parseZoneId(String(event.active.id));
-    const char = charAt(from);
-    if (char !== undefined) setDrag({ from, char, target: null, overTrash: false });
+    const id = String(event.active.id);
+    const char = draggedChar(id);
+    if (char !== undefined) setDrag({ from: id.startsWith(LEGEND_PREFIX) ? null : parseZoneId(id), char, target: null, overTrash: false });
     setSelected(null);
     setNotice("");
+    setRefusal(null);
   };
 
   const onDragMove = (event: DragMoveEvent) => {
@@ -119,7 +132,7 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
       if (!rect || !event.over) return current.target || current.overTrash ? { ...current, target: null, overTrash: false } : current;
       const x = (activator.clientX + event.delta.x - rect.left) / rect.width;
       const y = (activator.clientY + event.delta.y - rect.top) / rect.height;
-      const target = { key: String(event.over.id), zone: dropZone(current.from.zone, x, y) };
+      const target = { key: String(event.over.id), zone: dropZone(current.from?.zone ?? "base", x, y) };
       const same = current.target?.key === target.key && current.target.zone === target.zone;
       return same && !current.overTrash ? current : { ...current, target, overTrash: false };
     });
@@ -127,8 +140,13 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
 
   const onDragEnd = (event: DragEndEvent) => {
     const target = drag?.target;
-    if (drag?.overTrash && event.over?.id === TRASH_ID) remove(drag.from);
-    else if (drag && target && event.over) onChange(moveZone(layout, drag.from, target));
+    if (drag?.from && drag.overTrash && event.over?.id === TRASH_ID) remove(drag.from);
+    else if (drag && target && event.over) {
+      const result = dropResult(layout, drag, target);
+      // A refused move gives the same layout back: nothing to record for undo, but the reason stays in sight.
+      if (result.refused !== undefined) setRefusal({ char: result.refused, layout });
+      else if (result.layout !== layout) onChange(result.layout);
+    }
     setDrag(null);
   };
 
@@ -156,6 +174,7 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
       if (event.key === "Enter") {
         event.preventDefault();
         setSelected(ref);
+        setRefusal(null);
       }
       return;
     }
@@ -163,19 +182,27 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
     const shortcut = event.metaKey || (event.ctrlKey && !event.altKey);
     if (event.key.length === 1 && event.key !== " " && !shortcut) {
       event.preventDefault();
-      onChange(typeIntoZone(layout, ref, event.key));
+      const result = tryType(layout, ref, event.key);
+      if (result.refused !== undefined) setRefusal({ char: result.refused, layout });
+      else onChange(result.layout);
       setSelected(null);
     }
   };
 
   const announcements: Announcements = {
     onDragStart: ({ active }) => {
-      const char = charAt(parseZoneId(String(active.id)));
+      const char = draggedChar(String(active.id));
       return char === undefined ? undefined : format(labels.drag.pickedUp, { char: showChar(char, labels) });
     },
     onDragOver: ({ over }) =>
       over?.id === TRASH_ID ? labels.trash : over ? format(labels.drag.over, { key: keyName(String(over.id)) }) : labels.drag.outside,
-    onDragEnd: ({ over }) => (over?.id === TRASH_ID ? labels.drag.deleted : over ? labels.drag.dropped : labels.drag.cancelled),
+    onDragEnd: ({ over }) => {
+      if (!over) return labels.drag.cancelled;
+      if (over.id === TRASH_ID) return labels.drag.deleted;
+      // A refusal is read from the hint below the map.
+      if (drop?.refused !== undefined) return undefined;
+      return drag?.from ? labels.drag.dropped : labels.drag.placed;
+    },
     onDragCancel: () => labels.drag.cancelled,
   };
 
@@ -197,7 +224,7 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
         <div
           role="group"
           aria-label={labels.mapLabel}
-          className={cx("mx-auto grid w-max gap-1.5 [--cap:clamp(2.6rem,4.1vw,3.35rem)]", drag && "cursor-grabbing")}
+          className={cx("mx-auto grid w-max gap-1.5 [--cap:clamp(2.6rem,4.1vw,3.35rem)]", drag && (drop?.refused !== undefined ? "cursor-not-allowed" : "cursor-grabbing"))}
           style={{ gridTemplateColumns: `repeat(${shape.width}, var(--cap))`, gridAutoRows: "calc(var(--cap) * 0.92)" }}
         >
           {shape.keys.map((slot) => (
@@ -211,18 +238,27 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
               selected={selected?.key === slot.id ? selected.zone : null}
               changed={changed}
               isTarget={drag?.target?.key === slot.id}
-              isSource={drag?.from.key === slot.id}
+              refused={drop?.refused !== undefined}
+              isSource={drag?.from?.key === slot.id}
               dragging={drag !== null}
-              onSelect={(zone) => setSelected({ key: slot.id, zone })}
+              onSelect={(zone) => {
+                setSelected({ key: slot.id, zone });
+                setRefusal(null);
+              }}
               onZoneKeyDown={onZoneKeyDown}
             />
           ))}
         </div>
       </div>
-      <Legend layout={layout} labels={labels} />
-      <Trash label={labels.trash} active={drag?.overTrash ?? false} dragging={drag !== null} />
-      <p className="mt-3 min-h-5 text-xs text-muted" aria-live="polite">
-        {selected ? labels.selectedHint : `${labels.hint} ${labels.trashHint}`}
+      <Legend layout={layout} labels={labels} draggingKey={drag && !drag.from ? drag.char : null} />
+      {/* A key of the legend is only placed, never deleted: the trash ignores it. */}
+      <Trash label={labels.trash} active={drag?.overTrash ?? false} dragging={drag?.from != null} disabled={drag !== null && drag.from === null} />
+      <p className={cx("mt-3 min-h-5 text-xs", refused !== undefined ? "font-medium text-danger" : "text-muted")} aria-live="polite">
+        {refused !== undefined
+          ? format(labels.refused, { char: showChar(refused, labels) })
+          : selected
+            ? labels.selectedHint
+            : `${labels.hint} ${labels.trashHint}`}
       </p>
       <p className="sr-only" role="status">
         {notice}
@@ -248,13 +284,15 @@ type KeyCapProps = {
   selected: Zone | null;
   changed: Set<string>;
   isTarget: boolean;
+  /** The drop on this key is refused: it would send a special key where it does nothing. */
+  refused: boolean;
   isSource: boolean;
   dragging: boolean;
   onSelect: (zone: Zone) => void;
   onZoneKeyDown: (ref: ZoneRef, event: KeyboardEvent<HTMLButtonElement>) => void;
 };
 
-function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTarget, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
+function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
   const { setNodeRef } = useDroppable({ id: slot.id });
   const visible = visibleZones(layout.keys[slot.id] ?? {}, language);
   const strong = heat !== null && heat > 0.55;
@@ -272,7 +310,7 @@ function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTar
         slot.role === "outer" ? "border-dashed border-key-border bg-surface-muted" : "border-key-border bg-key",
         slot.role === "thumb" && "rounded-[7px]",
         strong ? "text-[color:var(--heat-ink)]" : "text-foreground",
-        isTarget && "z-10 scale-[1.06] shadow-lg ring-2 ring-accent",
+        isTarget && (refused ? "z-10 ring-2 ring-danger" : "z-10 scale-[1.06] shadow-lg ring-2 ring-accent"),
         isSource && !isTarget && dragging && "outline-2 outline-offset-1 outline-dashed outline-accent/60",
       )}
       style={{ gridColumn: slot.x + 1, gridRow: slot.y + 1, background }}
@@ -369,8 +407,8 @@ function ZoneCell({ refId, char, labels, selected, highlighted, strong, interact
 }
 
 /** Drop target that deletes the dragged character. Always visible, so that it can be found before dragging. */
-function Trash({ label, active, dragging }: { label: string; active: boolean; dragging: boolean }) {
-  const { setNodeRef } = useDroppable({ id: TRASH_ID });
+function Trash({ label, active, dragging, disabled }: { label: string; active: boolean; dragging: boolean; disabled: boolean }) {
+  const { setNodeRef } = useDroppable({ id: TRASH_ID, disabled });
   return (
     <div
       ref={setNodeRef}
@@ -393,22 +431,46 @@ function Trash({ label, active, dragging }: { label: string; active: boolean; dr
 
 /**
  * Names the special keys outside the keys themselves, where a thumb key has no room for text.
- * A key that is not on the map is dimmed: Repeat in particular only acts once its symbol is placed.
+ * Each one can be dragged onto the map. A key that is not on the map says so in words, and is not dimmed:
+ * a dimmed key looked disabled, so it did not invite dragging. Repeat in particular only acts once its symbol is placed.
  */
-function Legend({ layout, labels }: { layout: Layout; labels: Labels }) {
-  const placed = new Set<string>();
-  for (const chars of Object.values(layout.keys)) for (const char of Object.values(chars)) if (char !== undefined) placed.add(char);
+function Legend({ layout, labels, draggingKey }: { layout: Layout; labels: Labels; draggingKey: string | null }) {
+  // Placed means read by the engine: in the base zone of a key of the current shape.
+  const placed = baseCharsOnMap(layout);
   return (
-    <ul aria-label={labels.legend.label} className="mx-auto mt-3 flex w-max max-w-full flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-muted">
-      {legendKeys.map((char) => (
-        <li key={char} className={cx("flex items-center gap-1.5", !placed.has(char) && "opacity-60")}>
-          <kbd className="inline-flex size-5 items-center justify-center rounded-[5px] border border-key-border bg-key font-sans font-semibold text-foreground">{char}</kbd>
-          <span>
-            {specialName(char, labels)}
-            {!placed.has(char) && ` (${labels.legend.notPlaced})`}
-          </span>
-        </li>
+    <ul aria-label={labels.legend.label} className="mx-auto mt-3 flex w-max max-w-full flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted">
+      {actionKeys.map((char) => (
+        <LegendItem key={char} char={char} labels={labels} placed={placed.has(char)} lifted={draggingKey === char} />
       ))}
     </ul>
+  );
+}
+
+function LegendItem({ char, labels, placed, lifted }: { char: string; labels: Labels; placed: boolean; lifted: boolean }) {
+  const { setNodeRef, attributes, listeners } = useDraggable({ id: LEGEND_PREFIX + char });
+  const name = specialName(char, labels.legend);
+  return (
+    <li>
+      <button
+        ref={setNodeRef}
+        type="button"
+        {...attributes}
+        {...listeners}
+        // Typing the symbol into a selected zone is the keyboard way to place a key, so the legend stays out of the tab order.
+        tabIndex={-1}
+        title={labels.legend.dragHint}
+        aria-label={`${char} (${name}). ${labels.legend.dragHint}`}
+        className={cx(
+          "flex cursor-grab touch-none select-none items-center gap-1.5 rounded-lg px-1.5 py-1 transition-colors duration-100 hover:bg-surface-muted active:cursor-grabbing",
+          lifted && "opacity-30",
+        )}
+      >
+        <kbd className="inline-flex size-6 items-center justify-center rounded-[6px] border border-key-border bg-key font-sans text-sm font-semibold text-foreground">{char}</kbd>
+        <span>
+          {name}
+          {!placed && ` (${labels.legend.notPlaced})`}
+        </span>
+      </button>
+    </li>
   );
 }

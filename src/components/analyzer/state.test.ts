@@ -26,6 +26,15 @@ describe("reducer", () => {
     expect(state.layout).toBe(first);
   });
 
+  it("does nothing on reset when the layout is the imported one, even as a distinct object read back from storage", () => {
+    const start = reducer(initialState(first), {
+      type: "restore",
+      saved: { ...initialState(first), layout: JSON.parse(JSON.stringify(first)), imported: JSON.parse(JSON.stringify(first)) },
+      result: null,
+    });
+    expect(reducer(start, { type: "reset" })).toBe(start);
+  });
+
   it("offers only \"None\" without a replacements file (feedback 11)", () => {
     const start = initialState(first);
     expect(start.level).toBe("raw");

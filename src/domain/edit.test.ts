@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clearZone, dropZone, moveZone, typeIntoZone } from "./edit";
+import { clearZone, dropZone, moveZone, tryMove, tryType, typeIntoZone } from "./edit";
 import { completeLetterPairs, type Layout } from "./layout";
 
 const layout: Layout = {
@@ -146,5 +146,75 @@ describe("clearZone", () => {
 
   it("returns the same layout for an empty zone, so that nothing is recorded to undo", () => {
     expect(clearZone(layout, { key: "b", zone: "dk" })).toBe(layout);
+  });
+});
+
+describe("special keys (*, $, #, space) only work in the base zone", () => {
+  const withKeys: Layout = {
+    ...layout,
+    keys: { ...layout.keys, t: { base: "$", dk: "_" }, m: { base: "#" }, e: { base: "e", shift: "E", dk: "é", dkShift: "É" } },
+  };
+
+  it("lands in the base zone when dropped on the top-left zone of another key", () => {
+    const next = moveZone(withKeys, { key: "m", zone: "base" }, { key: "b", zone: "shift" });
+    expect(next.keys.b).toEqual({ base: "#", shift: "?" });
+    expect(next.keys.m).toEqual({ base: "," });
+  });
+
+  it("lands in the base zone when dropped on the dead key side of a key", () => {
+    const next = moveZone(withKeys, { key: "m", zone: "base" }, { key: "b", zone: "dkShift" });
+    expect(next.keys.b).toEqual({ base: "#", shift: "?" });
+  });
+
+  it("does not move when dropped on its own key", () => {
+    expect(moveZone(withKeys, { key: "t", zone: "base" }, { key: "t", zone: "shift" })).toBe(withKeys);
+  });
+
+  it("swaps whole layers with a letter, like any other move", () => {
+    const next = moveZone(withKeys, { key: "m", zone: "base" }, { key: "c", zone: "shift" });
+    expect(next.keys.c).toEqual({ base: "#" });
+    expect(next.keys.m).toEqual({ base: "l", shift: "L" });
+  });
+
+  it("is placed in the base zone when typed over any zone", () => {
+    const next = typeIntoZone(withKeys, { key: "b", zone: "shift" }, "#");
+    expect(next.keys.b).toEqual({ base: "#", shift: "?" });
+    expect(next.keys.m).toEqual({ base: "," });
+  });
+
+  it("is placed in the base zone when it is not on the map yet, replacing a letter and its capital", () => {
+    const without: Layout = { ...withKeys, keys: { ...withKeys.keys, m: {} } };
+    expect(typeIntoZone(without, { key: "c", zone: "shift" }, "#").keys.c).toEqual({ base: "#" });
+    expect(typeIntoZone(without, { key: "b", zone: "dk" }, "#").keys.b).toEqual({ base: "#", shift: "?" });
+  });
+
+  it("refuses a swap that would send it to a zone where it is ignored", () => {
+    // "?" (shift of b) dropped on the base of the "$" key would send "$" to the shift zone of b.
+    expect(moveZone(withKeys, { key: "b", zone: "shift" }, { key: "t", zone: "base" })).toBe(withKeys);
+    // "é" (dead key layer of e) swapped with the "$" key would send "$" to the dead key layer.
+    expect(moveZone(withKeys, { key: "e", zone: "dk" }, { key: "t", zone: "base" })).toBe(withKeys);
+  });
+
+  it("allows a swap that sends it to another base zone", () => {
+    const next = moveZone(withKeys, { key: "b", zone: "base" }, { key: "t", zone: "base" });
+    expect(next.keys.t).toEqual({ base: ",", dk: "_" });
+    expect(next.keys.b).toEqual({ base: "$", shift: "?" });
+  });
+
+  it("names the key that made it refuse a move or a typed character, to explain the refusal", () => {
+    expect(tryMove(withKeys, { key: "b", zone: "shift" }, { key: "t", zone: "base" })).toEqual({ layout: withKeys, refused: "$" });
+    expect(tryType(withKeys, { key: "t", zone: "base" }, "?")).toEqual({ layout: withKeys, refused: "$" });
+    expect(tryMove(withKeys, { key: "b", zone: "base" }, { key: "t", zone: "base" }).refused).toBeUndefined();
+  });
+
+  it("treats space the same way, as the engine also reads it in the base zone only", () => {
+    const withSpace: Layout = { ...withKeys, keys: { ...withKeys.keys, s: { base: " ", dk: "_" } } };
+    expect(moveZone(withSpace, { key: "s", zone: "base" }, { key: "b", zone: "shift" }).keys.b).toEqual({ base: " ", shift: "?" });
+    expect(tryMove(withSpace, { key: "e", zone: "dk" }, { key: "s", zone: "base" }).refused).toBe(" ");
+  });
+
+  it("brings back to the base zone a key left elsewhere by an older session", () => {
+    const misplaced: Layout = { ...withKeys, keys: { ...withKeys.keys, t: { shift: "$" } } };
+    expect(moveZone(misplaced, { key: "t", zone: "shift" }, { key: "t", zone: "base" }).keys.t).toEqual({ base: "$" });
   });
 });
