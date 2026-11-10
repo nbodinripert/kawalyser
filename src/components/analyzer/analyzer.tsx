@@ -339,7 +339,7 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
         )}
         {state.result ? (
           <div className={cx("transition-opacity", running && "opacity-50")}>
-            <Results result={state.result} dictionary={dictionary} numbers={numbers} />
+            <Results result={state.result} dictionary={dictionary} numbers={numbers} shapeId={state.layout.shapeId} />
           </div>
         ) : (
           state.status !== "failed" && (

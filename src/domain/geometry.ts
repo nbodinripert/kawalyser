@@ -147,6 +147,11 @@ export const shapes: Record<ShapeId, Shape> = {
   split34: buildShape("split34", false),
 };
 
+/** Whether a shape has the two outer columns, worked by the little fingers. */
+export function hasOuterColumns(shapeId: ShapeId): boolean {
+  return shapes[shapeId].keys.some((key) => key.role === "outer");
+}
+
 export function isShapeId(value: string): value is ShapeId {
   return (shapeIds as readonly string[]).includes(value);
 }

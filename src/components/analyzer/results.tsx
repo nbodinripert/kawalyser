@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { difficultyIds, listIds, type AnalysisResult } from "@/engine/analyse";
+import { hasOuterColumns, type ShapeId } from "@/domain/geometry";
+import { difficultyIds, listIds, type AnalysisResult, type HandSplit } from "@/engine/analyse";
 import type { TrigramScope } from "@/engine/metrics";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { Card, Segmented, cx } from "../ui";
@@ -10,12 +11,13 @@ import { StackedColumns } from "./stacked-columns";
 
 type ResultsProps = { result: AnalysisResult; dictionary: Dictionary; numbers: Formatters };
 
-export function Results({ result, dictionary, numbers }: ResultsProps) {
+/** The shape of the analysed layout: changing it clears the result, so it is always the current one. */
+export function Results({ result, dictionary, numbers, shapeId }: ResultsProps & { shapeId: ShapeId }) {
   return (
     <div className="grid min-w-0 gap-5 [&>*]:min-w-0">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <FingerLoad result={result} dictionary={dictionary} numbers={numbers} />
-        <Hands result={result} dictionary={dictionary} numbers={numbers} />
+        <Hands result={result} dictionary={dictionary} numbers={numbers} withOuterColumns={hasOuterColumns(shapeId)} />
       </div>
       <Trigrams result={result} dictionary={dictionary} numbers={numbers} />
       <Difficulties result={result} dictionary={dictionary} numbers={numbers} />
@@ -45,14 +47,17 @@ function FingerLoad({ result, dictionary, numbers }: ResultsProps) {
   );
 }
 
-function Hands({ result, dictionary, numbers }: ResultsProps) {
+function Hands({ result, dictionary, numbers, withOuterColumns }: ResultsProps & { withOuterColumns: boolean }) {
   const labels = dictionary.results.hands;
-  const rows: Array<[string, { left: number; right: number }]> = [
-    [labels.innerColumns, result.hands.innerColumns],
-    [labels.outerColumns, result.hands.outerColumns],
-    [labels.withoutThumbs, result.hands.withoutThumbs],
-    [labels.overall, result.hands.overall],
-  ];
+  // Without outer columns, as on the 34-key shape, their row would always read 0%.
+  const rows = (
+    [
+      [labels.innerColumns, result.hands.innerColumns],
+      withOuterColumns && [labels.outerColumns, result.hands.outerColumns],
+      [labels.withoutThumbs, result.hands.withoutThumbs],
+      [labels.overall, result.hands.overall],
+    ] satisfies Array<[string, HandSplit] | false>
+  ).filter((row) => row !== false);
   return (
     <Card title={labels.title}>
       <table className="w-full text-sm">
