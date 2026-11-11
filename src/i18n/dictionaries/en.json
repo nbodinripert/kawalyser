@@ -31,8 +31,8 @@
     "level": "Replacements",
     "levels": {
       "raw": "None",
-      "corrections": "Essential corrections",
-      "clever": "Optional corrections"
+      "corrections": "Essential",
+      "clever": "Essential + Optional"
     },
     "undo": "Undo",
     "redo": "Redo",
