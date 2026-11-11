@@ -1,10 +1,13 @@
 {
   "meta": {
     "title": "Kawalyser",
-    "description": "Test a keyboard layout and measure how comfortable it is to type on, without having to learn it."
+    "pageTitle": "Keyboard layout analyser with 1DK and Magic keys · Kawalyser",
+    "description": "Free keyboard layout analyser. Test a layout without learning it: SFBs, scissors, rolls and finger load. Supports 1DK, Repeat, Magic keys and Kalamine files.",
+    "imageAlt": "Kawalyser, keyboard layout analyser, with the Propergol layout on a split keyboard"
   },
   "home": {
-    "tagline": "Keyboard layout analyser supporting magic rules, 1DK and thumb alphas."
+    "tagline": "Keyboard layout analyser supporting magic rules, 1DK and thumb alphas.",
+    "heading": "Kawalyser: keyboard layout analyser"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -254,6 +257,25 @@
       "shs4": "SHS 4",
       "shs5": "SHS 5+"
     }
+  },
+  "about": {
+    "title": "Test a keyboard layout before you learn it",
+    "intro": "Learning a new keyboard layout takes weeks. Kawalyser first tells you if it is comfortable. It types a long French or English text on your layout and counts how your fingers move.",
+    "measuresTitle": "What it measures",
+    "measures": [
+      "Same-finger bigrams (SFB) and skipgrams (SFS).",
+      "Scissors, lateral stretches and row jumps.",
+      "Hand alternation, inward and outward rolls, and redirects.",
+      "The load on each finger and each hand."
+    ],
+    "featuresTitle": "Made for modern layouts",
+    "features": [
+      "Split keyboards with 34 or 40 keys, letters under the thumbs included.",
+      "A dead key (1DK) for accented letters and symbols.",
+      "Repeat and Magic keys, and Clever Keys rules from a replacements file.",
+      "Kalamine .toml import, drag-and-drop editing and CSV export."
+    ],
+    "free": "Free, with no sign-up."
   },
   "footer": {
     "credits": "Algorithms ported from the Kawalyser Excel analyser by Kawamashi. Default layout: Propergol (MIT licence).",

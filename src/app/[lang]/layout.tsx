@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { InlineScript } from "@/components/inline-script";
 import { hasLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { siteName, siteUrl } from "@/lib/site";
 import { themeScript } from "@/lib/theme";
 import "../globals.css";
 
@@ -25,8 +26,15 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
 
+  // The page sets its own title, canonical link and social cards; these are the fallbacks, for the 404 page.
   const { meta } = await getDictionary(lang);
-  return { title: meta.title, description: meta.description, icons: { icon: "/icon.svg" } };
+  return {
+    metadataBase: siteUrl,
+    applicationName: siteName,
+    title: meta.title,
+    description: meta.description,
+    icons: { icon: "/icon.svg" },
+  };
 }
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {

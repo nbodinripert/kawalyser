@@ -1,10 +1,13 @@
 {
   "meta": {
     "title": "Kawalyser",
-    "description": "Testez une disposition de clavier et mesurez si elle est agréable à taper, sans avoir à l'apprendre."
+    "pageTitle": "Analyseur de disposition de clavier, 1DK et Magic · Kawalyser",
+    "description": "Analyseur gratuit de disposition de clavier. Testez-la sans l'apprendre : SFB, ciseaux, roulements, charge des doigts. Gère la 1DK, Repeat, Magic et Kalamine.",
+    "imageAlt": "Kawalyser, analyseur de disposition de clavier, avec la disposition Propergol sur un clavier séparé"
   },
   "home": {
-    "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces."
+    "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces.",
+    "heading": "Kawalyser : analyseur de disposition de clavier"
   },
   "languageSwitcher": {
     "label": "Langue"
@@ -254,6 +257,25 @@
       "shs4": "SHS 4",
       "shs5": "SHS 5+"
     }
+  },
+  "about": {
+    "title": "Testez une disposition de clavier avant de l'apprendre",
+    "intro": "Apprendre une nouvelle disposition de clavier prend des semaines. Kawalyser vous dit d'abord si elle est confortable. Il tape un long texte français ou anglais sur votre disposition et compte les mouvements de vos doigts.",
+    "measuresTitle": "Ce qu'il mesure",
+    "measures": [
+      "Les bigrammes à un doigt (SFB) et les skipgrammes à un doigt (SFS).",
+      "Les ciseaux, les étirements latéraux et les sauts de rangée.",
+      "L'alternance des mains, les roulements vers l'intérieur et l'extérieur, et les redirections.",
+      "La charge de chaque doigt et de chaque main."
+    ],
+    "featuresTitle": "Pensé pour les dispositions modernes",
+    "features": [
+      "Claviers séparés de 34 ou 40 touches, lettres sous les pouces comprises.",
+      "Une touche morte (1DK) pour les lettres accentuées et les symboles.",
+      "Les touches Repeat et Magic, et les règles Clever Keys d'un fichier de remplacements.",
+      "Import des fichiers Kalamine .toml, édition par glisser-déposer et export CSV."
+    ],
+    "free": "Gratuit et sans inscription."
   },
   "footer": {
     "credits": "Algorithmes repris de l'analyseur Excel Kawalyser de Kawamashi. Disposition par défaut : Propergol (licence MIT).",
