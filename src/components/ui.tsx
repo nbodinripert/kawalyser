@@ -41,12 +41,13 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & { label: string };
 
 export function Select({ label, className, children, ...props }: SelectProps) {
   return (
-    <label className={cx("flex flex-col gap-1 text-xs font-medium text-muted", className)}>
+    // A disabled select fades with its label and chevron, as a disabled button does.
+    <label className={cx("flex flex-col gap-1 text-xs font-medium text-muted has-disabled:opacity-50", className)}>
       {label}
       {/* The browser's own chevron cannot be spaced, so it is replaced: as far from the right edge (13px, border included) as the text is from the left. */}
       <span className="relative">
         <select
-          className="h-9 w-full appearance-none rounded-lg border border-border bg-surface pr-8 pl-3 text-sm font-normal text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+          className="h-9 w-full appearance-none rounded-lg border border-border bg-surface pr-8 pl-3 text-sm font-normal text-foreground focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed"
           {...props}
         >
           {children}
