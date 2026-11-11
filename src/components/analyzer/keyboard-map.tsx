@@ -14,7 +14,7 @@ import {
   type DragMoveEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { useMemo, useState, type KeyboardEvent } from "react";
+import { useMemo, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { clearZone, dropZone, tryMove, tryType, type EditResult, type ZoneRef } from "@/domain/edit";
 import { shapes, type KeySlot } from "@/domain/geometry";
 import { baseCharsOnMap, visibleZones, type Layout, type Zone } from "@/domain/layout";
@@ -295,9 +295,11 @@ type KeyCapProps = {
 function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
   const { setNodeRef } = useDroppable({ id: slot.id });
   const visible = visibleZones(layout.keys[slot.id] ?? {}, language);
-  const strong = heat !== null && heat > 0.55;
+  // The 14% floor tints even the rarest keys, so that every used key reads as used.
   const background =
-    heat === null || heat === 0 ? undefined : `color-mix(in oklab, var(--heat) ${Math.round(6 + heat * 88)}%, var(--key))`;
+    heat === null || heat === 0 ? undefined : `color-mix(in oklab, var(--heat) ${Math.round(14 + heat * 80)}%, var(--key))`;
+  // Read by the `heat-text` classes of globals.css, which pick the text colour for the theme.
+  const heatLevel = { "--heat-level": heat ?? 0 } as CSSProperties;
 
   return (
     <div
@@ -307,13 +309,13 @@ function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTar
         "relative grid grid-cols-2 grid-rows-2 rounded-[5px] border transition-[box-shadow,transform] duration-100",
         // Hovering a key frames its four zones, to show that each one can be dragged or edited.
         !dragging && "group/key",
-        slot.role === "outer" ? "border-dashed border-key-border bg-surface-muted" : "border-key-border bg-key",
+        slot.role === "outer" ? "border-dashed border-key-border bg-surface" : "border-key-border bg-key",
         slot.role === "thumb" && "rounded-[7px]",
-        strong ? "text-[color:var(--heat-ink)]" : "text-foreground",
+        "heat-text",
         isTarget && (refused ? "z-10 ring-2 ring-danger" : "z-10 scale-[1.06] shadow-lg ring-2 ring-accent"),
         isSource && !isTarget && dragging && "outline-2 outline-offset-1 outline-dashed outline-accent/60",
       )}
-      style={{ gridColumn: slot.x + 1, gridRow: slot.y + 1, background }}
+      style={{ ...heatLevel, gridColumn: slot.x + 1, gridRow: slot.y + 1, background }}
     >
       {zoneOrder.map((zone) => (
         <ZoneCell
@@ -323,7 +325,6 @@ function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTar
           labels={labels}
           selected={selected === zone}
           highlighted={changed.has(zoneId({ key: slot.id, zone }))}
-          strong={strong}
           interactive={!dragging}
           onSelect={() => onSelect(zone)}
           onKeyDown={onZoneKeyDown}
@@ -339,14 +340,13 @@ type ZoneCellProps = {
   labels: Labels;
   selected: boolean;
   highlighted: boolean;
-  strong: boolean;
   /** False while a character is being dragged, so that the hover frames do not clutter the drop preview. */
   interactive: boolean;
   onSelect: () => void;
   onKeyDown: (ref: ZoneRef, event: KeyboardEvent<HTMLButtonElement>) => void;
 };
 
-function ZoneCell({ refId, char, labels, selected, highlighted, strong, interactive, onSelect, onKeyDown }: ZoneCellProps) {
+function ZoneCell({ refId, char, labels, selected, highlighted, interactive, onSelect, onKeyDown }: ZoneCellProps) {
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({ id: zoneId(refId), disabled: char === undefined });
   const isRight = refId.zone === "dk" || refId.zone === "dkShift";
   const isUpper = refId.zone === "shift" || refId.zone === "dkShift";
@@ -394,7 +394,7 @@ function ZoneCell({ refId, char, labels, selected, highlighted, strong, interact
             // Sized from the key, never truncated: a wide letter such as W must stay whole on small screens.
             "relative whitespace-nowrap rounded-[0.3rem]",
             isRight ? "text-[length:calc(var(--cap)*0.21)]" : "text-[length:calc(var(--cap)*0.3)] font-semibold",
-            isRight && !highlighted && (strong ? "opacity-80" : "text-muted"),
+            isRight && !highlighted && "heat-text-muted",
             // A preview of the drop: the characters about to land are set on an accent chip.
             highlighted && "bg-accent px-[0.2em] text-accent-contrast",
           )}

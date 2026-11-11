@@ -22,10 +22,11 @@
   --accent-contrast: #ffffff;
   --danger: #b4232c;
   --danger-soft: #fbe9ea;
-  --key: #ffffff;
-  --key-border: #cfdbd9;
-  --heat: #0a8f86;
+  --key: #e8efee;
+  --key-border: #c2d0ce;
+  --heat: #067a72;
   --heat-ink: #ffffff;
+  --heat-switch: 0.89;
   --grid: #e4ebea;
   --axis: #c5d1cf;
   --series-home: #0e8a8c;
@@ -51,10 +52,11 @@
     --accent-contrast: #062421;
     --danger: #f07a80;
     --danger-soft: #3a1a1d;
-    --key: #182322;
-    --key-border: #2c3c3a;
-    --heat: #2fb7a9;
-    --heat-ink: #04201d;
+    --key: #223230;
+    --key-border: #364a47;
+    --heat: #4fcdbf;
+    --heat-ink: #011311;
+    --heat-switch: 0.47;
     --grid: #22302e;
     --axis: #34443f;
     --series-home: #2fc0b4;
@@ -80,10 +82,11 @@
   --accent-contrast: #062421;
   --danger: #f07a80;
   --danger-soft: #3a1a1d;
-  --key: #182322;
-  --key-border: #2c3c3a;
-  --heat: #2fb7a9;
-  --heat-ink: #04201d;
+  --key: #223230;
+  --key-border: #364a47;
+  --heat: #4fcdbf;
+  --heat-ink: #011311;
+  --heat-switch: 0.47;
   --grid: #22302e;
   --axis: #34443f;
   --series-home: #2fc0b4;
@@ -117,6 +120,23 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/*
+ * Text on a heat-coloured key. --heat-level (0 to 1) is set on the key once an analysis is shown.
+ * Past --heat-switch the theme's text colour is no longer readable on the key, so the text takes
+ * --heat-ink. The switch is per theme, set where the two colours have the same contrast (about 4:1,
+ * the most a mid-tone allows), which is why it is done here rather than in the component.
+ */
+@layer components {
+  .heat-text {
+    --heat-strong: clamp(0, (var(--heat-level, 0) - var(--heat-switch)) * 1000, 1);
+    color: color-mix(in srgb, var(--heat-ink) calc(var(--heat-strong) * 100%), var(--foreground));
+  }
+  .heat-text-muted {
+    color: color-mix(in srgb, var(--heat-ink) calc(var(--heat-strong, 0) * 100%), var(--muted));
+    opacity: calc(1 - var(--heat-strong, 0) * 0.2);
+  }
 }
 
 .tabular {
