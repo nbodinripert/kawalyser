@@ -27,7 +27,7 @@ The corpora stay private: they are never sent to the browser and are not in this
 | Development | The `corpus/` folder at the root, ignored by git, or `CORPUS_DIR` |
 | Production | A private GitHub repository, read with `CORPUS_GITHUB_REPO` and `CORPUS_GITHUB_TOKEN` |
 
-Every variable is described in [`.env.example`](.env.example). Each corpus is read once per server instance, then kept in memory.
+Every variable is described in [`.env.example`](.env.example). Each corpus is read once per server instance, then kept in memory. A GitHub Actions workflow in the corpus repository calls a Vercel deploy hook (`VERCEL_DEPLOY_HOOK_URL` secret) whenever a corpus changes, so the site picks it up right away.
 
 ## Commands
 

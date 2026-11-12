@@ -84,9 +84,12 @@ Rules:
 
 ## Changing a corpus
 
-The corpora are not in this public repository: they live in a private repository, open on request to the maintainer. With that access, you can replace `fr.txt` or `en.txt` the same way (pencil, or **Add file → Upload files**).
+The corpora are not in this public repository: they live in a private repository, open on request to the maintainer. With that access, replace `fr.txt` or `en.txt` with **Add file → Upload files** (the files are too big for the pencil):
 
-Then tell the maintainer: the site only reads the corpora again after a new deployment, and the comparison test with the Excel analyzer uses the previous corpus.
+- keep the exact file name, at the root of the repository;
+- plain text, encoded in UTF-8, or accents will be damaged.
+
+The site redeploys by itself and uses the new corpus about two minutes later (**Actions** tab of the corpus repository, "Redeploy the site" workflow). Tell the maintainer anyway: the comparison test with the Excel analyzer still uses the previous corpus.
 
 ## If the checks are red
 

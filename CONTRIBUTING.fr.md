@@ -84,9 +84,12 @@ Règles :
 
 ## Changer un corpus
 
-Les corpus ne sont pas dans ce dépôt public : ils sont dans un dépôt privé, accessible sur demande au mainteneur. Avec cet accès, vous pouvez y remplacer `fr.txt` ou `en.txt` de la même façon (crayon, ou **Add file → Upload files**).
+Les corpus ne sont pas dans ce dépôt public : ils sont dans un dépôt privé, accessible sur demande au mainteneur. Avec cet accès, remplacez `fr.txt` ou `en.txt` avec **Add file → Upload files** (les fichiers sont trop gros pour le crayon) :
 
-Prévenez ensuite le mainteneur : le site ne relit les corpus qu'après un nouveau déploiement, et le test de comparaison avec l'Excel utilise l'ancien corpus.
+- gardez exactement le même nom de fichier, à la racine du dépôt ;
+- en texte brut encodé en UTF-8, sinon les accents seront abîmés.
+
+Le site se redéploie tout seul et utilise le nouveau corpus environ deux minutes plus tard (onglet **Actions** du dépôt des corpus, workflow « Redeploy the site »). Prévenez quand même le mainteneur : le test de comparaison avec l'Excel utilise toujours l'ancien corpus.
 
 ## Si la vérification est rouge
 
