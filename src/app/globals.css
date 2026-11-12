@@ -3,97 +3,84 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /*
- * Light by default. Every colour apart from the background and the error red stays between green and blue,
- * around the turquoise accent. The chart colours were picked by eye and have not been run through
- * a colour-blind or contrast validator: they differ in lightness as well as in hue to compensate.
+ * THE SITE'S COLORS. CONTRIBUTING.md explains how to change them.
+ *
+ * Each color is written once, as light-dark(light theme, dark theme). Visitors follow their system theme
+ * until they pick one with the toggle, which sets data-theme on <html> (see src/lib/theme.ts).
+ *
+ * Every color apart from the background and the error red stays between green and blue, around the turquoise
+ * accent. The chart colors were picked by eye and have not been run through a color-blind or contrast
+ * validator: they differ in lightness as well as in hue to compensate.
+ * src/app/[lang]/opengraph-image.tsx copies a few light theme colors: a test checks that they stay equal.
  */
 :root {
-  color-scheme: light;
-  --background: #f6f8f8;
-  --surface: #ffffff;
-  --surface-muted: #eef3f2;
-  --foreground: #142120;
-  --muted: #586866;
-  --faint: #8a9896;
-  --border: #dbe4e3;
-  --accent: #00766f;
-  --accent-strong: #005c56;
-  --accent-soft: #dff3f0;
-  --accent-contrast: #ffffff;
-  --danger: #b4232c;
-  --danger-soft: #fbe9ea;
-  --key: #e8efee;
-  --key-border: #c2d0ce;
-  --heat: #067a72;
-  --heat-ink: #ffffff;
+  color-scheme: light dark;
+
+  /* Page background, behind the cards. */
+  --background: light-dark(#f6f8f8, #0c1312);
+  /* Cards, panels and secondary buttons. */
+  --surface: light-dark(#ffffff, #131c1b);
+  /* Insets inside cards (statistic tiles, selectors) and hovered buttons. */
+  --surface-muted: light-dark(#eef3f2, #1a2524);
+  /* Main text. */
+  --foreground: light-dark(#142120, #e6efee);
+  /* Secondary text: hints, labels, chart labels. */
+  --muted: light-dark(#586866, #9fb0ae);
+  /* Least important text: the chart axis numbers and small notes. */
+  --faint: light-dark(#8a9896, #6f817f);
+  /* Card and panel borders. */
+  --border: light-dark(#dbe4e3, #253331);
+
+  /* The turquoise of the site: main button, links, selected items, keyboard focus. */
+  --accent: light-dark(#00766f, #3fc4b6);
+  /* The main button when hovered. */
+  --accent-strong: light-dark(#005c56, #6fd8cb);
+  /* Pale accent background: selected zones and notices. */
+  --accent-soft: light-dark(#dff3f0, #15302d);
+  /* Text written on the accent color, such as the main button's label. */
+  --accent-contrast: light-dark(#ffffff, #062421);
+
+  /* Errors and refused moves. */
+  --danger: light-dark(#b4232c, #f07a80);
+  /* Background of error messages. */
+  --danger-soft: light-dark(#fbe9ea, #3a1a1d);
+
+  /* Keys of the keyboard map. */
+  --key: light-dark(#e8efee, #223230);
+  --key-border: light-dark(#c2d0ce, #364a47);
+  /* Color of the most typed keys once an analysis is shown (less typed keys mix it with --key). */
+  --heat: light-dark(#067a72, #4fcdbf);
+  /* Text on the most typed keys, where the main text would not be readable. */
+  --heat-ink: light-dark(#ffffff, #011311);
+
+  /* Chart grid lines, and the zero line. */
+  --grid: light-dark(#e4ebea, #22302e);
+  --axis: light-dark(#c5d1cf, #34443f);
+  /* "Finger load" chart: home keys, then the other keys. */
+  --series-home: light-dark(#0e8a8c, #2fc0b4);
+  --series-other: light-dark(#86bcdc, #3f77a8);
+  /* "Where difficulties land" chart: distance, scissors, stretches. */
+  --distribution-1: light-dark(#256aa8, #6aa8f0);
+  --distribution-2: light-dark(#1aa6a6, #1f9e9a);
+  --distribution-3: light-dark(#5cbf8a, #7edba8);
+
+  /* Not a color: the heat level (0 to 1) past which key text switches to --heat-ink, see .heat-text. */
   --heat-switch: 0.89;
-  --grid: #e4ebea;
-  --axis: #c5d1cf;
-  --series-home: #0e8a8c;
-  --series-other: #86bcdc;
-  --distribution-1: #256aa8;
-  --distribution-2: #1aa6a6;
-  --distribution-3: #5cbf8a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --background: #0c1312;
-    --surface: #131c1b;
-    --surface-muted: #1a2524;
-    --foreground: #e6efee;
-    --muted: #9fb0ae;
-    --faint: #6f817f;
-    --border: #253331;
-    --accent: #3fc4b6;
-    --accent-strong: #6fd8cb;
-    --accent-soft: #15302d;
-    --accent-contrast: #062421;
-    --danger: #f07a80;
-    --danger-soft: #3a1a1d;
-    --key: #223230;
-    --key-border: #364a47;
-    --heat: #4fcdbf;
-    --heat-ink: #011311;
-    --heat-switch: 0.47;
-    --grid: #22302e;
-    --axis: #34443f;
-    --series-home: #2fc0b4;
-    --series-other: #3f77a8;
-    --distribution-1: #6aa8f0;
-    --distribution-2: #1f9e9a;
-    --distribution-3: #7edba8;
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #0c1312;
-  --surface: #131c1b;
-  --surface-muted: #1a2524;
-  --foreground: #e6efee;
-  --muted: #9fb0ae;
-  --faint: #6f817f;
-  --border: #253331;
-  --accent: #3fc4b6;
-  --accent-strong: #6fd8cb;
-  --accent-soft: #15302d;
-  --accent-contrast: #062421;
-  --danger: #f07a80;
-  --danger-soft: #3a1a1d;
-  --key: #223230;
-  --key-border: #364a47;
-  --heat: #4fcdbf;
-  --heat-ink: #011311;
   --heat-switch: 0.47;
-  --grid: #22302e;
-  --axis: #34443f;
-  --series-home: #2fc0b4;
-  --series-other: #3f77a8;
-  --distribution-1: #6aa8f0;
-  --distribution-2: #1f9e9a;
-  --distribution-3: #7edba8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --heat-switch: 0.47;
+  }
 }
 
 @theme inline {
@@ -123,9 +110,9 @@ body {
 }
 
 /*
- * Text on a heat-coloured key. --heat-level (0 to 1) is set on the key once an analysis is shown.
- * Past --heat-switch the theme's text colour is no longer readable on the key, so the text takes
- * --heat-ink. The switch is per theme, set where the two colours have the same contrast (about 4:1,
+ * Text on a heat-colored key. --heat-level (0 to 1) is set on the key once an analysis is shown.
+ * Past --heat-switch the theme's text color is no longer readable on the key, so the text takes
+ * --heat-ink. The switch is per theme, set where the two colors have the same contrast (about 4:1,
  * the most a mid-tone allows), which is why it is done here rather than in the component.
  */
 @layer components {

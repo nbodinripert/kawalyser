@@ -1,0 +1,36 @@
+# Checks every pull request and every push to main. A pull request can be merged only when this is green
+# (ruleset on main). The Excel parity test is skipped here: it needs the private corpus.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, types, tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      # Installs the pnpm version named in package.json ("packageManager").
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Texts and colors (the most common mistakes in a pull request)
+        run: pnpm vitest run src/i18n/dictionaries.test.ts src/app/theme-colors.test.ts
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build

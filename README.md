@@ -1,72 +1,84 @@
 # Kawalyser
 
-Site gratuit pour tester une disposition de clavier et mesurer si elle est agréable à taper, sans avoir à l'apprendre. Il reprend les algorithmes de l'[analyseur Excel Kawalyser](https://github.com/Kawamashi/Kawalyser), y compris la touche morte 1DK, les touches Repeat et Magic, et les Clever Keys.
+**English** · [Français](README.fr.md)
 
-Licence : [GPLv3](LICENSE). La disposition par défaut est [Propergol](https://github.com/Kawamashi/Propergol), sous licence MIT.
+A free website to test a keyboard layout and measure how comfortable it is to type, without learning it first. It ports the algorithms of the [Kawalyser Excel analyzer](https://github.com/Kawamashi/Kawalyser) by Kawamashi, including the 1DK dead key, the Repeat and Magic keys, and Clever Keys.
 
-## Démarrer
+License: [GPLv3](LICENSE). The default layout is [Propergol](https://github.com/Kawamashi/Propergol), under the MIT license.
 
-Il faut Node.js 20.9 ou plus récent, et pnpm.
+## Getting started
+
+You need Node.js 20.9 or later, and pnpm.
 
 ```bash
 pnpm install
-mkdir corpus   # puis y placer fr.txt et en.txt
+mkdir corpus   # then put fr.txt and en.txt in it
 pnpm dev
 ```
 
-Le site s'ouvre sur [http://localhost:3000](http://localhost:3000) et redirige vers `/en`, ou vers `/fr` si le visiteur a déjà choisi le français.
+The site opens on [http://localhost:3000](http://localhost:3000) and redirects to `/en`, or to `/fr` if the visitor already chose French.
 
-## Les corpus
+## The corpora
 
-Les corpus restent privés : ils ne sont jamais envoyés au navigateur et ne sont pas dans ce dépôt. L'analyse se fait sur le serveur.
+The corpora stay private: they are never sent to the browser and are not in this repository. The analysis runs on the server.
 
-| Environnement | Source |
+| Environment | Source |
 | --- | --- |
-| Développement | Le dossier `corpus/` à la racine, ignoré par git, ou `CORPUS_DIR` |
-| Production | Un dépôt GitHub privé, lu avec `CORPUS_GITHUB_REPO` et `CORPUS_GITHUB_TOKEN` |
+| Development | The `corpus/` folder at the root, ignored by git, or `CORPUS_DIR` |
+| Production | A private GitHub repository, read with `CORPUS_GITHUB_REPO` and `CORPUS_GITHUB_TOKEN` |
 
-Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque corpus est lu une fois par instance du serveur, puis gardé en mémoire.
+Every variable is described in [`.env.example`](.env.example). Each corpus is read once per server instance, then kept in memory.
 
-## Commandes
+## Commands
 
-| Commande | Rôle |
+| Command | Purpose |
 | --- | --- |
-| `pnpm dev` | Lance le serveur de développement |
-| `pnpm build` | Construit la version de production |
-| `pnpm start` | Lance la version construite |
-| `pnpm lint` | Vérifie le code avec ESLint |
-| `pnpm typecheck` | Vérifie les types |
-| `pnpm test` | Lance les tests une fois |
-| `pnpm test:watch` | Relance les tests à chaque modification |
+| `pnpm dev` | Starts the development server |
+| `pnpm build` | Builds the production version |
+| `pnpm start` | Starts the built version |
+| `pnpm lint` | Checks the code with ESLint |
+| `pnpm typecheck` | Checks the types |
+| `pnpm test` | Runs the tests once |
+| `pnpm test:watch` | Runs the tests again on every change |
 
-## Organisation
+## Project structure
 
-| Emplacement | Rôle |
+| Location | Purpose |
 | --- | --- |
-| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine) et des remplacements `.json` |
-| `src/engine/` | Le moteur d'analyse, porté du VBA, sans dépendance au navigateur ni au serveur |
-| `src/server/` | Chargement privé des corpus et cache des analyses |
-| `src/app/api/` | Routes `analyse` et `export` (CSV) |
-| `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques |
-| `src/i18n/` | Langues de l'interface et traductions |
+| `src/domain/` | Keyboard shapes, layout, reading Kalamine `.toml` files and replacement `.json` files |
+| `src/engine/` | The analysis engine, ported from VBA, with no browser or server dependency |
+| `src/server/` | Private corpus loading and analysis cache |
+| `src/app/api/` | `analyse` and `export` (CSV) routes |
+| `src/components/analyzer/` | Keyboard map, drag and drop, results and charts |
+| `src/i18n/` | Interface languages and translations |
 
-Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le texte de référence est `en.json`.
+A translation missing from `fr.json` breaks the build. The reference text is `en.json`.
 
-## Fidélité à l'Excel
+## Contributing
 
-`src/engine/excel-parity.test.ts` compare le moteur aux résultats enregistrés dans le classeur « Propergol CK - fr ». Le test ne tourne que si `corpus/fr.txt` existe. Le moteur a un mode `compat` qui reproduit l'Excel à l'identique, y compris ce que les specs ont corrigé :
+Texts and colors can be changed from github.com, with nothing to install: see the guide in [CONTRIBUTING.md](CONTRIBUTING.md). Every pull request goes through the automatic checks (`.github/workflows/ci.yml`) and gets a Vercel preview before it is accepted.
 
-| Comportement de l'Excel | Sur le site |
+| To change | File |
 | --- | --- |
-| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Essentiels » | Tous les caractères valides doublés tapés d'une seule frappe (pas ceux de la couche morte : Repeat répète la dernière frappe), seulement si `$` est placé, quel que soit le niveau |
-| « Pas de lettre avant ou après » ne reconnaît que `a` à `z` et `é` | Toutes les lettres |
-| Les barres de charge des index oublient `B` et `K` | Toutes les touches comptent |
-| « Sans espace » retire aussi la touche voisine d'espace | Seule la touche espace est retirée |
-| La règle « majeur en haut, annulaire en bas » des ciseaux ne s'applique jamais (comparaison texte/nombre en VBA) | La règle s'applique |
-| `#` n'est pas retiré du corpus | `#` est retiré, car il note la touche Magic |
-| Toutes les règles de remplacement s'appliquent, même celles qui demandent une touche absente de la carte (Magic, Repeat, touche morte ou caractère) | Ces règles sont ignorées, car elles ne peuvent pas être tapées ; le panneau des remplacements les barre |
+| Texts | `src/i18n/dictionaries/en.json` and `fr.json` |
+| Colors | `src/app/globals.css`, each color written `light-dark(light, dark)` |
+| Colors of the sharing image | `src/lib/og-colors.ts` (copy of the light theme, checked by a test) |
 
-## Format des remplacements
+## Faithfulness to the Excel analyzer
+
+`src/engine/excel-parity.test.ts` compares the engine with the results saved in the "Propergol CK - fr" workbook. The test only runs if `corpus/fr.txt` exists. The engine has a `compat` mode that reproduces the Excel analyzer exactly, including what the specs corrected:
+
+| Excel behavior | On the site |
+| --- | --- |
+| Repeat replaces `aa` to `zz`, even without a `$` key, from the "Essential" level | Every doubled valid character typed with a single key press (not the dead key layer ones: Repeat repeats the last key press), only if `$` is placed, at every level |
+| "No letter before or after" only recognizes `a` to `z` and `é` | Every letter |
+| The index finger load bars miss `B` and `K` | Every key counts |
+| "Without space" also removes the key next to space | Only the space key is removed |
+| The scissor rule "middle finger on top, ring finger below" never applies (a text/number comparison in VBA) | The rule applies |
+| `#` is not removed from the corpus | `#` is removed, since it stands for the Magic key |
+| Every replacement rule applies, even those that need a key missing from the map (Magic, Repeat, dead key or character) | These rules are ignored, since they cannot be typed; the replacements panel strikes them through |
+
+## Replacements format
 
 ```json
 {
@@ -79,4 +91,4 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 }
 ```
 
-Chaque ligne se lit « pour écrire `text`, taper `keys` ». Dans `keys`, `*` est la touche morte, `$` la touche Repeat et `#` la touche Magic. Une règle qui demande une touche absente de la carte est ignorée. Les corrections essentielles s'appliquent à partir du niveau « Essentiels », les optionnelles (les Clever Keys de l'Excel) seulement au niveau « Essentiels + Optionnels ».
+Each line reads "to write `text`, type `keys`". In `keys`, `*` is the dead key, `$` the Repeat key and `#` the Magic key. A rule that needs a key missing from the map is ignored. Essential corrections apply from the "Essential" level, optional ones (the Excel analyzer's Clever Keys) only at the "Essential + Optional" level.

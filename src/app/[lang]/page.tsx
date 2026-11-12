@@ -10,7 +10,7 @@ import { importKalamine } from "@/domain/kalamine";
 import { emptyLayout } from "@/domain/layout";
 import { hasLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
-import { absoluteUrl, languageAlternates, localePath, openGraphLocale, siteName } from "@/lib/site";
+import { absoluteUrl, languageAlternates, localePath, openGraphLocale, repositoryUrl, siteName } from "@/lib/site";
 
 const defaultImport = importKalamine(defaultLayoutToml, "split40");
 const defaultLayout = defaultImport.ok ? defaultImport.layout : emptyLayout("split40");
@@ -91,7 +91,12 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-muted sm:px-6">{dictionary.footer.credits}</div>
+        <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-5 text-xs text-muted sm:flex-row sm:justify-between sm:gap-6 sm:px-6">
+          <p>{dictionary.footer.credits}</p>
+          <a href={repositoryUrl} className="shrink-0 underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            {dictionary.footer.source}
+          </a>
+        </div>
       </footer>
     </>
   );

@@ -11,6 +11,9 @@ export const siteUrl = new URL(productionHost ? `https://${productionHost}` : "h
 
 export const siteName = "Kawalyser";
 
+/** Public repository of the site's code (the corpora live in a separate private repository). */
+export const repositoryUrl = "https://github.com/nbodinripert/kawalyser";
+
 export function localePath(locale: Locale): `/${Locale}` {
   return `/${locale}`;
 }

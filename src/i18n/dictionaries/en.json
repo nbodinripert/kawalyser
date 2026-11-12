@@ -1,13 +1,13 @@
 {
   "meta": {
     "title": "Kawalyser",
-    "pageTitle": "Keyboard layout analyser with 1DK and Magic keys · Kawalyser",
-    "description": "Free keyboard layout analyser. Test a layout without learning it: SFBs, scissors, rolls and finger load. Supports 1DK, Repeat, Magic keys and Kalamine files.",
-    "imageAlt": "Kawalyser, keyboard layout analyser, with the Propergol layout on a split keyboard"
+    "pageTitle": "Keyboard layout analyzer with 1DK and Magic keys · Kawalyser",
+    "description": "Free keyboard layout analyzer. Test a layout without learning it: SFBs, scissors, rolls and finger load. Supports 1DK, Repeat, Magic keys and Kalamine files.",
+    "imageAlt": "Kawalyser, keyboard layout analyzer, with the Propergol layout on a split keyboard"
   },
   "home": {
-    "tagline": "Keyboard layout analyser supporting magic rules, 1DK and thumb alphas.",
-    "heading": "Kawalyser: keyboard layout analyser"
+    "tagline": "Keyboard layout analyzer supporting magic rules, 1DK and thumb alphas.",
+    "heading": "Kawalyser: keyboard layout analyzer"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -62,7 +62,7 @@
       "over": "Over the {key} key.",
       "outside": "Not over a key.",
       "dropped": "Characters swapped.",
-      "cancelled": "Move cancelled."
+      "cancelled": "Move canceled."
     },
     "space": "space",
     "mapLabel": "Keyboard map",
@@ -80,13 +80,13 @@
       "unreadable": "This file could not be read: {detail}",
       "noLayer": "This file has no base or full layer.",
       "unknownGeometry": "The {geometry} geometry is not supported. Supported geometries: ERGO, ISO, ANSI and ALT.",
-      "duplicates": "{chars} appear on several keys of the main pad. The analyser could not tell which key is typed, so the file was not imported.",
+      "duplicates": "{chars} appear on several keys of the main pad. The analyzer could not tell which key is typed, so the file was not imported.",
       "replacements": "This replacement file is not valid: {detail}"
     }
   },
   "replacements": {
     "title": "Replacements",
-    "empty": "No replacement file. Import one to analyse Magic and the essential and optional corrections.",
+    "empty": "No replacement file. Import one to analyze Magic and the essential and optional corrections.",
     "hidden": "No replacement is applied: pick corrections in the Replacements selector to show them.",
     "essential": "Essential corrections",
     "optional": "Optional corrections",
@@ -97,7 +97,7 @@
   },
   "analysis": {
     "run": "Run analysis",
-    "running": "Analysing…",
+    "running": "Analyzing…",
     "failed": "The analysis failed. Please try again in a moment.",
     "empty": "Run the analysis to see the statistics of this layout.",
     "cleared": "The layout changed, so the previous statistics were cleared.",
@@ -278,7 +278,7 @@
     "free": "Free, with no sign-up."
   },
   "footer": {
-    "credits": "Algorithms ported from the Kawalyser Excel analyser by Kawamashi. Default layout: Propergol (MIT licence).",
+    "credits": "Algorithms ported from the Kawalyser Excel analyzer by Kawamashi. Default layout: Propergol (MIT license).",
     "source": "Source code"
   }
 }

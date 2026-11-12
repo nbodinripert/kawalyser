@@ -7,22 +7,9 @@ import { isSpaceChar } from "@/domain/layout";
 import { isSpecialKey } from "@/domain/symbols";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { ogColors } from "@/lib/og-colors";
 
 const size = { width: 1200, height: 630 };
-
-/**
- * The image renders outside the page, where the CSS variables of globals.css do not exist.
- * These values copy the light theme tokens.
- */
-const colors = {
-  background: "#f6f8f8",
-  foreground: "#142120",
-  muted: "#586866",
-  accent: "#00766f",
-  accentSoft: "#dff3f0",
-  key: "#e8efee",
-  keyBorder: "#c2d0ce",
-};
 
 // The 34-key board: the shape the image has room for, and the one most split keyboards share.
 const shape = shapes.split34;
@@ -55,16 +42,16 @@ export default async function Image({ params }: { params: Promise<{ lang: string
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "56px 64px",
-          background: colors.background,
-          color: colors.foreground,
+          background: ogColors.background,
+          color: ogColors.foreground,
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <div style={{ width: 18, height: 56, borderRadius: 6, background: colors.accent }} />
+            <div style={{ width: 18, height: 56, borderRadius: 6, background: ogColors.accent }} />
             <div style={{ fontSize: 68, fontWeight: 700, letterSpacing: -2 }}>{meta.title}</div>
           </div>
-          <div style={{ fontSize: 34, color: colors.muted, maxWidth: 1000 }}>{about.title}</div>
+          <div style={{ fontSize: 34, color: ogColors.muted, maxWidth: 1000 }}>{about.title}</div>
         </div>
 
         <div
@@ -92,9 +79,9 @@ export default async function Image({ params }: { params: Promise<{ lang: string
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: 10,
-                  border: `2px solid ${slot.home ? colors.accent : colors.keyBorder}`,
-                  background: slot.home ? colors.accentSoft : colors.key,
-                  color: special ? colors.accent : colors.foreground,
+                  border: `2px solid ${slot.home ? ogColors.accent : ogColors.keyBorder}`,
+                  background: slot.home ? ogColors.accentSoft : ogColors.key,
+                  color: special ? ogColors.accent : ogColors.foreground,
                   fontSize: 28,
                   fontWeight: 600,
                 }}

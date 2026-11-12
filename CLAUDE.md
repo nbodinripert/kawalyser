@@ -3,8 +3,9 @@
 Site gratuit pour tester une disposition de clavier et mesurer si elle est agréable à taper, sans avoir à l'apprendre. Port web de l'[analyseur Excel Kawalyser](https://github.com/Kawamashi/Kawalyser) (macros VBA), avec la touche morte 1DK, les touches Repeat et Magic, et les Clever Keys.
 
 - Code sous GPLv3. Disposition par défaut : [Propergol](https://github.com/Kawamashi/Propergol) (MIT).
-- Le savoir métier vient de Kawamashi, auteur de l'Excel et de Propergol. Ses réponses aux questions de la spec font foi ; le code les cite sous la forme « question N of the specs ».
+- Le savoir métier vient de Kawamashi, auteur de l'Excel et de Propergol. Ses réponses aux questions de la spec font foi ; le code les cite sous la forme « question N of the specs ». Dans le dépôt (public), le nommer seulement « Kawamashi » ou « l'auteur de l'Excel » : aucun lien de parenté, aucun nom réel.
 - Déployé sur Vercel depuis `main` : tout push sur `main` part en production.
+- Dépôt public, pour un public européen et américain. Kawamashi et d'autres contributeurs proposent des changements simples (textes, couleurs) par pull request depuis l'éditeur web de GitHub, en suivant `CONTRIBUTING.md` ; l'utilisateur relit et merge. Garder ce guide à jour quand les fichiers qu'il cite changent.
 
 @.claude/instructions.md
 
@@ -32,7 +33,9 @@ pnpm test         # vitest run
 pnpm build
 ```
 
-Après une modification, lancer au minimum `pnpm lint`, `pnpm typecheck` et `pnpm test`. Le test de parité Excel ne tourne que si `corpus/fr.txt` existe (c'est le cas sur la machine de l'utilisateur).
+Après une modification, lancer au minimum `pnpm lint`, `pnpm typecheck` et `pnpm test`. Le test de parité Excel ne tourne que si `corpus/fr.txt` existe (c'est le cas sur la machine de l'utilisateur, pas en CI). La CI GitHub (`.github/workflows/ci.yml`) lance les mêmes commandes et `pnpm build` sur chaque pull request.
+
+Les messages d'échec de `src/i18n/dictionaries.test.ts` et `src/app/theme-colors.test.ts` sont lus par des contributeurs qui ne connaissent pas le code : ils nomment le fichier, la clé et la valeur en cause.
 
 ## Architecture
 
@@ -57,11 +60,13 @@ Le flux : le navigateur envoie la disposition (JSON) → `POST /api/analyse` val
 5. **Lettres appariées.** Une lettre occupe toujours toute sa couche avec sa capitale (`completeLetterPairs`). Toute édition passe par `domain/edit.ts`.
 6. **Résultat invalidé.** Toute action qui change ce qui serait analysé (disposition, corpus, remplacements, niveau) efface le résultat (`invalidate` dans `state.ts`). Un résultat qui revient après un changement est ignoré grâce à `requestKey`.
 7. **Pas de texte en dur dans l'interface.** Toute chaîne visible passe par `en.json` et `fr.json`.
-8. **Couleurs par jetons.** Utiliser les variables de `globals.css` (`bg-surface`, `text-muted`, `bg-accent`…), définies pour les deux thèmes. Pas de couleur hexadécimale dans les composants.
+8. **Couleurs par jetons.** Utiliser les variables de `globals.css` (`bg-surface`, `text-muted`, `bg-accent`…). Chaque couleur y est écrite une seule fois, `light-dark(clair, sombre)`, avec un commentaire qui dit où elle apparaît. Pas de couleur hexadécimale dans les composants ; seule exception, l'image de partage, qui copie le thème clair dans `src/lib/og-colors.ts` (vérifié par `src/app/theme-colors.test.ts`).
 
 ## Conventions
 
-- Commentaires, identifiants, messages de commit et textes `en.json` en anglais. Échanges avec l'utilisateur, README et ce fichier en français.
+- Commentaires, identifiants, messages de commit et textes `en.json` en anglais. Échanges avec l'utilisateur et ce fichier en français.
+- Les textes affichés (`en.json`) et la documentation anglaise suivent l'orthographe américaine (« analyzer », « color », « license ») : c'est la plus cherchée, et elle est comprise en Europe. Le nom Kawalyser ne change pas.
+- Documentation publique en deux langues, tenues à jour ensemble : `README.md` et `CONTRIBUTING.md` en anglais (affichés par GitHub), `README.fr.md` et `CONTRIBUTING.fr.md` en français, avec un lien de l'une à l'autre en haut.
 - Les commentaires expliquent le pourquoi (souvent un renvoi à la spec ou au VBA), pas le quoi.
 - Phrases courtes et simples dans l'interface comme dans la doc.
 - Composants et fonctions en exports nommés (sauf `page.tsx` et `layout.tsx`, qui exigent un export par défaut) ; fichiers en `kebab-case`.
@@ -71,5 +76,6 @@ Le flux : le navigateur envoie la disposition (JSON) → `POST /api/analyse` val
 ## Git et déploiement
 
 - Ne commiter ou pousser que si l'utilisateur le demande. Un push sur `main` déploie en production.
+- Le dépôt est public : rien de privé dans les commits, les issues ou les PR (corpus, jetons, adresse pro).
 - Le dépôt signe les commits avec l'adresse personnelle (config git locale du dépôt). Ne jamais modifier la config git, ni locale ni globale : Vercel Hobby ignore les pushs signés avec une autre adresse.
 - Message de commit en anglais : un titre à l'impératif, puis un corps qui explique les changements visibles.

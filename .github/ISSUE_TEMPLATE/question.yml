@@ -1,0 +1,11 @@
+name: Question or idea
+description: A question about the analysis, a metric, or an idea for the site. English or French.
+labels: [question]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question or idea
+      description: For a metric, give a small example (a word or a key sequence) and the result you expect.
+    validations:
+      required: true
