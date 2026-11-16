@@ -45,11 +45,12 @@
   /* Background of error messages. */
   --danger-soft: light-dark(#fbe9ea, #3a1a1d);
 
-  /* Messages in the corner of the screen (toast.tsx): a solid blue, so that they stand out from the turquoise page.
-     White on it reads at 6.7:1 in the light theme, 5.2:1 in the dark one. */
-  --info: light-dark(#1d4ed8, #2563eb);
-  /* Text, icon and time bar on --info. */
-  --info-ink: light-dark(#ffffff, #ffffff);
+  /* Messages in the corner of the screen (toast.tsx): a solid purple, so that they stand out from the turquoise page.
+     The same in both themes. */
+  --info: light-dark(#9a55f2, #9a55f2);
+  /* Text, icon and time bar of those messages: a very dark purple, which reads at 4.6:1 on the purple
+     (white would give 4.2:1, under the 4.5:1 that small text needs). */
+  --info-ink: light-dark(#12062a, #12062a);
 
   /* Keys of the keyboard map. */
   --key: light-dark(#e8efee, #223230);
