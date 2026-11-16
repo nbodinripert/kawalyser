@@ -121,7 +121,7 @@
     "running": "Analyzing…",
     "failed": "The analysis failed. Please try again in a moment.",
     "empty": "Run the analysis to see the statistics of this layout.",
-    "cleared": "The layout changed, so the previous statistics were cleared.",
+    "cleared": "The previous statistics were cleared: run the analysis again to update them.",
     "downloadNgrams": "Download n-grams",
     "downloadDifficulties": "Download difficulties",
     "downloadFailed": "The download failed. Please try again."

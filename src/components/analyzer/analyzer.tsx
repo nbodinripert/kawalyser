@@ -299,6 +299,12 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
   const running = state.status === "running";
   // Stable, so that the toast's timer does not start over at every render.
   const dismissNotice = useCallback(() => dispatch({ type: "notice", notice: null }), []);
+  // The explanation of wiped statistics follows the message's own text. Memoized, so that the toast keeps its timer.
+  const clearedText = dictionary.analysis.cleared;
+  const shownNotice = useMemo(
+    () => state.notice && (state.notice.cleared ? { ...state.notice, text: [state.notice.text, clearedText].filter(Boolean).join(" ") } : state.notice),
+    [state.notice, clearedText],
+  );
 
   // The list shows a layout of its own as long as it is untouched; otherwise an extra first option names what is
   // on the map, "Propergol (modified)" for instance, and choosing a layout of the list loads it again (question 38).
@@ -457,7 +463,7 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
 
       </div>
 
-      <Toast notice={state.notice} closeLabel={labels.closeNotice} onDismiss={dismissNotice} />
+      <Toast notice={shownNotice} closeLabel={labels.closeNotice} onDismiss={dismissNotice} />
 
       <div aria-live="polite" className="xl:col-span-2 xl:row-start-2">
         {state.status === "failed" && (
@@ -473,7 +479,7 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
           state.status !== "failed" && (
             // Hidden until the saved session is read, so that restored statistics do not flash this message first.
             <div className={cx("rounded-2xl border border-dashed border-border px-6 py-12 text-center text-sm text-muted", !state.hydrated && "invisible")}>
-              {state.cleared ? dictionary.analysis.cleared : dictionary.analysis.empty}
+              {dictionary.analysis.empty}
             </div>
           )
         )}

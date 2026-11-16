@@ -121,7 +121,7 @@
     "running": "Analyse en cours…",
     "failed": "L'analyse a échoué. Réessayez dans un instant.",
     "empty": "Lancez l'analyse pour voir les statistiques de cette disposition.",
-    "cleared": "La disposition a changé : les statistiques précédentes ont été effacées.",
+    "cleared": "Les statistiques précédentes ont été effacées : relancez l'analyse pour les mettre à jour.",
     "downloadNgrams": "Télécharger les n-grammes",
     "downloadDifficulties": "Télécharger les difficultés",
     "downloadFailed": "Le téléchargement a échoué. Réessayez."

@@ -5,7 +5,12 @@ import { emptyReplacements, type AnalysisLevel, type Replacements } from "@/doma
 import { PERSONAL_CORPUS, type CorpusId, type CorpusLanguage } from "@/domain/corpora";
 import type { AnalysisResult } from "@/engine/analyse";
 
-export type Notice = { tone: "info" | "error"; text: string };
+export type Notice = {
+  tone: "info" | "error";
+  text: string;
+  /** The change also wiped the statistics: the message says so after its text (see `reducer`). */
+  cleared?: boolean;
+};
 
 /**
  * The corpus the user imported. Its text stays in the browser's storage and in the analysis worker,
@@ -28,8 +33,6 @@ export type AnalyzerState = {
   personalCorpus: PersonalCorpus | null;
   result: AnalysisResult | null;
   status: "idle" | "running" | "failed";
-  /** True when an edit has just wiped the statistics, to explain why they disappeared. */
-  cleared: boolean;
   notice: Notice | null;
   /** False until the saved session has been read, so that nothing overwrites it before. */
   hydrated: boolean;
@@ -79,7 +82,6 @@ export function initialState(layout: Layout): AnalyzerState {
     personalCorpus: null,
     result: null,
     status: "idle",
-    cleared: false,
     notice: null,
     hydrated: false,
   };
@@ -125,17 +127,26 @@ function restore(state: AnalyzerState, saved: Snapshot): Partial<AnalyzerState> 
 }
 
 /** Anything that changes what would be analysed wipes the statistics. */
-function invalidate(state: AnalyzerState): Pick<AnalyzerState, "result" | "cleared" | "status"> {
-  return { result: null, cleared: state.result !== null, status: "idle" };
+const invalidated: Pick<AnalyzerState, "result" | "status"> = { result: null, status: "idle" };
+
+/**
+ * When a change wipes statistics that were on screen, a message says why they disappeared: the change's own message
+ * if it has one, followed by that explanation, or the explanation alone. A message shown before is replaced.
+ */
+export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
+  const next = reduce(state, action);
+  if (state.result === null || next.result !== null || action.type === "restore") return next;
+  const own = next.notice !== state.notice && next.notice?.tone === "info" ? next.notice : null;
+  return { ...next, notice: { ...(own ?? { tone: "info", text: "" }), cleared: true } };
 }
 
-export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
+function reduce(state: AnalyzerState, action: Action): AnalyzerState {
   switch (action.type) {
     case "edit":
       if (action.layout === state.layout) return state;
       return {
         ...state,
-        ...invalidate(state),
+        ...invalidated,
         layout: action.layout,
         past: remember(state),
         future: [],
@@ -143,20 +154,20 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
     case "undo": {
       const previous = state.past.at(-1);
       if (!previous) return state;
-      return { ...state, ...invalidate(state), ...restore(state, previous), past: state.past.slice(0, -1), future: [snapshot(state), ...state.future] };
+      return { ...state, ...invalidated, ...restore(state, previous), past: state.past.slice(0, -1), future: [snapshot(state), ...state.future] };
     }
     case "redo": {
       const next = state.future[0];
       if (!next) return state;
-      return { ...state, ...invalidate(state), ...restore(state, next), past: remember(state), future: state.future.slice(1) };
+      return { ...state, ...invalidated, ...restore(state, next), past: remember(state), future: state.future.slice(1) };
     }
     case "reset":
       if (sameLayout(state.layout, state.imported)) return state;
-      return { ...state, ...invalidate(state), layout: state.imported, past: remember(state), future: [] };
+      return { ...state, ...invalidated, layout: state.imported, past: remember(state), future: [] };
     case "importLayout":
       return {
         ...state,
-        ...invalidate(state),
+        ...invalidated,
         layout: action.layout,
         imported: action.layout,
         presetId: null,
@@ -168,7 +179,7 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
       const layout = { ...action.preset.layout, shapeId: state.layout.shapeId };
       return {
         ...state,
-        ...invalidate(state),
+        ...invalidated,
         layout,
         imported: layout,
         presetId: action.preset.id,
@@ -186,7 +197,7 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
     case "setReplacements":
       return {
         ...state,
-        ...invalidate(state),
+        ...invalidated,
         replacements: action.replacements,
         replacementsName: action.name,
         level: levelFor(action.name),
@@ -195,24 +206,24 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
         notice: action.notice,
       };
     case "setLevel":
-      return { ...state, ...invalidate(state), level: action.level };
+      return { ...state, ...invalidated, level: action.level };
     case "setCorpus":
-      return { ...state, ...invalidate(state), corpus: action.corpus };
+      return { ...state, ...invalidated, corpus: action.corpus };
     case "setPersonalCorpus":
-      return { ...state, ...invalidate(state), corpus: PERSONAL_CORPUS, personalCorpus: action.personalCorpus, notice: action.notice };
+      return { ...state, ...invalidated, corpus: PERSONAL_CORPUS, personalCorpus: action.personalCorpus, notice: action.notice };
     case "personalCorpusRestored":
       if (state.personalCorpus?.savedAt === action.personalCorpus.savedAt) return state;
-      return { ...state, ...(state.corpus === PERSONAL_CORPUS ? invalidate(state) : {}), personalCorpus: action.personalCorpus };
+      return { ...state, ...(state.corpus === PERSONAL_CORPUS ? invalidated : {}), personalCorpus: action.personalCorpus };
     case "removePersonalCorpus":
       if (state.personalCorpus === null && state.corpus !== PERSONAL_CORPUS) return state;
       // The message about its import no longer applies.
       return state.corpus === PERSONAL_CORPUS
-        ? { ...state, ...invalidate(state), corpus: action.fallback, personalCorpus: null, notice: null }
+        ? { ...state, ...invalidated, corpus: action.fallback, personalCorpus: null, notice: null }
         : { ...state, personalCorpus: null, notice: null };
     case "setShape":
       return {
         ...state,
-        ...invalidate(state),
+        ...invalidated,
         layout: { ...state.layout, shapeId: action.shapeId },
         imported: { ...state.imported, shapeId: action.shapeId },
       };
@@ -229,14 +240,13 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
         future: [],
         result: action.result,
         status: "idle",
-        cleared: false,
         notice: null,
         hydrated: true,
       };
     case "notice":
       return { ...state, notice: action.notice };
     case "analysisStarted":
-      return { ...state, status: "running", cleared: false };
+      return { ...state, status: "running" };
     case "analysisSucceeded":
       // A result that comes back after the layout, corpus or replacements changed no longer applies.
       if (action.key !== requestKey(state)) return { ...state, status: "idle" };

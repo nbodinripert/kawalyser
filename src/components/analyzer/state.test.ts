@@ -15,7 +15,7 @@ describe("reducer", () => {
     const analysed = reducer(start, { type: "analysisSucceeded", result, key: requestKey(start) });
     const edited = reducer(analysed, { type: "edit", layout: second });
     expect(edited.result).toBeNull();
-    expect(edited.cleared).toBe(true);
+    expect(edited.notice).toEqual({ tone: "info", text: "", cleared: true });
   });
 
   it("undoes, redoes and resets edits", () => {
@@ -180,3 +180,30 @@ describe("personal corpus (v2 specs)", () => {
   });
 });
 
+describe("message about wiped statistics", () => {
+  const notice = { tone: "info" as const, text: "P loaded." };
+  const analysed = () => {
+    const start = initialState(first);
+    return reducer(start, { type: "analysisSucceeded", result, key: requestKey(start) });
+  };
+
+  it("follows the change's own message", () => {
+    const preset: Preset = { id: "p", name: "P", layout: second, replacements: emptyReplacements, replacementsName: null, corpus: null };
+    expect(reducer(analysed(), { type: "loadPreset", preset, notice }).notice).toEqual({ ...notice, cleared: true });
+  });
+
+  it("is shown once: later edits leave the message as it is", () => {
+    const edited = reducer(analysed(), { type: "edit", layout: second });
+    const again = reducer(edited, { type: "edit", layout: first });
+    expect(again.notice).toBe(edited.notice);
+  });
+
+  it("is not shown when there were no statistics", () => {
+    expect(reducer(initialState(first), { type: "edit", layout: second }).notice).toBeNull();
+  });
+
+  it("replaces an error shown before", () => {
+    const failed = reducer(analysed(), { type: "notice", notice: { tone: "error", text: "Broken file." } });
+    expect(reducer(failed, { type: "edit", layout: second }).notice).toEqual({ tone: "info", text: "", cleared: true });
+  });
+});
