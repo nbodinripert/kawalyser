@@ -198,6 +198,14 @@ describe("message about wiped statistics", () => {
     expect(again.notice).toBe(edited.notice);
   });
 
+  it("leaves out the name of a layout chosen with no statistics on screen", () => {
+    const preset: Preset = { id: "p", name: "P", layout: second, replacements: emptyReplacements, replacementsName: null, corpus: null };
+    expect(reducer(initialState(first), { type: "loadPreset", preset, notice }).notice).toBeNull();
+    const shown = { tone: "info" as const, text: "mine.txt imported." };
+    const withToast = reducer(initialState(first), { type: "notice", notice: shown });
+    expect(reducer(withToast, { type: "loadPreset", preset, notice }).notice).toBe(shown);
+  });
+
   it("is not shown when there were no statistics", () => {
     expect(reducer(initialState(first), { type: "edit", layout: second }).notice).toBeNull();
   });

@@ -191,7 +191,8 @@ function reduce(state: AnalyzerState, action: Action): AnalyzerState {
         corpus: state.corpus === PERSONAL_CORPUS ? state.corpus : (action.preset.corpus ?? state.corpus),
         past: remember(state),
         future: [],
-        notice: action.notice,
+        // The map shows the new layout: its name in a message only matters next to statistics it wiped.
+        notice: state.result ? action.notice : state.notice,
       };
     }
     case "setReplacements":
