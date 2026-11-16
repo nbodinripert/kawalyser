@@ -1,0 +1,33 @@
+[
+  {
+    "name": "Propergol",
+    "toml": "propergol.toml",
+    "replacements": "propergol.json",
+    "corpus": "french",
+    "thumbs": { "leftHome": "E", "leftSecondary": "#", "rightSecondary": "$", "rightHome": " " }
+  },
+  {
+    "name": "Ergo-L",
+    "toml": "ergol.toml",
+    "corpus": "french",
+    "thumbs": { "rightHome": " " }
+  },
+  {
+    "name": "Erglace-ng-mirror",
+    "toml": "erglace-ng-mirror.toml",
+    "corpus": "french",
+    "thumbs": { "rightHome": " " }
+  },
+  {
+    "name": "Strud-L",
+    "toml": "strudl.toml",
+    "corpus": "french",
+    "thumbs": { "rightHome": " " }
+  },
+  {
+    "name": "StrudE-L",
+    "toml": "strudel.toml",
+    "corpus": "french",
+    "thumbs": { "leftHome": "E", "rightHome": " " }
+  }
+]

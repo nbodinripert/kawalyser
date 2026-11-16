@@ -5,7 +5,8 @@ import { z } from "zod";
 import { findBlockingDuplicates } from "@/domain/duplicates";
 import { shapeIds } from "@/domain/geometry";
 import { importKalamine, type ImportProblem } from "@/domain/kalamine";
-import { completeLayoutPairs, sameLayout, type Layout } from "@/domain/layout";
+import { completeLayoutPairs, sameLayout } from "@/domain/layout";
+import type { Preset } from "@/domain/presets";
 import { analysisLevels, emptyReplacements, parseReplacements, replacementsSchema } from "@/domain/replacements";
 import { analysisRequestSchema, layoutSchema, type AnalysisRequest } from "@/domain/schemas";
 import { corpusLanguages } from "@/domain/corpora";
@@ -18,9 +19,13 @@ import { KeyboardMap } from "./keyboard-map";
 import { formatters } from "./numbers";
 import { ReplacementsPanel } from "./replacements-panel";
 import { Results } from "./results";
-import { initialState, reducer, requestKey, resultStorageKey, storageKey, toSaved, type SavedState } from "./state";
+import { presetState, reducer, requestKey, resultStorageKey, storageKey, toSaved, type SavedState } from "./state";
 
-type AnalyzerProps = { dictionary: Dictionary; locale: Locale; defaultLayout: Layout };
+/** `presets` is the list of layouts the site provides; a first visit opens `initialPreset`, its first one. */
+type AnalyzerProps = { dictionary: Dictionary; locale: Locale; presets: Preset[]; initialPreset: Preset };
+
+/** The option standing for the layout on the map when it is not one of the list as provided. */
+const CURRENT_LAYOUT = "current";
 
 const savedSchema = z.object({
   layout: layoutSchema,
@@ -29,6 +34,7 @@ const savedSchema = z.object({
   replacementsName: z.string().nullable(),
   level: z.enum(analysisLevels),
   language: z.enum(corpusLanguages),
+  presetId: z.string().nullable().optional(),
 });
 
 function readSaved(): SavedState | null {
@@ -95,8 +101,8 @@ async function readFile(event: ChangeEvent<HTMLInputElement>): Promise<{ name: s
   return { name: file.name, text: await file.text() };
 }
 
-export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
-  const [state, dispatch] = useReducer(reducer, defaultLayout, initialState);
+export function Analyzer({ dictionary, locale, presets, initialPreset }: AnalyzerProps) {
+  const [state, dispatch] = useReducer(reducer, initialPreset, presetState);
   const [downloading, setDownloading] = useState<"ngrams" | "difficulties" | null>(null);
   const tomlInput = useRef<HTMLInputElement>(null);
   const jsonInput = useRef<HTMLInputElement>(null);
@@ -211,6 +217,18 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
 
   const running = state.status === "running";
 
+  // The list shows a layout of its own as long as it is untouched; otherwise an extra first option names what is
+  // on the map, "Propergol (modified)" for instance, and choosing a layout of the list loads it again (question 38).
+  const currentPreset = presets.find((preset) => preset.id === state.presetId);
+  const untouched = sameLayout(state.layout, state.imported);
+  const presetValue = currentPreset && untouched && state.replacementsName === currentPreset.replacementsName ? currentPreset.id : CURRENT_LAYOUT;
+  const layoutName = currentPreset?.name ?? (state.layout.name || labels.unnamed);
+  const currentLabel = currentPreset || !untouched ? format(labels.modified, { name: layoutName }) : layoutName;
+  const onChoosePreset = (id: string) => {
+    const preset = presets.find((item) => item.id === id);
+    if (preset) dispatch({ type: "loadPreset", preset, notice: { tone: "info", text: format(labels.presetLoaded, { name: preset.name }) } });
+  };
+
   return (
     <div className="grid min-w-0 gap-6 [&>*]:min-w-0">
       <Card
@@ -250,6 +268,14 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
           <div className="min-w-0">
             <div className="mb-4 flex flex-wrap items-end gap-3">
+              <Select label={labels.preset} value={presetValue} onChange={(event) => onChoosePreset(event.target.value)}>
+                {presetValue === CURRENT_LAYOUT && <option value={CURRENT_LAYOUT}>{currentLabel}</option>}
+                {presets.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </option>
+                ))}
+              </Select>
               <Select label={labels.shape} value={state.layout.shapeId} onChange={(event) => dispatch({ type: "setShape", shapeId: event.target.value as (typeof shapeIds)[number] })}>
                 {shapeIds.map((id) => (
                   <option key={id} value={id}>

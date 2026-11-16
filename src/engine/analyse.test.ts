@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultLayoutToml } from "@/domain/default-layout";
+import { propergolToml } from "@/domain/__fixtures__/propergol-toml";
 import { importKalamine } from "@/domain/kalamine";
 import { visibleZones } from "@/domain/layout";
 import { emptyReplacements } from "@/domain/replacements";
@@ -7,7 +7,7 @@ import { analyse } from "./analyse";
 import { createCodec } from "./codec";
 import { ngramsCsv } from "./export";
 
-const imported = importKalamine(defaultLayoutToml, "split40");
+const imported = importKalamine(propergolToml, "split40");
 if (!imported.ok) throw new Error("default layout should import");
 const layout = imported.layout;
 
@@ -41,8 +41,8 @@ describe("characters outside the Basic Multilingual Plane", () => {
   });
 
   it("never mistakes a private-use character of the corpus for a special key", () => {
-    const { result } = run("e\n");
-    expect(result.missingChars.entries.map((entry) => entry.gram)).toEqual([""]);
+    const { result } = run("\ue000e\n");
+    expect(result.missingChars.entries.map((entry) => entry.gram)).toEqual(["\ue000"]);
   });
 
   it("gives each character its own symbol, and the character back", () => {

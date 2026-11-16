@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { defaultLayoutToml } from "@/domain/default-layout";
+import { propergolToml } from "@/domain/__fixtures__/propergol-toml";
 import { importKalamine } from "@/domain/kalamine";
 import type { Layout } from "@/domain/layout";
 import { parseReplacements, type Replacements } from "@/domain/replacements";
 import { createAdapter } from "./adapt";
 import { buildKeyMap, DK, MAGIC, REPEAT } from "./keymap";
 
-const imported = importKalamine(defaultLayoutToml, "split40");
+const imported = importKalamine(propergolToml, "split40");
 if (!imported.ok) throw new Error("default layout should import");
 const layout = imported.layout;
 
@@ -112,12 +112,12 @@ describe("createAdapter", () => {
   });
 
   it("reads no-break spaces and tabs as spaces (question 33 of the specs)", () => {
-    const { words } = createAdapter(buildKeyMap(layout), replacements, { level: "raw" }).adaptLine("oui ! non ?\tbon");
+    const { words } = createAdapter(buildKeyMap(layout), replacements, { level: "raw" }).adaptLine("oui\u202f! non\u00a0?\tbon");
     expect(words).toEqual(["oui", "!", "non", "?", "bon"]);
   });
 
   it("joins a letter and its combining accent into one character", () => {
-    expect(typed("créé")).toBe(typed("créé"));
+    expect(typed("cre\u0301e\u0301")).toBe(typed("créé"));
   });
 });
 

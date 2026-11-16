@@ -73,7 +73,7 @@ Les trigrammes se lisent sur trois périmètres : `all`, `noSpace` (sans espace)
 
 ### Kalamine
 
-Les `.toml` décrivent la disposition en dessin ASCII. `base` porte la couche morte à droite de chaque touche, `full` y met AltGr à la place. `**` est la 1DK, `*x` une autre touche morte. Géométries lues : ANSI, ISO, ERGO, ALT. La rangée des chiffres et AltGr sont ignorées. À l'import, Magic va sur `tli`, Repeat sur `tri` et l'espace sur `tro`.
+Les `.toml` décrivent la disposition en dessin ASCII. `base` porte la couche morte à droite de chaque touche, `full` y met AltGr à la place. `**` est la 1DK, `*x` une autre touche morte. Géométries lues : ANSI, ISO, ERGO, ALT. La rangée des chiffres et AltGr sont ignorées. À l'import, Magic va sur `tli`, Repeat sur `tri` et l'espace sur `tro`. Les dispositions de la liste (`layouts/layouts.json`) décrivent elles-mêmes leurs quatre pouces : `leftHome` (`tlo`), `leftSecondary` (`tli`), `rightSecondary` (`tri`), `rightHome` (`tro`) ; la touche de repos est l'extérieure (question 36).
 
 ## Comment traiter une demande
 

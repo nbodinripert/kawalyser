@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Layout } from "@/domain/layout";
+import type { Preset } from "@/domain/presets";
+import { emptyReplacements } from "@/domain/replacements";
 import type { AnalysisResult } from "@/engine/analyse";
-import { initialState, reducer, requestKey } from "./state";
+import { initialState, presetState, reducer, requestKey } from "./state";
 
 const first: Layout = { name: "a", shapeId: "split40", keys: { k: { base: "a" } } };
 const second: Layout = { ...first, keys: { k: { base: "b" } } };
@@ -72,5 +74,63 @@ describe("reducer", () => {
     const done = reducer(running, { type: "analysisSucceeded", result, key });
     expect(done.result).toBeNull();
     expect(done.status).toBe("idle");
+  });
+});
+
+describe("layouts of the list (v2 specs)", () => {
+  const withReplacements: Preset = {
+    id: "p",
+    name: "P",
+    layout: { name: "P", shapeId: "split40", keys: { k: { base: "p" } } },
+    replacements: { essentialCorrections: [{ text: "qu", keys: "q" }], optionalCorrections: [] },
+    replacementsName: "p.json",
+    corpus: "fr",
+  };
+  const without: Preset = { ...withReplacements, id: "e", name: "E", replacements: emptyReplacements, replacementsName: null, corpus: null };
+  const notice = { tone: "info" as const, text: "" };
+
+  it("opens the first layout with its replacements and corpus (question 40)", () => {
+    const start = presetState(withReplacements);
+    expect(start).toMatchObject({ presetId: "p", replacementsName: "p.json", level: "clever", language: "fr" });
+    expect(start.layout).toBe(withReplacements.layout);
+  });
+
+  it("takes the replacements off with a layout that has none, and keeps the corpus without a corpus field (questions 39 and 42)", () => {
+    const start = { ...presetState(withReplacements), language: "en" as const };
+    const loaded = reducer(start, { type: "loadPreset", preset: without, notice });
+    expect(loaded).toMatchObject({ presetId: "e", replacementsName: null, replacements: emptyReplacements, level: "raw", language: "en" });
+    expect(loaded.layout.keys).toBe(without.layout.keys);
+  });
+
+  it("undoes the choice of a layout, replacements included", () => {
+    const start = presetState(withReplacements);
+    const loaded = reducer(start, { type: "loadPreset", preset: without, notice });
+    const undone = reducer(loaded, { type: "undo" });
+    expect(undone).toMatchObject({ presetId: "p", replacementsName: "p.json", level: "clever" });
+    expect(undone.layout).toBe(withReplacements.layout);
+    expect(reducer(undone, { type: "redo" })).toMatchObject({ presetId: "e", replacementsName: null, level: "raw" });
+  });
+
+  it("keeps the keyboard shape and the level when an edit is undone", () => {
+    let state = presetState(withReplacements);
+    state = reducer(state, { type: "setLevel", level: "corrections" });
+    state = reducer(state, { type: "edit", layout: { ...state.layout, keys: { k: { base: "q" } } } });
+    state = reducer(state, { type: "setShape", shapeId: "split34" });
+    state = reducer(state, { type: "undo" });
+    expect(state.layout.keys).toBe(withReplacements.layout.keys);
+    expect(state.layout.shapeId).toBe("split34");
+    expect(state.level).toBe("corrections");
+  });
+
+  it("loads a layout on the current keyboard shape", () => {
+    const start = reducer(presetState(without), { type: "setShape", shapeId: "split34" });
+    expect(reducer(start, { type: "loadPreset", preset: withReplacements, notice }).layout.shapeId).toBe("split34");
+  });
+
+  it("forgets the layout of the list after a .toml import, and reads older sessions without one", () => {
+    const imported = reducer(presetState(withReplacements), { type: "importLayout", layout: first, notice });
+    expect(imported.presetId).toBeNull();
+    const saved = { layout: first, imported: first, replacements: emptyReplacements, replacementsName: null, level: "raw" as const, language: "en" as const };
+    expect(reducer(presetState(withReplacements), { type: "restore", saved, result: null }).presetId).toBeNull();
   });
 });

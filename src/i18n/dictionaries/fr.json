@@ -21,6 +21,10 @@
     "importToml": "Importer un .toml",
     "importReplacements": "Importer des remplacements",
     "removeReplacements": "Retirer les remplacements",
+    "preset": "Disposition",
+    "modified": "{name} (modifiée)",
+    "unnamed": "Disposition importée",
+    "presetLoaded": "{name} chargée.",
     "shape": "Clavier",
     "shapes": {
       "split40": "Split, 40 touches",

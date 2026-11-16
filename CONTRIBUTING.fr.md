@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md) · **Français**
 
-Ce guide explique comment changer les textes et les couleurs du site depuis github.com, sans rien installer et sans connaître le code.
+Ce guide explique comment changer les textes, les couleurs et les dispositions du site depuis github.com, sans rien installer et sans connaître le code.
 
 ## Le principe
 
@@ -82,6 +82,38 @@ Règles :
 - **Lisibilité** : un texte doit rester lisible sur son fond. Vérifiez le contraste avec [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) : au moins 4,5 pour du texte normal, 3 pour les gros titres et les bordures.
 - L'**image de partage** (celle qui s'affiche quand on partage le lien du site) reprend quelques couleurs du thème clair dans [`src/lib/og-colors.ts`](src/lib/og-colors.ts). Si vous changez `--background`, `--foreground`, `--muted`, `--accent`, `--accent-soft`, `--key` ou `--key-border`, recopiez la couleur claire dans ce fichier. Sinon la vérification sera rouge et vous le dira.
 
+## Ajouter ou changer une disposition
+
+Les dispositions de la liste **Disposition** sont dans le dossier [`layouts/`](layouts) :
+
+- un fichier Kalamine `.toml` par disposition, tel que vous le publiez ;
+- un fichier `.json` de remplacements, pour les dispositions qui en ont un ;
+- [`layouts/layouts.json`](layouts/layouts.json), la liste dans l'ordre du menu. La première disposition s'ouvre à la première visite.
+
+Pour ajouter une disposition, déposez ses fichiers avec **Add file → Upload files** dans le dossier `layouts`, puis ajoutez une entrée à `layouts.json` dans la même PR :
+
+```json
+{
+  "name": "Propergol",
+  "toml": "propergol.toml",
+  "replacements": "propergol.json",
+  "corpus": "french",
+  "thumbs": { "leftHome": "E", "leftSecondary": "#", "rightSecondary": "$", "rightHome": " " }
+}
+```
+
+| Champ | Sens |
+| --- | --- |
+| `name` | Le nom affiché dans la liste |
+| `toml` | Le fichier de la disposition, dans le dossier `layouts` |
+| `replacements` | Facultatif. Le fichier de remplacements, dans le même dossier |
+| `corpus` | Facultatif. `"french"` ou `"english"` : le corpus sélectionné avec la disposition |
+| `thumbs` | Les quatre touches de pouce, que le `.toml` ne décrit pas |
+
+Les touches de pouce sont `leftHome` et `rightHome` (les touches extérieures, où les pouces se reposent) et `leftSecondary` et `rightSecondary` (les touches intérieures). Écrivez un caractère par touche : `" "` pour espace, `"#"` pour Magic, `"$"` pour Repeat, `"*"` pour la touche morte. Une lettre dessinée tout à gauche de la rangée du bas du `.toml`, comme `"E"` dans Propergol, apporte toute sa touche, avec Shift et son caractère de touche morte. Une touche de pouce absente reste vide.
+
+Les entrées sont séparées par des virgules, et la liste est entre crochets `[ … ]`. La vérification importe chaque disposition et nomme le fichier ou l'entrée en cause.
+
 ## Changer un corpus
 
 Les corpus ne sont pas dans ce dépôt public : ils sont dans un dépôt privé, accessible sur demande au mainteneur. Avec cet accès, remplacez `fr.txt` ou `en.txt` avec **Add file → Upload files** (les fichiers sont trop gros pour le crayon) :
@@ -99,6 +131,7 @@ Le site se redéploie tout seul et utilise le nouveau corpus environ deux minute
    - `Missing from fr.json: …` : une clé manque dans le fichier français.
    - `--accent: "3fc4b6" is not a color like #00766f` : il manque le `#`.
    - `src/i18n/dictionaries/fr.json is not valid JSON … (line 49 column 7)` : il manque une virgule ou un guillemet dans ce fichier, à la ligne indiquée ou juste avant.
+   - `layouts.json: entry 2 (Ergo-L), thumbs: Unrecognized key: "rightOuter"` : un nom de champ de cette entrée est mal écrit.
 3. Corrigez sur votre branche. Si le message n'est pas clair, demandez de l'aide dans la PR.
 
 ## Ce qui passe par le mainteneur

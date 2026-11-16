@@ -21,6 +21,10 @@
     "importToml": "Import .toml",
     "importReplacements": "Import replacements",
     "removeReplacements": "Remove replacements",
+    "preset": "Layout",
+    "modified": "{name} (modified)",
+    "unnamed": "Imported layout",
+    "presetLoaded": "{name} loaded.",
     "shape": "Keyboard",
     "shapes": {
       "split40": "Split, 40 keys",

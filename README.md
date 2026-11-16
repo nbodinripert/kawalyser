@@ -4,7 +4,7 @@
 
 A free website to test a keyboard layout and measure how comfortable it is to type, without learning it first. It ports the algorithms of the [Kawalyser Excel analyzer](https://github.com/Kawamashi/Kawalyser) by Kawamashi, including the 1DK dead key, the Repeat and Magic keys, and Clever Keys.
 
-License: [GPLv3](LICENSE). The default layout is [Propergol](https://github.com/Kawamashi/Propergol), under the MIT license.
+License: [GPLv3](LICENSE). The layouts of the list are in [`layouts/`](layouts): [Propergol](https://github.com/Kawamashi/Propergol) (MIT license), opened by default, [Ergo-L](https://github.com/Nuclear-Squid/ergol) (WTFPL), [Erglace](https://github.com/Lysquid/Erglace), Strud-L and StrudE-L.
 
 ## Getting started
 
@@ -45,9 +45,10 @@ Every variable is described in [`.env.example`](.env.example). Each corpus is re
 
 | Location | Purpose |
 | --- | --- |
-| `src/domain/` | Keyboard shapes, layout, reading Kalamine `.toml` files and replacement `.json` files |
+| `layouts/` | The layouts of the list: `.toml` files, replacements, and `layouts.json` with their thumb keys |
+| `src/domain/` | Keyboard shapes, layout, reading Kalamine `.toml` files, replacement `.json` files and the layouts list |
 | `src/engine/` | The analysis engine, ported from VBA, with no browser or server dependency |
-| `src/server/` | Private corpus loading and analysis cache |
+| `src/server/` | Private corpus loading, layouts list loading and analysis cache |
 | `src/app/api/` | `analyse` and `export` (CSV) routes |
 | `src/components/analyzer/` | Keyboard map, drag and drop, results and charts |
 | `src/i18n/` | Interface languages and translations |
@@ -56,13 +57,14 @@ A translation missing from `fr.json` breaks the build. The reference text is `en
 
 ## Contributing
 
-Texts and colors can be changed from github.com, with nothing to install: see the guide in [CONTRIBUTING.md](CONTRIBUTING.md). Every pull request goes through the automatic checks (`.github/workflows/ci.yml`) and gets a Vercel preview before it is accepted.
+Texts, colors and layouts can be changed from github.com, with nothing to install: see the guide in [CONTRIBUTING.md](CONTRIBUTING.md). Every pull request goes through the automatic checks (`.github/workflows/ci.yml`) and gets a Vercel preview before it is accepted.
 
 | To change | File |
 | --- | --- |
 | Texts | `src/i18n/dictionaries/en.json` and `fr.json` |
 | Colors | `src/app/globals.css`, each color written `light-dark(light, dark)` |
 | Colors of the sharing image | `src/lib/og-colors.ts` (copy of the light theme, checked by a test) |
+| Layouts of the list | `layouts/`, with `layouts.json` (checked by a test) |
 
 ## Faithfulness to the Excel analyzer
 

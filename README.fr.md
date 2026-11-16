@@ -4,7 +4,7 @@
 
 Site gratuit pour tester une disposition de clavier et mesurer si elle est agréable à taper, sans avoir à l'apprendre. Il reprend les algorithmes de l'[analyseur Excel Kawalyser](https://github.com/Kawamashi/Kawalyser), y compris la touche morte 1DK, les touches Repeat et Magic, et les Clever Keys.
 
-Licence : [GPLv3](LICENSE). La disposition par défaut est [Propergol](https://github.com/Kawamashi/Propergol), sous licence MIT.
+Licence : [GPLv3](LICENSE). Les dispositions de la liste sont dans [`layouts/`](layouts) : [Propergol](https://github.com/Kawamashi/Propergol) (licence MIT), ouverte par défaut, [Ergo-L](https://github.com/Nuclear-Squid/ergol) (WTFPL), [Erglace](https://github.com/Lysquid/Erglace), Strud-L et StrudE-L.
 
 ## Démarrer
 
@@ -45,9 +45,10 @@ Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque 
 
 | Emplacement | Rôle |
 | --- | --- |
-| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine) et des remplacements `.json` |
+| `layouts/` | Les dispositions de la liste : fichiers `.toml`, remplacements, et `layouts.json` avec leurs touches de pouce |
+| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine), des remplacements `.json` et de la liste des dispositions |
 | `src/engine/` | Le moteur d'analyse, porté du VBA, sans dépendance au navigateur ni au serveur |
-| `src/server/` | Chargement privé des corpus et cache des analyses |
+| `src/server/` | Chargement privé des corpus, chargement de la liste des dispositions et cache des analyses |
 | `src/app/api/` | Routes `analyse` et `export` (CSV) |
 | `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques |
 | `src/i18n/` | Langues de l'interface et traductions |
@@ -56,13 +57,14 @@ Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le t
 
 ## Contribuer
 
-Les textes et les couleurs se modifient depuis github.com, sans rien installer : le guide est dans [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md). Chaque pull request passe par les vérifications automatiques (`.github/workflows/ci.yml`) et reçoit un aperçu Vercel avant d'être acceptée.
+Les textes, les couleurs et les dispositions se modifient depuis github.com, sans rien installer : le guide est dans [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md). Chaque pull request passe par les vérifications automatiques (`.github/workflows/ci.yml`) et reçoit un aperçu Vercel avant d'être acceptée.
 
 | Pour changer | Fichier |
 | --- | --- |
 | Les textes | `src/i18n/dictionaries/en.json` et `fr.json` |
 | Les couleurs | `src/app/globals.css`, chaque couleur écrite `light-dark(clair, sombre)` |
 | Les couleurs de l'image de partage | `src/lib/og-colors.ts` (copie du thème clair, vérifiée par un test) |
+| Les dispositions de la liste | `layouts/`, avec `layouts.json` (vérifié par un test) |
 
 ## Fidélité à l'Excel
 

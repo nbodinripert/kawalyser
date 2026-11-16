@@ -2,7 +2,7 @@
 
 Site gratuit pour tester une disposition de clavier et mesurer si elle est agréable à taper, sans avoir à l'apprendre. Port web de l'[analyseur Excel Kawalyser](https://github.com/Kawamashi/Kawalyser) (macros VBA), avec la touche morte 1DK, les touches Repeat et Magic, et les Clever Keys.
 
-- Code sous GPLv3. Disposition par défaut : [Propergol](https://github.com/Kawamashi/Propergol) (MIT).
+- Code sous GPLv3. Dispositions de la liste dans `layouts/` ; la première, ouverte par défaut, est [Propergol](https://github.com/Kawamashi/Propergol) (MIT).
 - Le savoir métier vient de Kawamashi, auteur de l'Excel et de Propergol. Ses réponses aux questions de la spec font foi ; le code les cite sous la forme « question N of the specs ». Dans le dépôt (public), le nommer seulement « Kawamashi » ou « l'auteur de l'Excel » : aucun lien de parenté, aucun nom réel.
 - Déployé sur Vercel depuis `main` : tout push sur `main` part en production.
 - Dépôt public, pour un public européen et américain. Kawamashi et d'autres contributeurs proposent des changements simples (textes, couleurs) par pull request depuis l'éditeur web de GitHub, en suivant `CONTRIBUTING.md` ; l'utilisateur relit et merge. Garder ce guide à jour quand les fichiers qu'il cite changent.
@@ -43,9 +43,9 @@ Le flux : le navigateur envoie la disposition (JSON) → `POST /api/analyse` val
 
 | Dossier | Rôle | Règle de dépendance |
 | --- | --- | --- |
-| `src/domain/` | Formes de clavier (`geometry.ts`), disposition et couches (`layout.ts`), édition par glisser-déposer (`edit.ts`), import Kalamine `.toml` (`kalamine.ts`), remplacements `.json` (`replacements.ts`), identifiants des corpus du site (`corpora.ts`), symboles spéciaux (`symbols.ts`), schémas Zod (`schemas.ts`) | Pur TypeScript. N'importe ni React, ni Next, ni Node. |
+| `src/domain/` | Formes de clavier (`geometry.ts`), disposition et couches (`layout.ts`), édition par glisser-déposer (`edit.ts`), import Kalamine `.toml` (`kalamine.ts`), remplacements `.json` (`replacements.ts`), liste des dispositions de `layouts/` (`presets.ts`), identifiants des corpus du site (`corpora.ts`), symboles spéciaux (`symbols.ts`), schémas Zod (`schemas.ts`) | Pur TypeScript. N'importe ni React, ni Next, ni Node. |
 | `src/engine/` | Moteur porté du VBA : `keymap.ts` (caractère → touche), `adapt.ts` (corpus → frappes réelles), `count.ts` (n-grammes), `metrics.ts` (bigrammes, trigrammes, difficultés), `analyse.ts` (assemblage), `export.ts` (CSV) | Ne dépend que de `domain/`. Exécutable dans un test sans navigateur ni serveur. |
-| `src/server/` | Lecture des corpus (dossier local ou dépôt GitHub privé), cache mémoire des 3 dernières analyses | `import "server-only"` obligatoire. |
+| `src/server/` | Lecture des corpus (dossier local ou dépôt GitHub privé), lecture de `layouts/` au prérendu (`"use cache"`), cache mémoire des 3 dernières analyses | `import "server-only"` obligatoire. |
 | `src/app/[lang]/` | Page unique et layout, localisés | Composants serveur. |
 | `src/app/api/` | `analyse` et `export` (CSV, `;` en français) | Valider l'entrée avec Zod, renvoyer `{ error: "code" }` en cas d'échec. |
 | `src/components/analyzer/` | Interface client : carte du clavier (`@dnd-kit`), réducteur d'état (`state.ts`), résultats et graphiques | Client. L'état passe par le réducteur, avec undo/redo et sauvegarde `localStorage`. |

@@ -2,7 +2,7 @@
 
 **English** · [Français](CONTRIBUTING.fr.md)
 
-This guide explains how to change the site's texts and colors from github.com, with nothing to install and no knowledge of the code.
+This guide explains how to change the site's texts, colors and layouts from github.com, with nothing to install and no knowledge of the code.
 
 ## How it works
 
@@ -82,6 +82,38 @@ Rules:
 - **Readability**: text must stay readable on its background. Check the contrast with the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/): at least 4.5 for normal text, 3 for large headings and borders.
 - The **sharing image** (the one shown when someone shares the site's link) reuses a few light theme colors in [`src/lib/og-colors.ts`](src/lib/og-colors.ts). If you change `--background`, `--foreground`, `--muted`, `--accent`, `--accent-soft`, `--key` or `--key-border`, copy the light color into that file too. Otherwise the checks turn red and tell you so.
 
+## Adding or changing a layout
+
+The layouts of the **Layout** list live in the [`layouts/`](layouts) folder:
+
+- one Kalamine `.toml` file per layout, as you publish it;
+- a replacements `.json` file, for the layouts that have one;
+- [`layouts/layouts.json`](layouts/layouts.json), the list in the order of the menu. The first layout opens on a first visit.
+
+To add a layout, upload its files with **Add file → Upload files** in the `layouts` folder, then add an entry to `layouts.json` in the same PR:
+
+```json
+{
+  "name": "Propergol",
+  "toml": "propergol.toml",
+  "replacements": "propergol.json",
+  "corpus": "french",
+  "thumbs": { "leftHome": "E", "leftSecondary": "#", "rightSecondary": "$", "rightHome": " " }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `name` | The name shown in the list |
+| `toml` | The layout file, in the `layouts` folder |
+| `replacements` | Optional. The replacements file, in the same folder |
+| `corpus` | Optional. `"french"` or `"english"`: the corpus selected with the layout |
+| `thumbs` | The four thumb keys, which the `.toml` does not describe |
+
+The thumb keys are `leftHome` and `rightHome` (the outer keys, where the thumbs rest) and `leftSecondary` and `rightSecondary` (the inner ones). Write one character per key: `" "` for space, `"#"` for Magic, `"$"` for Repeat, `"*"` for the dead key. A letter drawn at the far left of the bottom row of the `.toml`, such as `"E"` in Propergol, brings that whole key, with Shift and its dead key character. A thumb key left out stays empty.
+
+Entries are separated by commas, and the list is enclosed in square brackets `[ … ]`. The checks import every layout and name the file or the entry at fault.
+
 ## Changing a corpus
 
 The corpora are not in this public repository: they live in a private repository, open on request to the maintainer. With that access, replace `fr.txt` or `en.txt` with **Add file → Upload files** (the files are too big for the pencil):
@@ -99,6 +131,7 @@ The site redeploys by itself and uses the new corpus about two minutes later (**
    - `Missing from fr.json: …`: a key is missing from the French file.
    - `--accent: "3fc4b6" is not a color like #00766f`: the `#` is missing.
    - `src/i18n/dictionaries/fr.json is not valid JSON … (line 49 column 7)`: a comma or a quote is missing in that file, on that line or just before.
+   - `layouts.json: entry 2 (Ergo-L), thumbs: Unrecognized key: "rightOuter"`: a field name of that entry is misspelled.
 3. Fix it on your branch. If the message is unclear, ask for help in the PR.
 
 ## What goes through the maintainer

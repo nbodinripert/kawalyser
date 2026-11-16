@@ -5,15 +5,10 @@ import { Analyzer } from "@/components/analyzer/analyzer";
 import { JsonLd } from "@/components/json-ld";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { defaultLayoutToml } from "@/domain/default-layout";
-import { importKalamine } from "@/domain/kalamine";
-import { emptyLayout } from "@/domain/layout";
 import { hasLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { absoluteUrl, languageAlternates, localePath, openGraphLocale, repositoryUrl, siteName } from "@/lib/site";
-
-const defaultImport = importKalamine(defaultLayoutToml, "split40");
-const defaultLayout = defaultImport.ok ? defaultImport.layout : emptyLayout("split40");
+import { loadPresets } from "@/server/presets";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;
@@ -43,7 +38,9 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
-  const dictionary = await getDictionary(lang);
+  const [dictionary, presets] = await Promise.all([getDictionary(lang), loadPresets()]);
+  const [initialPreset] = presets;
+  if (!initialPreset) throw new Error("layouts/layouts.json lists no layout");
 
   // No rating or download count: Google wants real ones, and the site has none.
   const structuredData = {
@@ -86,7 +83,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <h1 className="sr-only">{dictionary.home.heading}</h1>
-        <Analyzer dictionary={dictionary} locale={lang} defaultLayout={defaultLayout} />
+        <Analyzer dictionary={dictionary} locale={lang} presets={presets} initialPreset={initialPreset} />
         <About labels={dictionary.about} />
       </main>
 
