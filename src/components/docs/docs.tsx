@@ -18,7 +18,7 @@ import {
 } from "../icons";
 import { cx } from "../ui";
 import { MiniBoard, type Press } from "./mini-board";
-import { richText } from "./rich-text";
+import { richText } from "../rich-text";
 
 type DocsProps = { lang: Locale; dictionary: Dictionary };
 type Labels = Dictionary["docs"];

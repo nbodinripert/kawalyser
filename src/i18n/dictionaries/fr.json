@@ -7,7 +7,9 @@
   },
   "home": {
     "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces.",
-    "heading": "Kawalyser : analyseur de disposition de clavier"
+    "heading": "Kawalyser : analyseur de disposition de clavier",
+    "intro": "Kawalyser tape un long texte sur votre disposition de clavier et compte les mouvements de vos doigts : bigrammes du même doigt, ciseaux, roulements et charge des doigts. Gratuit, sans inscription. {docs}",
+    "docsLink": "Voir comment ça marche"
   },
   "languageSwitcher": {
     "label": "Langue"

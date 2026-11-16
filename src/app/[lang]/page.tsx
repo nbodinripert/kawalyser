@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Analyzer } from "@/components/analyzer/analyzer";
 import { JsonLd } from "@/components/json-ld";
+import { richText } from "@/components/rich-text";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { hasLocale, locales } from "@/i18n/config";
@@ -67,6 +69,16 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <h1 className="sr-only">{dictionary.home.heading}</h1>
+        {/* Says in plain words what the tool does, for visitors and for search engines, which find little text in the analyzer itself. */}
+        <p className="mb-5 max-w-3xl text-sm text-muted">
+          {richText(dictionary.home.intro, {
+            docs: (
+              <Link href={localePath(lang, "docs")} className="font-medium text-accent underline underline-offset-2 hover:text-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                {dictionary.home.docsLink}
+              </Link>
+            ),
+          })}
+        </p>
         <Analyzer dictionary={analyzerDictionary} locale={lang} presets={presets} initialPreset={initialPreset} />
       </main>
 

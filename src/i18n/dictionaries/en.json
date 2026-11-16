@@ -7,7 +7,9 @@
   },
   "home": {
     "tagline": "Keyboard layout analyzer supporting magic rules, 1DK and thumb alphas.",
-    "heading": "Kawalyser: keyboard layout analyzer"
+    "heading": "Kawalyser: keyboard layout analyzer",
+    "intro": "Kawalyser types a long text on your keyboard layout and counts how your fingers move: same-finger bigrams, scissors, rolls and finger load. Free, with no sign-up. {docs}",
+    "docsLink": "See how it works"
   },
   "languageSwitcher": {
     "label": "Language"
