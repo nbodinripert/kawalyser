@@ -91,7 +91,30 @@ Les dispositions de la liste **Disposition** sont dans le dossier [`layouts/`](l
 - un fichier `.json` de remplacements, pour les dispositions qui en ont un ;
 - [`layouts/layouts.json`](layouts/layouts.json), la liste dans l'ordre du menu. La première disposition s'ouvre à la première visite.
 
-Pour ajouter une disposition, déposez ses fichiers avec **Add file → Upload files** dans le dossier `layouts`, puis ajoutez une entrée à `layouts.json` dans la même PR :
+### Ajouter une disposition, pas à pas
+
+Avant de commencer, vérifiez que la licence de la disposition permet à chacun de la partager. Nommez ses fichiers en minuscules, avec seulement des lettres, des chiffres et des tirets, sans espace ni accent : `ma-disposition.toml`, `ma-disposition.json`.
+
+1. Sur la page du dépôt, ouvrez le dossier `layouts`.
+2. Cliquez sur **Add file → Upload files**. Déposez le fichier `.toml`, et le fichier de remplacements `.json` si la disposition en a un.
+3. Sous **Commit changes**, décrivez le changement en une ligne, par exemple « Ajoute la disposition Ma Disposition ». Choisissez **Create a new branch for this commit and start a pull request**, puis **Propose changes**.
+4. Sur la page suivante, cliquez sur **Create pull request**. Dans la description, donnez un lien vers la disposition et sa licence.
+5. En haut de la page de la PR, GitHub écrit « wants to merge 1 commit into `main` from `…` ». Cliquez sur le nom de branche après « from » : il ouvre votre branche.
+6. Ouvrez `layouts`, puis `layouts.json`, et cliquez sur le crayon ✏️. Ajoutez une entrée pour la disposition (voir « L'entrée dans layouts.json » plus bas).
+7. Cliquez sur **Commit changes…**, choisissez **Commit directly to the … branch**, puis **Commit changes**. La PR se met à jour toute seule.
+8. La page Docs nomme les dispositions de la liste dans le texte `docs.features.items.presets.text`. Ajoutez-y le nouveau nom, dans `en.json` et `fr.json`, sur la même branche (voir « Changer un texte »).
+9. Attendez la vérification et l'aperçu (voir « Vérifier votre PR »). Sur l'aperçu, choisissez la disposition dans la liste **Disposition**, vérifiez les touches et les pouces, puis cliquez sur **Lancer l'analyse**.
+
+### Modifier ou retirer une disposition
+
+- **Nouvelle version du `.toml`** : dans le dossier `layouts`, déposez le nouveau fichier avec **Add file → Upload files**, sous **exactement le même nom**. GitHub remplace l'ancien fichier. Suivez ensuite les étapes 3, 4 et 9.
+- **Nom, pouces ou corpus** : modifiez l'entrée de la disposition dans `layouts.json` avec le crayon.
+- **Ordre du menu** : déplacez l'entrée entière, de `{` à `}`, dans `layouts.json`. La première s'ouvre à la première visite.
+- **Retirer une disposition** : supprimez son entrée de `layouts.json`, puis ses fichiers (ouvrez le fichier, **⋯ → Delete file**), sur la même branche. La liste doit garder au moins une disposition.
+
+### L'entrée dans layouts.json
+
+Chaque disposition est une entrée entre accolades `{ … }` :
 
 ```json
 {
@@ -113,7 +136,30 @@ Pour ajouter une disposition, déposez ses fichiers avec **Add file → Upload f
 
 Les touches de pouce sont `leftHome` et `rightHome` (les touches extérieures, où les pouces se reposent) et `leftSecondary` et `rightSecondary` (les touches intérieures). Écrivez un caractère par touche : `" "` pour espace, `"#"` pour Magic, `"$"` pour Repeat, `"*"` pour la touche morte. Une lettre dessinée tout à gauche de la rangée du bas du `.toml`, comme `"E"` dans Propergol, apporte toute sa touche, avec Shift et son caractère de touche morte. Une touche de pouce absente reste vide.
 
-Les entrées sont séparées par des virgules, et la liste est entre crochets `[ … ]`. La vérification importe chaque disposition et nomme le fichier ou l'entrée en cause.
+Les entrées sont séparées par des virgules, et la liste est entre crochets `[ … ]`. Pour ajouter une entrée à la fin, mettez une virgule après l'accolade `}` de la dernière, et aucune après la vôtre :
+
+```json
+  {
+    "name": "StrudE-L",
+    "toml": "strudel.toml",
+    "corpus": "french",
+    "thumbs": { "leftHome": "E", "rightHome": " " }
+  },
+  {
+    "name": "Ma Disposition",
+    "toml": "ma-disposition.toml",
+    "thumbs": { "rightHome": " " }
+  }
+]
+```
+
+### Ce que le site lit dans le .toml
+
+- Le dessin `base`, en géométrie ANSI, ISO, ERGO ou ALT, avec la couche de la touche morte à droite de chaque touche. Sans `base`, le dessin `full`, sans couche morte. La rangée des chiffres et AltGr sont ignorées.
+- La touche morte `**` (1DK), et ses caractères sur l'espace venus de `[spacebar]`. Les autres touches mortes sont ignorées.
+- Un caractère dessiné sur deux touches de la grille principale, dans la même couche, est refusé.
+
+La vérification importe chaque disposition et nomme le fichier ou l'entrée en cause.
 
 ## Changer un corpus
 
@@ -133,6 +179,9 @@ Le site se redéploie tout seul et utilise le nouveau corpus environ deux minute
    - `--accent: "3fc4b6" is not a color like #00766f` : il manque le `#`.
    - `src/i18n/dictionaries/fr.json is not valid JSON … (line 49 column 7)` : il manque une virgule ou un guillemet dans ce fichier, à la ligne indiquée ou juste avant.
    - `layouts.json: entry 2 (Ergo-L), thumbs: Unrecognized key: "rightOuter"` : un nom de champ de cette entrée est mal écrit.
+   - `layouts.json: entry 6 (Ma Disposition), toml: must be a file name of the layouts folder, ending in .toml` : le nom de fichier a une espace, un accent, ou pas de `.toml` à la fin.
+   - `ma-disposition.toml is listed in layouts.json but missing from the layouts folder` : le nom de fichier dans `layouts.json` diffère du fichier déposé (vérifiez les majuscules).
+   - `ma-disposition.toml: é appear on several keys of the main pad` : le `.toml` dessine ce caractère deux fois dans la même couche.
 3. Corrigez sur votre branche. Si le message n'est pas clair, demandez de l'aide dans la PR.
 
 ## Ce qui passe par le mainteneur

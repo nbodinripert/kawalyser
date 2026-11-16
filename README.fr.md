@@ -6,6 +6,19 @@ Site gratuit pour tester une disposition de clavier et mesurer si elle est agré
 
 Licence : [GPLv3](LICENSE). Les dispositions de la liste sont dans [`layouts/`](layouts) : [Propergol](https://github.com/Kawamashi/Propergol) (licence MIT), ouverte par défaut, [Ergo-L](https://github.com/Nuclear-Squid/ergol) (WTFPL), [Erglace](https://github.com/Lysquid/Erglace), Strud-L et StrudE-L.
 
+## Fonctions
+
+- **Dispositions prêtes à l'emploi.** Choisissez-en une dans la liste « Disposition » : ses touches, ses pouces, ses remplacements et son corpus se chargent en un clic. Après une modification, la liste affiche « (modifiée) », et Ctrl+Z annule aussi le choix d'une disposition.
+- **Import Kalamine.** Chargez n'importe quel fichier `.toml` sur un clavier séparé de 40 ou 34 touches. Glissez un caractère sur une autre touche, ou sélectionnez une zone et tapez.
+- **Touches spéciales.** La touche morte 1DK (`*`), Repeat (`$`), Magic (`#`) et les Clever Keys, avec un fichier de remplacements. Trois niveaux de remplacements : Aucun, Essentiels, Essentiels + Optionnels.
+- **Tous les caractères comptent.** Tout caractère placé sur la carte peut être tapé. Un caractère rare utilisé dans un fichier de remplacements devient une deuxième touche morte ou une deuxième touche Magic.
+- **Votre propre corpus.** Importez un fichier `.txt` dans n'importe quelle langue, jusqu'à 10 Mo, en UTF-8 ou Windows-1252. Il est analysé dans le navigateur et n'atteint jamais le serveur.
+- **Statistiques.** Charge des doigts et des mains, bigrammes, trigrammes, les 12 difficultés, charge cognitive, et les caractères du corpus absents de la carte les plus fréquents. Tout le détail se télécharge en CSV.
+- **Page Docs.** `/fr/docs` explique les touches spéciales, chaque statistique et les formats de fichier.
+- Anglais et français, thèmes clair et sombre, utilisable au clavier seul et sur téléphone.
+
+Les chiffres diffèrent un peu de ceux de la première version du site : tous les caractères de la carte comptent désormais, le tiret compris.
+
 ## Démarrer
 
 Il faut Node.js 20.9 ou plus récent, et pnpm.
@@ -48,11 +61,11 @@ Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque 
 | Emplacement | Rôle |
 | --- | --- |
 | `layouts/` | Les dispositions de la liste : fichiers `.toml`, remplacements, et `layouts.json` avec leurs touches de pouce |
-| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine), des remplacements `.json` et de la liste des dispositions |
+| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine), des remplacements `.json`, de la liste des dispositions et du corpus importé par le visiteur |
 | `src/engine/` | Le moteur d'analyse, porté du VBA, sans dépendance au navigateur ni au serveur |
 | `src/server/` | Chargement privé des corpus, chargement de la liste des dispositions et cache des analyses |
 | `src/app/api/` | Routes `analyse` et `export` (CSV) |
-| `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques |
+| `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques, analyse du corpus du visiteur dans un Web Worker |
 | `src/components/docs/` | La page Docs : ce que fait le site, touches spéciales, statistiques, fichiers, confidentialité |
 | `src/i18n/` | Langues de l'interface et traductions |
 

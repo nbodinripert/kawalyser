@@ -6,6 +6,19 @@ A free website to test a keyboard layout and measure how comfortable it is to ty
 
 License: [GPLv3](LICENSE). The layouts of the list are in [`layouts/`](layouts): [Propergol](https://github.com/Kawamashi/Propergol) (MIT license), opened by default, [Ergo-L](https://github.com/Nuclear-Squid/ergol) (WTFPL), [Erglace](https://github.com/Lysquid/Erglace), Strud-L and StrudE-L.
 
+## Features
+
+- **Ready-made layouts.** Pick one in the Layout list: its keys, thumb keys, replacements and corpus load in one click. After a change, the list says "(modified)", and Ctrl+Z also undoes the choice of a layout.
+- **Kalamine import.** Load any `.toml` file on a split keyboard with 40 or 34 keys. Drag a character onto another key, or select a zone and type.
+- **Special keys.** The 1DK dead key (`*`), Repeat (`$`), Magic (`#`) and Clever Keys, with a replacements file. Three levels of replacements: None, Essential, Essential + Optional.
+- **Every character counts.** Any character placed on the map can be typed. A rare character used in a replacements file becomes a second dead key or a second Magic key.
+- **Your own corpus.** Import a `.txt` file in any language, up to 10 MB, in UTF-8 or Windows-1252. It is analyzed in the browser and never reaches the server.
+- **Statistics.** Finger and hand load, bigrams, trigrams, the 12 difficulties, cognitive load, and the most frequent corpus characters missing from the map. Every detail downloads as CSV.
+- **Docs page.** `/en/docs` explains the special keys, each statistic and the file formats.
+- English and French, light and dark themes, usable with the keyboard alone and on a phone.
+
+The figures differ slightly from those of the first version of the site: every character of the map now counts, the hyphen among them.
+
 ## Getting started
 
 You need Node.js 20.9 or later, and pnpm.
@@ -27,7 +40,7 @@ The corpora stay private: they are never sent to the browser and are not in this
 | Development | The `corpus/` folder at the root, ignored by git, or `CORPUS_DIR` |
 | Production | A private GitHub repository, read with `CORPUS_GITHUB_REPO` and `CORPUS_GITHUB_TOKEN` |
 
-A visitor can also import a corpus of their own (`.txt`, up to 10 MB, UTF-8 or Windows-1252). It never reaches the server: it is analysed in the browser, in a Web Worker that runs the same engine, and kept in the browser's IndexedDB storage.
+A visitor can also import a corpus of their own (`.txt`, up to 10 MB, UTF-8 or Windows-1252). It never reaches the server: it is analyzed in the browser, in a Web Worker that runs the same engine, and kept in the browser's IndexedDB storage.
 
 Every variable is described in [`.env.example`](.env.example). Each corpus is read once per server instance, then kept in memory. A GitHub Actions workflow in the corpus repository calls a Vercel deploy hook (`VERCEL_DEPLOY_HOOK_URL` secret) whenever a corpus changes, so the site picks it up right away.
 
@@ -48,11 +61,11 @@ Every variable is described in [`.env.example`](.env.example). Each corpus is re
 | Location | Purpose |
 | --- | --- |
 | `layouts/` | The layouts of the list: `.toml` files, replacements, and `layouts.json` with their thumb keys |
-| `src/domain/` | Keyboard shapes, layout, reading Kalamine `.toml` files, replacement `.json` files and the layouts list |
+| `src/domain/` | Keyboard shapes, layout, reading Kalamine `.toml` files, replacement `.json` files, the layouts list and the corpus a visitor imports |
 | `src/engine/` | The analysis engine, ported from VBA, with no browser or server dependency |
 | `src/server/` | Private corpus loading, layouts list loading and analysis cache |
 | `src/app/api/` | `analyse` and `export` (CSV) routes |
-| `src/components/analyzer/` | Keyboard map, drag and drop, results and charts |
+| `src/components/analyzer/` | Keyboard map, drag and drop, results and charts, analysis of a visitor's corpus in a Web Worker |
 | `src/components/docs/` | The Docs page: what the site does, special keys, statistics, files, privacy |
 | `src/i18n/` | Interface languages and translations |
 
