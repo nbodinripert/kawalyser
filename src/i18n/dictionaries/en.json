@@ -36,6 +36,7 @@
     "modified": "{name} (modified)",
     "unnamed": "Imported layout",
     "presetLoaded": "{name} loaded.",
+    "closeNotice": "Close",
     "shape": "Keyboard",
     "shapes": {
       "split40": "Split, 40 keys",

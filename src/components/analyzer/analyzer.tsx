@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useMemo, useReducer, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useReducer, useRef, useState, type ChangeEvent } from "react";
 import { z } from "zod";
 import { findBlockingDuplicates } from "@/domain/duplicates";
 import { shapeIds } from "@/domain/geometry";
@@ -20,6 +20,7 @@ import { KeyboardMap } from "./keyboard-map";
 import { formatters } from "./numbers";
 import { ReplacementsPanel } from "./replacements-panel";
 import { Results } from "./results";
+import { Toast } from "./toast";
 import { deleteCorpus, loadCorpus, saveCorpus } from "./corpus-store";
 import { createLocalAnalysis, type ExportKind, type LocalAnalysis } from "./local-analysis";
 import { presetState, reducer, requestKey, resultStorageKey, storageKey, toSaved, type SavedState } from "./state";
@@ -296,6 +297,8 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
   };
 
   const running = state.status === "running";
+  // Stable, so that the toast's timer does not start over at every render.
+  const dismissNotice = useCallback(() => dispatch({ type: "notice", notice: null }), []);
 
   // The list shows a layout of its own as long as it is untouched; otherwise an extra first option names what is
   // on the map, "Propergol (modified)" for instance, and choosing a layout of the list loads it again (question 38).
@@ -352,18 +355,6 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
           </div>
         }
       >
-        {state.notice && (
-          <p
-            role={state.notice.tone === "error" ? "alert" : "status"}
-            className={cx(
-              "mb-6 rounded-lg px-4 py-3 text-sm",
-              state.notice.tone === "error" ? "bg-danger-soft text-danger" : "bg-accent-soft text-foreground",
-            )}
-          >
-            {state.notice.text}
-          </p>
-        )}
-
         <div className="mb-8 flex flex-wrap gap-4 [&>*]:min-w-44 [&>*]:flex-1">
           <Select label={labels.preset} value={presetValue} onChange={(event) => onChoosePreset(event.target.value)}>
             {presetValue === CURRENT_LAYOUT && <option value={CURRENT_LAYOUT}>{currentLabel}</option>}
@@ -465,6 +456,8 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
         </Card>
 
       </div>
+
+      <Toast notice={state.notice} closeLabel={labels.closeNotice} onDismiss={dismissNotice} />
 
       <div aria-live="polite" className="xl:col-span-2 xl:row-start-2">
         {state.status === "failed" && (

@@ -139,7 +139,6 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
         layout: action.layout,
         past: remember(state),
         future: [],
-        notice: null,
       };
     case "undo": {
       const previous = state.past.at(-1);

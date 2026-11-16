@@ -36,6 +36,7 @@
     "modified": "{name} (modifiée)",
     "unnamed": "Disposition importée",
     "presetLoaded": "{name} chargée.",
+    "closeNotice": "Fermer",
     "shape": "Clavier",
     "shapes": {
       "split40": "Split, 40 touches",
