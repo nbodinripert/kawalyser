@@ -311,8 +311,8 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
   const fileButton = "w-full justify-start";
 
   return (
-    // On wide screens, the actions stand beside the layout card and follow it as it scrolls; the results take the
-    // whole width under both. On a phone: layout, actions, results.
+    // On wide screens, the actions stand beside the layout card, and the results take the whole width under both.
+    // On a phone: layout, actions, results.
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_21rem] xl:gap-8 [&>*]:min-w-0">
       <Card
         className="xl:col-start-1 xl:row-start-1"
@@ -415,7 +415,7 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
         </div>
       </Card>
 
-      <div className="grid content-start gap-6 sm:grid-cols-2 xl:sticky xl:top-24 xl:col-start-2 xl:row-start-1 xl:grid-cols-1 xl:self-start">
+      <div className="grid content-start gap-6 sm:grid-cols-2 xl:col-start-2 xl:row-start-1 xl:grid-cols-1 xl:self-start">
         <Card title={dictionary.analysis.title}>
           <div className="grid gap-3">
             <Button variant="primary" className="h-11 w-full text-base" onClick={runAnalysis} disabled={running} aria-busy={running}>
