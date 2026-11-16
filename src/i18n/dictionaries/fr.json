@@ -18,9 +18,14 @@
   },
   "layout": {
     "title": "Disposition",
+    "importCorpus": "Importer un corpus",
     "importToml": "Importer un .toml",
     "importReplacements": "Importer des remplacements",
     "removeReplacements": "Retirer les remplacements",
+    "removeCorpus": "Retirer le corpus",
+    "corpusImported": "{name} importé : {count} caractères. Il reste dans votre navigateur.",
+    "corpusLegacyEncoding": "Le fichier n'était pas en UTF-8 : il a été lu en Windows-1252. Si les accents semblent faux dans les résultats, enregistrez-le en UTF-8 et importez-le de nouveau.",
+    "corpusNotStored": "Ce navigateur n'a pas pu l'enregistrer : il disparaîtra au rechargement de la page.",
     "preset": "Disposition",
     "modified": "{name} (modifiée)",
     "unnamed": "Disposition importée",
@@ -33,7 +38,8 @@
     "corpus": "Corpus",
     "corpora": {
       "fr": "Français",
-      "en": "Anglais"
+      "en": "Anglais",
+      "personal": "Personnel ({name})"
     },
     "level": "Remplacements",
     "levels": {
@@ -85,7 +91,10 @@
       "noLayer": "Ce fichier ne contient pas de bloc base ni full.",
       "unknownGeometry": "La forme {geometry} n'est pas prise en charge. Formes acceptées : ERGO, ISO, ANSI et ALT.",
       "duplicates": "{chars} figurent sur plusieurs touches du pavé principal. L'analyseur ne pourrait pas savoir laquelle est tapée : le fichier n'a pas été importé.",
-      "replacements": "Ce fichier de remplacements n'est pas valide : {detail}"
+      "replacements": "Ce fichier de remplacements n'est pas valide : {detail}",
+      "corpusEmpty": "{name} est vide.",
+      "corpusTooLarge": "{name} dépasse 10 Mo, la taille maximale d'un corpus.",
+      "corpusNotText": "{name} ne semble pas être du texte. Enregistrez-le au format .txt en UTF-8, puis réessayez."
     }
   },
   "replacements": {
@@ -270,7 +279,7 @@
   },
   "about": {
     "title": "Testez une disposition de clavier avant de l'apprendre",
-    "intro": "Apprendre une nouvelle disposition de clavier prend des semaines. Kawalyser vous dit d'abord si elle est confortable. Il tape un long texte français ou anglais sur votre disposition et compte les mouvements de vos doigts.",
+    "intro": "Apprendre une nouvelle disposition de clavier prend des semaines. Kawalyser vous dit d'abord si elle est confortable. Il tape un long texte français ou anglais, ou le vôtre, sur votre disposition et compte les mouvements de vos doigts.",
     "measuresTitle": "Ce qu'il mesure",
     "measures": [
       "Les bigrammes à un doigt (SFB) et les skipgrammes à un doigt (SFS).",
@@ -283,7 +292,9 @@
       "Claviers séparés de 34 ou 40 touches, lettres sous les pouces comprises.",
       "Une touche morte (1DK) pour les lettres accentuées et les symboles.",
       "Les touches Repeat et Magic, et les règles Clever Keys d'un fichier de remplacements.",
-      "Import des fichiers Kalamine .toml, édition par glisser-déposer et export CSV."
+      "Import des fichiers Kalamine .toml, édition par glisser-déposer et export CSV.",
+      "Des dispositions prêtes à l'emploi : Propergol, Ergo-L, Erglace, Strud-L et StrudE-L.",
+      "Votre propre corpus, dans n'importe quelle langue. Il reste dans votre navigateur."
     ],
     "free": "Gratuit et sans inscription."
   },

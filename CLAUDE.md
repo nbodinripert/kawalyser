@@ -41,6 +41,8 @@ Les messages d'échec de `src/i18n/dictionaries.test.ts` et `src/app/theme-color
 
 Le flux : le navigateur envoie la disposition (JSON) → `POST /api/analyse` valide avec Zod → `src/server/analysis.ts` charge le corpus privé et appelle le moteur → le résultat agrégé revient au client. Le corpus ne quitte jamais le serveur.
 
+Un corpus importé par le visiteur suit l'autre chemin : décodé dans le navigateur (`domain/corpus-file.ts`), gardé dans IndexedDB (`corpus-store.ts`), analysé par le même moteur dans un Web Worker (`analysis.worker.ts`, piloté par `local-analysis.ts`). Il n'atteint jamais le serveur.
+
 | Dossier | Rôle | Règle de dépendance |
 | --- | --- | --- |
 | `src/domain/` | Formes de clavier (`geometry.ts`), disposition et couches (`layout.ts`), édition par glisser-déposer (`edit.ts`), import Kalamine `.toml` (`kalamine.ts`), remplacements `.json` (`replacements.ts`), liste des dispositions de `layouts/` (`presets.ts`), identifiants des corpus du site (`corpora.ts`), symboles spéciaux (`symbols.ts`), schémas Zod (`schemas.ts`) | Pur TypeScript. N'importe ni React, ni Next, ni Node. |
@@ -48,12 +50,12 @@ Le flux : le navigateur envoie la disposition (JSON) → `POST /api/analyse` val
 | `src/server/` | Lecture des corpus (dossier local ou dépôt GitHub privé), lecture de `layouts/` au prérendu (`"use cache"`), cache mémoire des 3 dernières analyses | `import "server-only"` obligatoire. |
 | `src/app/[lang]/` | Page unique et layout, localisés | Composants serveur. |
 | `src/app/api/` | `analyse` et `export` (CSV, `;` en français) | Valider l'entrée avec Zod, renvoyer `{ error: "code" }` en cas d'échec. |
-| `src/components/analyzer/` | Interface client : carte du clavier (`@dnd-kit`), réducteur d'état (`state.ts`), résultats et graphiques | Client. L'état passe par le réducteur, avec undo/redo et sauvegarde `localStorage`. |
+| `src/components/analyzer/` | Interface client : carte du clavier (`@dnd-kit`), réducteur d'état (`state.ts`), résultats et graphiques, analyse du corpus du visiteur dans un Web Worker | Client. L'état passe par le réducteur, avec undo/redo et sauvegarde `localStorage`. |
 | `src/i18n/` | `en` (défaut) et `fr` | `en.json` est la référence : une clé absente de `fr.json` casse la compilation. |
 
 ## Invariants à ne jamais casser
 
-1. **Corpus privés.** Jamais dans le dépôt, jamais envoyés au client, jamais importés depuis un fichier client. Dossier `corpus/` ignoré par git ; en production, variables `CORPUS_GITHUB_*` (voir `.env.example`).
+1. **Corpus privés.** Ceux du site : jamais dans le dépôt, jamais envoyés au client. Celui du visiteur : jamais envoyé au serveur. Dossier `corpus/` ignoré par git ; en production, variables `CORPUS_GITHUB_*` (voir `.env.example`).
 2. **Parité Excel.** Le mode `compat` du moteur reproduit l'Excel à l'identique, y compris ses bugs. Toute correction d'un comportement Excel passe par `!compat`, et s'ajoute au tableau « Fidélité à l'Excel » du README. `src/engine/excel-parity.test.ts` doit rester vert.
 3. **Moteur pur.** Pas d'accès réseau, fichier, DOM ni `Date` dans `domain/` et `engine/`.
 4. **Notation des touches spéciales** : `*` touche morte 1DK, `$` Repeat, `#` Magic (pas `€` comme dans l'Excel, absent des claviers US). Dans le moteur, elles deviennent des caractères Unicode à usage privé (`keymap.ts`) pour ne jamais se confondre avec un vrai `*` ou `#` du corpus.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useReducer, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useEffectEvent, useMemo, useReducer, useRef, useState, type ChangeEvent } from "react";
 import { z } from "zod";
 import { findBlockingDuplicates } from "@/domain/duplicates";
 import { shapeIds } from "@/domain/geometry";
@@ -9,7 +9,8 @@ import { completeLayoutPairs, sameLayout } from "@/domain/layout";
 import type { Preset } from "@/domain/presets";
 import { analysisLevels, emptyReplacements, parseReplacements, replacementsSchema } from "@/domain/replacements";
 import { analysisRequestSchema, layoutSchema, type AnalysisRequest } from "@/domain/schemas";
-import { corpusLanguages } from "@/domain/corpora";
+import { corpusLanguages, PERSONAL_CORPUS, type CorpusId, type CorpusLanguage } from "@/domain/corpora";
+import { decodeCorpus, MAX_CORPUS_BYTES } from "@/domain/corpus-file";
 import type { AnalysisResult } from "@/engine/analyse";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -19,6 +20,8 @@ import { KeyboardMap } from "./keyboard-map";
 import { formatters } from "./numbers";
 import { ReplacementsPanel } from "./replacements-panel";
 import { Results } from "./results";
+import { deleteCorpus, loadCorpus, saveCorpus } from "./corpus-store";
+import { createLocalAnalysis, type ExportKind, type LocalAnalysis } from "./local-analysis";
 import { presetState, reducer, requestKey, resultStorageKey, storageKey, toSaved, type SavedState } from "./state";
 
 /** `presets` is the list of layouts the site provides; a first visit opens `initialPreset`, its first one. */
@@ -33,8 +36,11 @@ const savedSchema = z.object({
   replacements: replacementsSchema,
   replacementsName: z.string().nullable(),
   level: z.enum(analysisLevels),
-  language: z.enum(corpusLanguages),
+  corpus: z.enum([...corpusLanguages, PERSONAL_CORPUS]).optional(),
+  /** The name of `corpus` before the corpus import. */
+  language: z.enum(corpusLanguages).optional(),
   presetId: z.string().nullable().optional(),
+  personalCorpus: z.object({ name: z.string(), characters: z.number(), savedAt: z.number() }).nullable().optional(),
 });
 
 function readSaved(): SavedState | null {
@@ -44,8 +50,13 @@ function readSaved(): SavedState | null {
     const parsed = savedSchema.safeParse(JSON.parse(raw));
     if (!parsed.success) return null;
     // Sessions saved before letters were always paired get the same treatment as new edits.
-    const saved = parsed.data as SavedState;
-    return { ...saved, layout: completeLayoutPairs(saved.layout), imported: completeLayoutPairs(saved.imported) };
+    const { language, corpus, ...saved } = parsed.data;
+    return {
+      ...(saved as Omit<SavedState, "corpus">),
+      corpus: corpus ?? language ?? "en",
+      layout: completeLayoutPairs(saved.layout),
+      imported: completeLayoutPairs(saved.imported),
+    };
   } catch {
     return null;
   }
@@ -103,16 +114,46 @@ async function readFile(event: ChangeEvent<HTMLInputElement>): Promise<{ name: s
 
 export function Analyzer({ dictionary, locale, presets, initialPreset }: AnalyzerProps) {
   const [state, dispatch] = useReducer(reducer, initialPreset, presetState);
-  const [downloading, setDownloading] = useState<"ngrams" | "difficulties" | null>(null);
+  const [downloading, setDownloading] = useState<ExportKind | null>(null);
   const tomlInput = useRef<HTMLInputElement>(null);
+  const corpusInput = useRef<HTMLInputElement>(null);
+  const local = useRef<LocalAnalysis | null>(null);
+  // Settles once the stored personal corpus, if any, has reached the worker: an analysis waits for it.
+  const corpusRestored = useRef<Promise<void>>(Promise.resolve());
+  // Set by an import or a removal, so that a slow read of the stored corpus does not bring the old one back.
+  const corpusChanged = useRef(false);
   const jsonInput = useRef<HTMLInputElement>(null);
   const numbers = useMemo(() => formatters(locale), [locale]);
   const labels = dictionary.layout;
 
+  const localAnalysis = () => (local.current ??= createLocalAnalysis());
+  const currentPreset = presets.find((preset) => preset.id === state.presetId);
+  // What replaces the personal corpus when it goes: the corpus of the current layout, or English.
+  const fallbackCorpus: CorpusLanguage = currentPreset?.corpus ?? "en";
+
+  // Storage cleared or blocked since: the saved session cannot use its corpus any more.
+  const onCorpusLost = useEffectEvent((presetId: string | null | undefined) => {
+    const savedPreset = presets.find((preset) => preset.id === presetId);
+    dispatch({ type: "removePersonalCorpus", fallback: savedPreset?.corpus ?? "en" });
+  });
+
   // The saved session is read after hydration, since the server cannot see it.
   useEffect(() => {
     const saved = readSaved();
-    dispatch({ type: "restore", saved, result: saved ? readSavedResult(requestKey(saved)) : null });
+    dispatch({ type: "restore", saved, result: saved ? readSavedResult(requestKey({ ...saved, personalCorpus: saved.personalCorpus ?? null })) : null });
+    corpusRestored.current = loadCorpus().then((stored) => {
+      if (corpusChanged.current) return;
+      if (stored) {
+        localAnalysis().setCorpus(stored.text);
+        dispatch({ type: "personalCorpusRestored", personalCorpus: { name: stored.name, characters: stored.characters, savedAt: stored.savedAt } });
+      } else {
+        onCorpusLost(saved?.presetId);
+      }
+    });
+    return () => {
+      local.current?.dispose();
+      local.current = null;
+    };
   }, []);
 
   useEffect(() => {
@@ -136,11 +177,36 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const request: AnalysisRequest = {
-    layout: state.layout,
-    replacements: state.replacements,
-    level: state.level,
-    language: state.language,
+  const input = { layout: state.layout, replacements: state.replacements, level: state.level };
+  const key = requestKey(state);
+
+  const onImportCorpus = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const refuse = (template: string) => dispatch({ type: "notice", notice: { tone: "error", text: format(template, { name: file.name }) } });
+    // Refused before reading, so that a huge file is never loaded.
+    if (file.size > MAX_CORPUS_BYTES) return refuse(labels.errors.corpusTooLarge);
+    const decoded = decodeCorpus(new Uint8Array(await file.arrayBuffer()));
+    if (!decoded.ok) {
+      const problems = { empty: labels.errors.corpusEmpty, "too-large": labels.errors.corpusTooLarge, "not-text": labels.errors.corpusNotText };
+      return refuse(problems[decoded.problem]);
+    }
+    corpusChanged.current = true;
+    const personalCorpus = { name: file.name, characters: decoded.text.length, savedAt: Date.now() };
+    localAnalysis().setCorpus(decoded.text);
+    const stored = await saveCorpus({ ...personalCorpus, text: decoded.text });
+    const messages = [format(labels.corpusImported, { name: file.name, count: numbers.integer(personalCorpus.characters) })];
+    if (decoded.encoding === "windows-1252") messages.push(labels.corpusLegacyEncoding);
+    if (!stored) messages.push(labels.corpusNotStored);
+    dispatch({ type: "setPersonalCorpus", personalCorpus, notice: { tone: "info", text: messages.join(" ") } });
+  };
+
+  const removeCorpus = () => {
+    corpusChanged.current = true;
+    local.current?.setCorpus(null);
+    void deleteCorpus();
+    dispatch({ type: "removePersonalCorpus", fallback: fallbackCorpus });
   };
 
   const onImportToml = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -175,17 +241,22 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
   };
 
   const runAnalysis = async () => {
-    const body = analysisRequestSchema.parse(request);
-    const key = requestKey(request);
     dispatch({ type: "analysisStarted" });
     try {
-      const response = await fetch("/api/analyse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!response.ok) throw new Error(String(response.status));
-      const result = (await response.json()) as AnalysisResult;
+      let result: AnalysisResult;
+      if (state.corpus === PERSONAL_CORPUS) {
+        await corpusRestored.current;
+        result = await localAnalysis().analyse(key, input);
+      } else {
+        const body: AnalysisRequest = analysisRequestSchema.parse({ ...input, language: state.corpus });
+        const response = await fetch("/api/analyse", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        result = (await response.json()) as AnalysisResult;
+      }
       writeSavedResult(key, result);
       dispatch({ type: "analysisSucceeded", result, key });
     } catch {
@@ -193,16 +264,25 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
     }
   };
 
-  const download = async (kind: "ngrams" | "difficulties") => {
+  const download = async (kind: ExportKind) => {
     setDownloading(kind);
     try {
-      const response = await fetch("/api/export", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, locale, analysis: request }),
-      });
-      if (!response.ok) throw new Error(String(response.status));
-      const url = URL.createObjectURL(await response.blob());
+      let blob: Blob;
+      if (state.corpus === PERSONAL_CORPUS) {
+        await corpusRestored.current;
+        // As the export route does: French spreadsheets expect semicolons, since the comma is their decimal separator.
+        const options = { separator: locale === "fr" ? (";" as const) : ("," as const), headers: dictionary.csv };
+        blob = new Blob([await localAnalysis().exportCsv(key, input, kind, options)], { type: "text/csv;charset=utf-8" });
+      } else {
+        const response = await fetch("/api/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind, locale, analysis: { ...input, language: state.corpus } }),
+        });
+        if (!response.ok) throw new Error(String(response.status));
+        blob = await response.blob();
+      }
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `kawalyser-${kind}.csv`;
@@ -219,7 +299,6 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
 
   // The list shows a layout of its own as long as it is untouched; otherwise an extra first option names what is
   // on the map, "Propergol (modified)" for instance, and choosing a layout of the list loads it again (question 38).
-  const currentPreset = presets.find((preset) => preset.id === state.presetId);
   const untouched = sameLayout(state.layout, state.imported);
   const presetValue = currentPreset && untouched && state.replacementsName === currentPreset.replacementsName ? currentPreset.id : CURRENT_LAYOUT;
   const layoutName = currentPreset?.name ?? (state.layout.name || labels.unnamed);
@@ -240,13 +319,20 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <input ref={corpusInput} type="file" accept=".txt,text/plain" className="hidden" onChange={onImportCorpus} />
             <input ref={tomlInput} type="file" accept=".toml,text/plain" className="hidden" onChange={onImportToml} />
             <input ref={jsonInput} type="file" accept=".json,application/json" className="hidden" onChange={onImportJson} />
+            <Button onClick={() => corpusInput.current?.click()}>{labels.importCorpus}</Button>
             <Button onClick={() => tomlInput.current?.click()}>{labels.importToml}</Button>
             <Button onClick={() => jsonInput.current?.click()}>{labels.importReplacements}</Button>
             {state.replacementsName && (
               <Button variant="ghost" onClick={() => dispatch({ type: "setReplacements", replacements: emptyReplacements, name: null, notice: null })}>
                 {labels.removeReplacements}
+              </Button>
+            )}
+            {state.personalCorpus && (
+              <Button variant="ghost" onClick={removeCorpus}>
+                {labels.removeCorpus}
               </Button>
             )}
           </div>
@@ -283,12 +369,13 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
                   </option>
                 ))}
               </Select>
-              <Select label={labels.corpus} value={state.language} onChange={(event) => dispatch({ type: "setLanguage", language: event.target.value as (typeof corpusLanguages)[number] })}>
+              <Select label={labels.corpus} value={state.corpus} onChange={(event) => dispatch({ type: "setCorpus", corpus: event.target.value as CorpusId })}>
                 {corpusLanguages.map((id) => (
                   <option key={id} value={id}>
                     {labels.corpora[id]}
                   </option>
                 ))}
+                {state.personalCorpus && <option value={PERSONAL_CORPUS}>{format(labels.corpora.personal, { name: state.personalCorpus.name })}</option>}
               </Select>
               <Select label={labels.level} disabled={!state.replacementsName} value={state.level} onChange={(event) => dispatch({ type: "setLevel", level: event.target.value as (typeof analysisLevels)[number] })}>
                 {(state.replacementsName ? analysisLevels : analysisLevels.slice(0, 1)).map((id) => (

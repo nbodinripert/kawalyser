@@ -54,7 +54,7 @@ describe("reducer", () => {
 
   it("brings back the statistics saved for the same session, after a language switch", () => {
     const start = initialState(first);
-    const saved = { layout: second, imported: second, replacements: start.replacements, replacementsName: null, level: start.level, language: start.language };
+    const saved = { layout: second, imported: second, replacements: start.replacements, replacementsName: null, level: start.level, corpus: start.corpus };
     const restored = reducer(start, { type: "restore", saved, result });
     expect(restored.result).toBe(result);
     expect(restored.layout).toBe(second);
@@ -64,7 +64,7 @@ describe("reducer", () => {
     const start = initialState(first);
     const reordered = { ...start, layout: { keys: { k: { base: "a" } }, shapeId: "split40" as const, name: "a" } };
     expect(requestKey(reordered)).toBe(requestKey(start));
-    expect(requestKey({ ...start, language: "fr" })).not.toBe(requestKey(start));
+    expect(requestKey({ ...start, corpus: "fr" })).not.toBe(requestKey(start));
   });
 
   it("ignores a result that comes back after the layout changed", () => {
@@ -91,14 +91,14 @@ describe("layouts of the list (v2 specs)", () => {
 
   it("opens the first layout with its replacements and corpus (question 40)", () => {
     const start = presetState(withReplacements);
-    expect(start).toMatchObject({ presetId: "p", replacementsName: "p.json", level: "clever", language: "fr" });
+    expect(start).toMatchObject({ presetId: "p", replacementsName: "p.json", level: "clever", corpus: "fr" });
     expect(start.layout).toBe(withReplacements.layout);
   });
 
   it("takes the replacements off with a layout that has none, and keeps the corpus without a corpus field (questions 39 and 42)", () => {
-    const start = { ...presetState(withReplacements), language: "en" as const };
+    const start = { ...presetState(withReplacements), corpus: "en" as const };
     const loaded = reducer(start, { type: "loadPreset", preset: without, notice });
-    expect(loaded).toMatchObject({ presetId: "e", replacementsName: null, replacements: emptyReplacements, level: "raw", language: "en" });
+    expect(loaded).toMatchObject({ presetId: "e", replacementsName: null, replacements: emptyReplacements, level: "raw", corpus: "en" });
     expect(loaded.layout.keys).toBe(without.layout.keys);
   });
 
@@ -130,7 +130,53 @@ describe("layouts of the list (v2 specs)", () => {
   it("forgets the layout of the list after a .toml import, and reads older sessions without one", () => {
     const imported = reducer(presetState(withReplacements), { type: "importLayout", layout: first, notice });
     expect(imported.presetId).toBeNull();
-    const saved = { layout: first, imported: first, replacements: emptyReplacements, replacementsName: null, level: "raw" as const, language: "en" as const };
+    const saved = { layout: first, imported: first, replacements: emptyReplacements, replacementsName: null, level: "raw" as const, corpus: "en" as const };
     expect(reducer(presetState(withReplacements), { type: "restore", saved, result: null }).presetId).toBeNull();
   });
 });
+
+describe("personal corpus (v2 specs)", () => {
+  const preset: Preset = {
+    id: "p",
+    name: "P",
+    layout: { name: "P", shapeId: "split40", keys: { k: { base: "p" } } },
+    replacements: emptyReplacements,
+    replacementsName: null,
+    corpus: "fr",
+  };
+  const mine = { name: "mine.txt", characters: 12, savedAt: 1 };
+  const notice = { tone: "info" as const, text: "" };
+
+  it("selects the corpus once imported, and clears the statistics", () => {
+    const start = presetState(preset);
+    const analysed = reducer(start, { type: "analysisSucceeded", result, key: requestKey(start) });
+    const imported = reducer(analysed, { type: "setPersonalCorpus", personalCorpus: mine, notice });
+    expect(imported).toMatchObject({ corpus: "personal", personalCorpus: mine, result: null });
+  });
+
+  it("keeps it selected when a layout of the list is chosen (question 42)", () => {
+    const start = reducer(presetState(preset), { type: "setPersonalCorpus", personalCorpus: mine, notice });
+    expect(reducer(start, { type: "loadPreset", preset, notice }).corpus).toBe("personal");
+  });
+
+  it("falls back to another corpus once removed, but only if it was selected", () => {
+    const selected = reducer(presetState(preset), { type: "setPersonalCorpus", personalCorpus: mine, notice });
+    expect(reducer(selected, { type: "removePersonalCorpus", fallback: "fr" })).toMatchObject({ corpus: "fr", personalCorpus: null });
+    const other = reducer(selected, { type: "setCorpus", corpus: "en" });
+    expect(reducer(other, { type: "removePersonalCorpus", fallback: "fr" })).toMatchObject({ corpus: "en", personalCorpus: null });
+  });
+
+  it("tells two imports apart in the request key, even under the same name", () => {
+    const first = reducer(presetState(preset), { type: "setPersonalCorpus", personalCorpus: mine, notice });
+    const second = reducer(first, { type: "setPersonalCorpus", personalCorpus: { ...mine, savedAt: 2 }, notice });
+    expect(requestKey(second)).not.toBe(requestKey(first));
+    // On a corpus of the site, the personal one does not count.
+    expect(requestKey({ ...first, corpus: "fr" })).toBe(requestKey({ ...second, corpus: "fr" }));
+  });
+
+  it("does not select a personal corpus a saved session lost", () => {
+    const saved = { layout: first, imported: first, replacements: emptyReplacements, replacementsName: null, level: "raw" as const, corpus: "personal" as const };
+    expect(reducer(presetState(preset), { type: "restore", saved, result: null }).corpus).toBe("en");
+  });
+});
+

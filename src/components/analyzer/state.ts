@@ -2,10 +2,16 @@ import type { ShapeId } from "@/domain/geometry";
 import { sameLayout, type Layout } from "@/domain/layout";
 import type { Preset } from "@/domain/presets";
 import { emptyReplacements, type AnalysisLevel, type Replacements } from "@/domain/replacements";
-import type { CorpusLanguage } from "@/domain/corpora";
+import { PERSONAL_CORPUS, type CorpusId, type CorpusLanguage } from "@/domain/corpora";
 import type { AnalysisResult } from "@/engine/analyse";
 
 export type Notice = { tone: "info" | "error"; text: string };
+
+/**
+ * The corpus the user imported. Its text stays in the browser's storage and in the analysis worker,
+ * out of the state, which is saved to localStorage: only what names it is here.
+ */
+export type PersonalCorpus = { name: string; characters: number; savedAt: number };
 
 export type AnalyzerState = {
   layout: Layout;
@@ -18,7 +24,8 @@ export type AnalyzerState = {
   replacements: Replacements;
   replacementsName: string | null;
   level: AnalysisLevel;
-  language: CorpusLanguage;
+  corpus: CorpusId;
+  personalCorpus: PersonalCorpus | null;
   result: AnalysisResult | null;
   status: "idle" | "running" | "failed";
   /** True when an edit has just wiped the statistics, to explain why they disappeared. */
@@ -43,7 +50,12 @@ export type Action =
   | { type: "loadPreset"; preset: Preset; notice: Notice }
   | { type: "setReplacements"; replacements: Replacements; name: string | null; notice: Notice | null }
   | { type: "setLevel"; level: AnalysisLevel }
-  | { type: "setLanguage"; language: CorpusLanguage }
+  | { type: "setCorpus"; corpus: CorpusId }
+  | { type: "setPersonalCorpus"; personalCorpus: PersonalCorpus; notice: Notice }
+  /** The corpus read back from the browser's storage after a reload, as it was: the selected corpus does not change. */
+  | { type: "personalCorpusRestored"; personalCorpus: PersonalCorpus }
+  /** `fallback` replaces the personal corpus if it was selected. */
+  | { type: "removePersonalCorpus"; fallback: CorpusLanguage }
   | { type: "setShape"; shapeId: ShapeId }
   | { type: "restore"; saved: SavedState | null; result: AnalysisResult | null }
   | { type: "notice"; notice: Notice | null }
@@ -63,7 +75,8 @@ export function initialState(layout: Layout): AnalyzerState {
     replacements: emptyReplacements,
     replacementsName: null,
     level: "raw",
-    language: "en",
+    corpus: "en",
+    personalCorpus: null,
     result: null,
     status: "idle",
     cleared: false,
@@ -80,7 +93,7 @@ export function presetState(preset: Preset): AnalyzerState {
     replacements: preset.replacements,
     replacementsName: preset.replacementsName,
     level: levelFor(preset.replacementsName),
-    language: preset.corpus ?? "en",
+    corpus: preset.corpus ?? "en",
   };
 }
 
@@ -164,7 +177,8 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
         replacements: action.preset.replacements,
         replacementsName: action.preset.replacementsName,
         level: levelFor(action.preset.replacementsName),
-        language: action.preset.corpus ?? state.language,
+        // A personal corpus stays selected: the user compares layouts on their own text (question 42).
+        corpus: state.corpus === PERSONAL_CORPUS ? state.corpus : (action.preset.corpus ?? state.corpus),
         past: remember(state),
         future: [],
         notice: action.notice,
@@ -183,8 +197,19 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
       };
     case "setLevel":
       return { ...state, ...invalidate(state), level: action.level };
-    case "setLanguage":
-      return { ...state, ...invalidate(state), language: action.language };
+    case "setCorpus":
+      return { ...state, ...invalidate(state), corpus: action.corpus };
+    case "setPersonalCorpus":
+      return { ...state, ...invalidate(state), corpus: PERSONAL_CORPUS, personalCorpus: action.personalCorpus, notice: action.notice };
+    case "personalCorpusRestored":
+      if (state.personalCorpus?.savedAt === action.personalCorpus.savedAt) return state;
+      return { ...state, ...(state.corpus === PERSONAL_CORPUS ? invalidate(state) : {}), personalCorpus: action.personalCorpus };
+    case "removePersonalCorpus":
+      if (state.personalCorpus === null && state.corpus !== PERSONAL_CORPUS) return state;
+      // The message about its import no longer applies.
+      return state.corpus === PERSONAL_CORPUS
+        ? { ...state, ...invalidate(state), corpus: action.fallback, personalCorpus: null, notice: null }
+        : { ...state, personalCorpus: null, notice: null };
     case "setShape":
       return {
         ...state,
@@ -194,7 +219,21 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
       };
     case "restore":
       if (!action.saved) return { ...state, hydrated: true };
-      return { ...state, ...action.saved, presetId: action.saved.presetId ?? null, level: action.saved.replacementsName ? action.saved.level : "raw", past: [], future: [], result: action.result, status: "idle", cleared: false, notice: null, hydrated: true };
+      return {
+        ...state,
+        ...action.saved,
+        presetId: action.saved.presetId ?? null,
+        personalCorpus: action.saved.personalCorpus ?? null,
+        corpus: action.saved.corpus === PERSONAL_CORPUS && !action.saved.personalCorpus ? "en" : action.saved.corpus,
+        level: action.saved.replacementsName ? action.saved.level : "raw",
+        past: [],
+        future: [],
+        result: action.result,
+        status: "idle",
+        cleared: false,
+        notice: null,
+        hydrated: true,
+      };
     case "notice":
       return { ...state, notice: action.notice };
     case "analysisStarted":
@@ -208,16 +247,18 @@ export function reducer(state: AnalyzerState, action: Action): AnalyzerState {
   }
 }
 
-export type SavedState = Pick<AnalyzerState, "layout" | "imported" | "replacements" | "replacementsName" | "level" | "language"> & {
+export type SavedState = Pick<AnalyzerState, "layout" | "imported" | "replacements" | "replacementsName" | "level" | "corpus"> & {
   /** Missing from sessions saved before the list of layouts. */
   presetId?: string | null;
+  /** Missing from sessions saved before the corpus import. */
+  personalCorpus?: PersonalCorpus | null;
 };
 
 export const storageKey = "kawalyser-state-v1";
 
 export function toSaved(state: AnalyzerState): SavedState {
-  const { layout, imported, presetId, replacements, replacementsName, level, language } = state;
-  return { layout, imported, presetId, replacements, replacementsName, level, language };
+  const { layout, imported, presetId, replacements, replacementsName, level, corpus, personalCorpus } = state;
+  return { layout, imported, presetId, replacements, replacementsName, level, corpus, personalCorpus };
 }
 
 /** JSON with object keys sorted, so that the same content always gives the same text. */
@@ -236,9 +277,11 @@ function stableStringify(value: unknown): string {
  * Identifies what an analysis was run on: a result only applies to this exact layout, corpus and replacements.
  * Key order is ignored, since a session read back from storage may list the same fields in another order.
  */
-export function requestKey(state: Pick<AnalyzerState, "layout" | "replacements" | "level" | "language">): string {
-  const { layout, replacements, level, language } = state;
-  return stableStringify({ layout, replacements, level, language });
+export function requestKey(state: Pick<AnalyzerState, "layout" | "replacements" | "level" | "corpus" | "personalCorpus">): string {
+  const { layout, replacements, level, corpus } = state;
+  // A personal corpus is told apart by when it was imported: another file under the same name gives another key.
+  const personal = corpus === PERSONAL_CORPUS ? state.personalCorpus : undefined;
+  return stableStringify({ layout, replacements, level, corpus, personal });
 }
 
 export const resultStorageKey = "kawalyser-result-v1";

@@ -18,9 +18,14 @@
   },
   "layout": {
     "title": "Layout",
+    "importCorpus": "Import corpus",
     "importToml": "Import .toml",
     "importReplacements": "Import replacements",
     "removeReplacements": "Remove replacements",
+    "removeCorpus": "Remove corpus",
+    "corpusImported": "{name} imported: {count} characters. It stays in your browser.",
+    "corpusLegacyEncoding": "The file was not in UTF-8, so it was read as Windows-1252. If accented letters look wrong in the results, save it as UTF-8 and import it again.",
+    "corpusNotStored": "This browser could not store it: it will be gone after a reload.",
     "preset": "Layout",
     "modified": "{name} (modified)",
     "unnamed": "Imported layout",
@@ -33,7 +38,8 @@
     "corpus": "Corpus",
     "corpora": {
       "fr": "French",
-      "en": "English"
+      "en": "English",
+      "personal": "Custom ({name})"
     },
     "level": "Replacements",
     "levels": {
@@ -85,7 +91,10 @@
       "noLayer": "This file has no base or full layer.",
       "unknownGeometry": "The {geometry} geometry is not supported. Supported geometries: ERGO, ISO, ANSI and ALT.",
       "duplicates": "{chars} appear on several keys of the main pad. The analyzer could not tell which key is typed, so the file was not imported.",
-      "replacements": "This replacement file is not valid: {detail}"
+      "replacements": "This replacement file is not valid: {detail}",
+      "corpusEmpty": "{name} is empty.",
+      "corpusTooLarge": "{name} is larger than 10 MB, the limit for a corpus.",
+      "corpusNotText": "{name} does not look like text. Save it as a .txt file in UTF-8, then try again."
     }
   },
   "replacements": {
@@ -270,7 +279,7 @@
   },
   "about": {
     "title": "Test a keyboard layout before you learn it",
-    "intro": "Learning a new keyboard layout takes weeks. Kawalyser first tells you if it is comfortable. It types a long French or English text on your layout and counts how your fingers move.",
+    "intro": "Learning a new keyboard layout takes weeks. Kawalyser first tells you if it is comfortable. It types a long French or English text, or your own, on your layout and counts how your fingers move.",
     "measuresTitle": "What it measures",
     "measures": [
       "Same-finger bigrams (SFB) and skipgrams (SFS).",
@@ -283,7 +292,9 @@
       "Split keyboards with 34 or 40 keys, letters under the thumbs included.",
       "A dead key (1DK) for accented letters and symbols.",
       "Repeat and Magic keys, and Clever Keys rules from a replacements file.",
-      "Kalamine .toml import, drag-and-drop editing and CSV export."
+      "Kalamine .toml import, drag-and-drop editing and CSV export.",
+      "Ready-made layouts: Propergol, Ergo-L, Erglace, Strud-L and StrudE-L.",
+      "Your own corpus, in any language. It stays in your browser."
     ],
     "free": "Free, with no sign-up."
   },

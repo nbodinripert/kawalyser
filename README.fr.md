@@ -27,6 +27,8 @@ Les corpus restent privés : ils ne sont jamais envoyés au navigateur et ne son
 | Développement | Le dossier `corpus/` à la racine, ignoré par git, ou `CORPUS_DIR` |
 | Production | Un dépôt GitHub privé, lu avec `CORPUS_GITHUB_REPO` et `CORPUS_GITHUB_TOKEN` |
 
+Un visiteur peut aussi importer son propre corpus (`.txt`, 10 Mo au plus, en UTF-8 ou Windows-1252). Il n'atteint jamais le serveur : il est analysé dans le navigateur, par un Web Worker qui fait tourner le même moteur, et gardé dans le stockage IndexedDB du navigateur.
+
 Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque corpus est lu une fois par instance du serveur, puis gardé en mémoire. Un workflow GitHub Actions du dépôt des corpus appelle un « deploy hook » Vercel (secret `VERCEL_DEPLOY_HOOK_URL`) à chaque changement de corpus, pour que le site le prenne en compte tout de suite.
 
 ## Commandes
