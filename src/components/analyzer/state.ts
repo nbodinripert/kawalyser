@@ -1,7 +1,7 @@
 import type { ShapeId } from "@/domain/geometry";
 import { sameLayout, type Layout } from "@/domain/layout";
 import { emptyReplacements, type AnalysisLevel, type Replacements } from "@/domain/replacements";
-import type { CorpusLanguage } from "@/domain/valid-chars";
+import type { CorpusLanguage } from "@/domain/corpora";
 import type { AnalysisResult } from "@/engine/analyse";
 
 export type Notice = { tone: "info" | "error"; text: string };

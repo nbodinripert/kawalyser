@@ -8,7 +8,7 @@ import { importKalamine, type ImportProblem } from "@/domain/kalamine";
 import { completeLayoutPairs, sameLayout, type Layout } from "@/domain/layout";
 import { analysisLevels, emptyReplacements, parseReplacements, replacementsSchema } from "@/domain/replacements";
 import { analysisRequestSchema, layoutSchema, type AnalysisRequest } from "@/domain/schemas";
-import { corpusLanguages } from "@/domain/valid-chars";
+import { corpusLanguages } from "@/domain/corpora";
 import type { AnalysisResult } from "@/engine/analyse";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
@@ -62,7 +62,8 @@ function readSavedResult(key: string): AnalysisResult | null {
     const raw = sessionStorage.getItem(resultStorageKey);
     if (!raw) return null;
     const saved = JSON.parse(raw) as { key?: unknown; result?: AnalysisResult };
-    return saved.key === key && saved.result?.keyPresses && saved.result.trigrams ? saved.result : null;
+    // A result saved by an older version of the site lacks the newer fields: it is analysed again.
+    return saved.key === key && saved.result?.keyPresses && saved.result.trigrams && saved.result.missingChars ? saved.result : null;
   } catch {
     return null;
   }
@@ -273,7 +274,6 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
             </div>
             <KeyboardMap
               layout={state.layout}
-              language={state.language}
               keyPresses={state.result?.keyPresses ?? null}
               labels={labels}
               onChange={(layout) => dispatch({ type: "edit", layout })}
@@ -311,7 +311,6 @@ export function Analyzer({ dictionary, locale, defaultLayout }: AnalyzerProps) {
             level={state.level}
             name={state.replacementsName}
             layout={state.layout}
-            language={state.language}
             labels={dictionary.replacements}
             legend={labels.legend}
           />

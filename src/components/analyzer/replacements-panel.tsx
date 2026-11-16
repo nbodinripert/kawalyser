@@ -4,7 +4,6 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import type { Layout } from "@/domain/layout";
 import type { AnalysisLevel, Replacements } from "@/domain/replacements";
 import { SPACE } from "@/domain/symbols";
-import type { CorpusLanguage } from "@/domain/valid-chars";
 import { buildKeyMap, missingKeys } from "@/engine/keymap";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx, format } from "../ui";
@@ -17,7 +16,6 @@ type ReplacementsPanelProps = {
   name: string | null;
   /** The engine ignores a replacement that this map cannot type: the panel strikes it through. */
   layout: Layout;
-  language: CorpusLanguage;
   labels: Dictionary["replacements"];
   legend: Dictionary["layout"]["legend"];
 };
@@ -26,14 +24,14 @@ type ReplacementsPanelProps = {
 const VISIBLE_RULES = 12;
 
 /** Reads "to write this, type that", as Kawamashi asked (question 14 of the specs). */
-export function ReplacementsPanel({ replacements, level, name, layout, language, labels, legend }: ReplacementsPanelProps) {
+export function ReplacementsPanel({ replacements, level, name, layout, labels, legend }: ReplacementsPanelProps) {
   const groups = [
     { title: labels.essential, rules: level === "raw" ? [] : replacements.essentialCorrections },
     { title: labels.optional, rules: level === "clever" ? replacements.optionalCorrections : [] },
   ].filter((group) => group.rules.length > 0);
 
   // The same test as the engine's (`canType` in `adapt.ts`): a rule the map cannot type is ignored by the analysis.
-  const keyMap = useMemo(() => buildKeyMap(layout, { language }), [layout, language]);
+  const keyMap = useMemo(() => buildKeyMap(layout), [layout]);
   const missingOf = (keys: string) => missingKeys(keyMap, keys);
   const missing = [...new Set(groups.flatMap((group) => group.rules.flatMap((rule) => missingOf(rule.keys))))];
   const describe = (char: string) => {

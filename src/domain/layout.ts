@@ -1,6 +1,5 @@
 import { shapes, type KeyRole, type ShapeId } from "./geometry";
-import { isSpecialKey, SPACE } from "./symbols";
-import { isValidChar, type CorpusLanguage } from "./valid-chars";
+import { SPACE } from "./symbols";
 
 /** The four zones of a key. */
 export type KeyChars = {
@@ -80,16 +79,16 @@ export function layerUnits(key: string, chars: KeyChars, layer: Layer): Unit[] {
   return units;
 }
 
-/** The characters a key shows for a corpus language, after the two display rules. */
-export function visibleZones(chars: KeyChars, language: CorpusLanguage): Partial<Record<Zone, string>> {
-  const visible = (char: string | undefined) =>
-    char !== undefined && (isSpecialKey(char) || isValidChar(char, language)) ? char : undefined;
-
+/**
+ * The characters a key shows, after the display rule for letters. Every character shows: the list of valid characters
+ * per language is gone, so that any character can be tested, a second dead key or Magic key for instance (v2 specs).
+ */
+export function visibleZones(chars: KeyChars): Partial<Record<Zone, string>> {
   const result: Partial<Record<Zone, string>> = {};
   for (const layer of ["direct", "dk"] as const) {
     const { lower, upper } = layerZones[layer];
-    const lowerChar = visible(chars[lower]);
-    const upperChar = visible(chars[upper]);
+    const lowerChar = chars[lower];
+    const upperChar = chars[upper];
     if (isPair(lowerChar, upperChar)) {
       // Letter and capital: the specs show the capital alone in the direct layer, the small letter alone in the dk layer.
       if (layer === "direct") result[upper] = upperChar;

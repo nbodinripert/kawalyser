@@ -20,8 +20,8 @@ const replacements: Replacements = {
 };
 
 function typed(text: string, level: "raw" | "corrections" | "clever" = "clever") {
-  const keyMap = buildKeyMap(layout, { language: "fr" });
-  const adapter = createAdapter(keyMap, replacements, { level, language: "fr" });
+  const keyMap = buildKeyMap(layout);
+  const adapter = createAdapter(keyMap, replacements, { level });
   return adapter.adaptLine(text).adapted.join(" ");
 }
 
@@ -38,7 +38,7 @@ describe("createAdapter", () => {
   it("does not use Repeat when the key is not on the map, at any level", () => {
     const without: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).map(([id, chars]) => [id, Object.fromEntries(Object.entries(chars).filter(([, char]) => char !== "$"))])) };
     for (const level of ["raw", "corrections", "clever"] as const) {
-      const adapter = createAdapter(buildKeyMap(without, { language: "fr" }), replacements, { level, language: "fr" });
+      const adapter = createAdapter(buildKeyMap(without), replacements, { level });
       expect(adapter.adaptLine("elle").adapted.join(" ")).toBe("elle");
     }
   });
@@ -52,14 +52,14 @@ describe("createAdapter", () => {
 
   it("does not use Repeat for a character missing from the map", () => {
     const withoutZ: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "z")) };
-    const adapter = createAdapter(buildKeyMap(withoutZ, { language: "fr" }), replacements, { level: "raw", language: "fr" });
+    const adapter = createAdapter(buildKeyMap(withoutZ), replacements, { level: "raw" });
     expect(adapter.adaptLine("pizza").adapted.join(" ")).toBe("pizza");
   });
 
   it("keeps the Excel behaviour in compat mode: Repeat only from the corrections level, key or not", () => {
-    const keyMap = buildKeyMap(layout, { language: "fr" });
-    expect(createAdapter(keyMap, replacements, { level: "raw", language: "fr", compat: true }).adaptLine("elle").adapted.join(" ")).toBe("elle");
-    expect(createAdapter(keyMap, replacements, { level: "corrections", language: "fr", compat: true }).adaptLine("elle").adapted.join(" ")).toBe(`el${REPEAT}e`);
+    const keyMap = buildKeyMap(layout);
+    expect(createAdapter(keyMap, replacements, { level: "raw", compat: true }).adaptLine("elle").adapted.join(" ")).toBe("elle");
+    expect(createAdapter(keyMap, replacements, { level: "corrections", compat: true }).adaptLine("elle").adapted.join(" ")).toBe(`el${REPEAT}e`);
   });
 
   it("applies Clever Keys before the corrections, word by word", () => {
@@ -77,7 +77,7 @@ describe("createAdapter", () => {
 
   it("ignores a rule that needs a key missing from the map (feedback on untypeable rules)", () => {
     const withoutMagic: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "#")) };
-    const adapter = createAdapter(buildKeyMap(withoutMagic, { language: "fr" }), replacements, { level: "clever", language: "fr" });
+    const adapter = createAdapter(buildKeyMap(withoutMagic), replacements, { level: "clever" });
     // "ment" needs Magic: left as it is, and not counted in the cognitive load. "quand" can still be typed.
     expect(adapter.adaptLine("rapidement quand").adapted).toEqual(["rapidement", "qn"]);
     expect(adapter.usage.has("ment")).toBe(false);
@@ -85,13 +85,13 @@ describe("createAdapter", () => {
 
   it("ignores an essential correction that needs a character missing from the map", () => {
     const withoutQ: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "q")) };
-    const adapter = createAdapter(buildKeyMap(withoutQ, { language: "fr" }), replacements, { level: "corrections", language: "fr" });
+    const adapter = createAdapter(buildKeyMap(withoutQ), replacements, { level: "corrections" });
     expect(adapter.adaptLine("quoi").adapted).toEqual(["quoi"]);
   });
 
   it("applies every rule in compat mode, as the Excel analyser does", () => {
     const withoutMagic: Layout = { ...layout, keys: Object.fromEntries(Object.entries(layout.keys).filter(([, chars]) => chars.base !== "#")) };
-    const adapter = createAdapter(buildKeyMap(withoutMagic, { language: "fr" }), replacements, { level: "clever", language: "fr", compat: true });
+    const adapter = createAdapter(buildKeyMap(withoutMagic), replacements, { level: "clever", compat: true });
     expect(adapter.adaptLine("rapidement").adapted).toEqual([`rapide${"m" + MAGIC}`]);
   });
 
@@ -100,8 +100,24 @@ describe("createAdapter", () => {
     expect(typed("pasè").startsWith("pas")).toBe(true);
   });
 
-  it("cleans the reserved symbols out of the corpus", () => {
-    expect(typed("a#b$c€d&e£")).toBe("abcde");
+  it("removes the map's special symbols from the corpus, and keeps £, € and & (question 32 of the specs)", () => {
+    const keyMap = buildKeyMap(layout);
+    const { cleaned } = createAdapter(keyMap, replacements, { level: "raw" }).adaptLine("**a#b$c** 5€ & 3£ peut-être");
+    expect(cleaned).toBe("abc 5€ & 3£ peut-être");
+  });
+
+  it("keeps the Excel cleaning in compat mode", () => {
+    const { cleaned } = createAdapter(buildKeyMap(layout, { compat: true }), replacements, { level: "raw", compat: true }).adaptLine("a#b$c€d&e£*");
+    expect(cleaned).toBe("a#bcde*");
+  });
+
+  it("reads no-break spaces and tabs as spaces (question 33 of the specs)", () => {
+    const { words } = createAdapter(buildKeyMap(layout), replacements, { level: "raw" }).adaptLine("oui ! non ?\tbon");
+    expect(words).toEqual(["oui", "!", "non", "?", "bon"]);
+  });
+
+  it("joins a letter and its combining accent into one character", () => {
+    expect(typed("créé")).toBe(typed("créé"));
   });
 });
 
@@ -130,12 +146,14 @@ describe("labels (feedback 6)", () => {
   });
 });
 
-describe("valid characters (feedback 4)", () => {
-  it("accepts ù in French and _ in both languages", async () => {
-    const { isValidChar } = await import("@/domain/valid-chars");
-    expect(isValidChar("ù", "fr")).toBe(true);
-    expect(isValidChar("Ù", "fr")).toBe(true);
-    expect(isValidChar("_", "fr")).toBe(true);
-    expect(isValidChar("_", "en")).toBe(true);
+describe("without the list of valid characters (v2 specs)", () => {
+  it("types a character the v1 lists left out", () => {
+    // In Propergol, "(" sits in the dead key layer of B.
+    expect(typed("(")).toBe(`${DK}b`);
+  });
+
+  it("uses Repeat for any doubled character typed with one key press, punctuation included (question 26)", () => {
+    expect(typed("--")).toBe(`-${REPEAT}`);
+    expect(typed("..")).toBe(`.${REPEAT}`);
   });
 });

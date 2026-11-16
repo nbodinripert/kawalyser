@@ -43,7 +43,7 @@ Le flux : le navigateur envoie la disposition (JSON) → `POST /api/analyse` val
 
 | Dossier | Rôle | Règle de dépendance |
 | --- | --- | --- |
-| `src/domain/` | Formes de clavier (`geometry.ts`), disposition et couches (`layout.ts`), édition par glisser-déposer (`edit.ts`), import Kalamine `.toml` (`kalamine.ts`), remplacements `.json` (`replacements.ts`), caractères valides par langue (`valid-chars.ts`), symboles spéciaux (`symbols.ts`), schémas Zod (`schemas.ts`) | Pur TypeScript. N'importe ni React, ni Next, ni Node. |
+| `src/domain/` | Formes de clavier (`geometry.ts`), disposition et couches (`layout.ts`), édition par glisser-déposer (`edit.ts`), import Kalamine `.toml` (`kalamine.ts`), remplacements `.json` (`replacements.ts`), identifiants des corpus du site (`corpora.ts`), symboles spéciaux (`symbols.ts`), schémas Zod (`schemas.ts`) | Pur TypeScript. N'importe ni React, ni Next, ni Node. |
 | `src/engine/` | Moteur porté du VBA : `keymap.ts` (caractère → touche), `adapt.ts` (corpus → frappes réelles), `count.ts` (n-grammes), `metrics.ts` (bigrammes, trigrammes, difficultés), `analyse.ts` (assemblage), `export.ts` (CSV) | Ne dépend que de `domain/`. Exécutable dans un test sans navigateur ni serveur. |
 | `src/server/` | Lecture des corpus (dossier local ou dépôt GitHub privé), cache mémoire des 3 dernières analyses | `import "server-only"` obligatoire. |
 | `src/app/[lang]/` | Page unique et layout, localisés | Composants serveur. |

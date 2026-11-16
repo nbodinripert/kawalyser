@@ -20,7 +20,6 @@ describe.skipIf(!existsSync(corpusPath))("parity with the Excel analyser (Proper
       layout: layoutFromFixture(fixture),
       replacements: replacementsFromFixture(fixture),
       level: "clever",
-      language: "fr",
       compat: true,
     });
     return detail;

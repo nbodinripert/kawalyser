@@ -227,7 +227,13 @@
       "totalHint": "Somme des scores du tableau"
     },
     "table": "Afficher sous forme de tableau",
-    "hideTable": "Masquer le tableau"
+    "hideTable": "Masquer le tableau",
+    "missing": {
+      "title": "Absents de la carte",
+      "summary": "{share} des caractères du corpus ne sont nulle part sur la carte. Les statistiques les laissent de côté.",
+      "none": "Tous les caractères du corpus sont sur la carte.",
+      "listLabel": "Caractères absents de la carte les plus fréquents"
+    }
   },
   "csv": {
     "words": "Mots",

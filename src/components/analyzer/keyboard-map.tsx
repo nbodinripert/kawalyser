@@ -19,7 +19,6 @@ import { clearZone, dropZone, tryMove, tryType, type EditResult, type ZoneRef } 
 import { shapes, type KeySlot } from "@/domain/geometry";
 import { baseCharsOnMap, visibleZones, type Layout, type Zone } from "@/domain/layout";
 import { actionKeys, DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
-import type { CorpusLanguage } from "@/domain/valid-chars";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { cx, format } from "../ui";
 
@@ -27,7 +26,6 @@ type Labels = Dictionary["layout"];
 
 type KeyboardMapProps = {
   layout: Layout;
-  language: CorpusLanguage;
   keyPresses: Record<string, number> | null;
   labels: Labels;
   onChange: (layout: Layout) => void;
@@ -77,17 +75,17 @@ const showChar =(char: string, labels: Labels) => {
 };
 
 /** The zones a move would change, to highlight them while the user is still dragging. */
-function changedZones(before: Layout, after: Layout, keys: string[], language: CorpusLanguage): Set<string> {
+function changedZones(before: Layout, after: Layout, keys: string[]): Set<string> {
   const changed = new Set<string>();
   for (const key of keys) {
-    const was = visibleZones(before.keys[key] ?? {}, language);
-    const will = visibleZones(after.keys[key] ?? {}, language);
+    const was = visibleZones(before.keys[key] ?? {});
+    const will = visibleZones(after.keys[key] ?? {});
     for (const zone of zoneOrder) if (was[zone] !== will[zone] && will[zone] !== undefined) changed.add(zoneId({ key, zone }));
   }
   return changed;
 }
 
-export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: KeyboardMapProps) {
+export function KeyboardMap({ layout, keyPresses, labels, onChange }: KeyboardMapProps) {
   const shape = shapes[layout.shapeId];
   const [selected, setSelected] = useState<ZoneRef | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -101,12 +99,12 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
   // While dragging over a key, the map already shows the result of the drop, or why it is refused.
   const drop = drag?.target ? dropResult(layout, drag, drag.target) : null;
   const preview = drop?.layout ?? layout;
-  const changed = drop ? changedZones(layout, preview, shape.keys.map((slot) => slot.id), language) : new Set<string>();
+  const changed = drop ? changedZones(layout, preview, shape.keys.map((slot) => slot.id)) : new Set<string>();
   const refused = drop ? drop.refused : refusal?.layout === layout ? refusal.char : undefined;
 
-  const charAt = (ref: ZoneRef) => visibleZones(layout.keys[ref.key] ?? {}, language)[ref.zone];
+  const charAt = (ref: ZoneRef) => visibleZones(layout.keys[ref.key] ?? {})[ref.zone];
   const keyName = (key: string) => {
-    const zones = visibleZones(layout.keys[key] ?? {}, language);
+    const zones = visibleZones(layout.keys[key] ?? {});
     const main = zones.shift ?? zones.base ?? zones.dk;
     return main === undefined ? "" : showChar(main, labels);
   };
@@ -232,7 +230,6 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
               key={slot.id}
               slot={slot}
               layout={preview}
-              language={language}
               heat={heat(slot.id)}
               labels={labels}
               selected={selected?.key === slot.id ? selected.zone : null}
@@ -278,7 +275,6 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
 type KeyCapProps = {
   slot: KeySlot;
   layout: Layout;
-  language: CorpusLanguage;
   heat: number | null;
   labels: Labels;
   selected: Zone | null;
@@ -292,9 +288,9 @@ type KeyCapProps = {
   onZoneKeyDown: (ref: ZoneRef, event: KeyboardEvent<HTMLButtonElement>) => void;
 };
 
-function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
+function KeyCap({ slot, layout, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
   const { setNodeRef } = useDroppable({ id: slot.id });
-  const visible = visibleZones(layout.keys[slot.id] ?? {}, language);
+  const visible = visibleZones(layout.keys[slot.id] ?? {});
   // The 14% floor tints even the rarest keys, so that every used key reads as used.
   const background =
     heat === null || heat === 0 ? undefined : `color-mix(in oklab, var(--heat) ${Math.round(14 + heat * 80)}%, var(--key))`;

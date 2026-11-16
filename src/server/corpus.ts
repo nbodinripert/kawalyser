@@ -1,7 +1,7 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { CorpusLanguage } from "@/domain/valid-chars";
+import type { CorpusLanguage } from "@/domain/corpora";
 
 /**
  * The corpora stay private: they are never sent to the browser and are not in the public repository.

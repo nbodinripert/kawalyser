@@ -5,7 +5,7 @@ import { hasOuterColumns, type ShapeId } from "@/domain/geometry";
 import { difficultyIds, listIds, type AnalysisResult, type HandSplit } from "@/engine/analyse";
 import type { TrigramScope } from "@/engine/metrics";
 import type { Dictionary } from "@/i18n/dictionaries";
-import { Card, Segmented, cx } from "../ui";
+import { Card, Segmented, cx, format } from "../ui";
 import type { Formatters } from "./numbers";
 import { StackedColumns } from "./stacked-columns";
 
@@ -22,6 +22,7 @@ export function Results({ result, dictionary, numbers, shapeId }: ResultsProps &
       <Trigrams result={result} dictionary={dictionary} numbers={numbers} />
       <Difficulties result={result} dictionary={dictionary} numbers={numbers} />
       <Distribution result={result} dictionary={dictionary} numbers={numbers} />
+      <MissingChars result={result} dictionary={dictionary} numbers={numbers} />
     </div>
   );
 }
@@ -84,6 +85,36 @@ function Hands({ result, dictionary, numbers, withOuterColumns }: ResultsProps &
         <Stat label={`${labels.homeKeys} · ${labels.withoutSpace}`} value={numbers.percent(result.homeKeys.withoutSpace)} />
         <Stat label={labels.presses} value={numbers.signedPercent(result.pressesChange)} hint={labels.pressesHint} className="col-span-2" />
       </dl>
+    </Card>
+  );
+}
+
+/** An invisible character, a zero-width space for instance, reads as its code point. */
+function charLabel(char: string): string {
+  if (/[\p{L}\p{M}\p{N}\p{P}\p{S}]/u.test(char)) return char;
+  return `U+${(char.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, "0")}`;
+}
+
+function MissingChars({ result, dictionary, numbers }: ResultsProps) {
+  const labels = dictionary.results.missing;
+  const { share, entries } = result.missingChars;
+  return (
+    <Card title={labels.title}>
+      {entries.length === 0 ? (
+        <p className="text-sm text-muted">{labels.none}</p>
+      ) : (
+        <>
+          <p className="text-sm text-muted">{format(labels.summary, { share: numbers.percent(share) })}</p>
+          <ul aria-label={labels.listLabel} className="mt-3 flex flex-wrap gap-2">
+            {entries.map((entry) => (
+              <li key={entry.gram} className="rounded-lg bg-surface-muted px-2.5 py-1 text-sm">
+                <span className="font-mono font-semibold">{charLabel(entry.gram)}</span>{" "}
+                <span className="tabular text-muted">{numbers.percent(entry.share)}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </Card>
   );
 }

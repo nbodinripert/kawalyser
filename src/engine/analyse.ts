@@ -2,7 +2,6 @@ import { shapes } from "@/domain/geometry";
 import type { Layout } from "@/domain/layout";
 import type { AnalysisLevel, Replacements } from "@/domain/replacements";
 import { SPACE } from "@/domain/symbols";
-import type { CorpusLanguage } from "@/domain/valid-chars";
 import { createAdapter } from "./adapt";
 import { countCorpus, type CorpusCounts } from "./count";
 import { buildKeyMap, DK_SPACE, tokenLabel, type KeyMap } from "./keymap";
@@ -20,7 +19,6 @@ export type AnalysisInput = {
   layout: Layout;
   replacements: Replacements;
   level: AnalysisLevel;
-  language: CorpusLanguage;
   compat?: boolean;
 };
 
@@ -76,12 +74,22 @@ export type AnalysisResult = {
   distribution: { distance: number[]; scissors: number[]; stretch: number[] };
   /** Each list's total, its share of the list's own denominator, and its first entries. */
   lists: Record<ListId, { total: number; share: number; entries: ListEntry[] }>;
+  /**
+   * The most frequent characters of the cleaned corpus that are nowhere on the map, with their share of its characters
+   * (question 34 of the specs): with a corpus in another language, they show what the statistics leave out.
+   * A character in a Shift zone is on the map, though the analysis leaves it out too (question 8).
+   */
+  missingChars: { total: number; share: number; entries: ListEntry[] };
   totals: { characters: number; corpusPresses: number; words: number };
 };
 
 const LIST_LIMIT = 300;
+const MISSING_LIMIT = 10;
 
-const label = (gram: string) => Array.from(gram, tokenLabel).join("");
+/** How a gram reads on screen: special keys with their map symbols, other characters as the corpus wrote them. */
+export function gramLabel(gram: string, keyMap: KeyMap): string {
+  return keyMap.codec.decode(Array.from(gram, tokenLabel).join(""));
+}
 
 function sum(values: number[], from: number): number {
   let total = 0;
@@ -107,14 +115,14 @@ function trigramStats(t: TrigramTallies, scope: TrigramScope): TrigramStats {
   };
 }
 
-function toList(map: Map<string, number>, denominator: number, labelOf: (gram: string) => string = label) {
+function toList(map: Map<string, number>, denominator: number, labelOf: (gram: string) => string, limit = LIST_LIMIT) {
   const entries = [...map.entries()].sort((a, b) => b[1] - a[1]);
   let total = 0;
   for (const [, count] of entries) total += count;
   return {
     total,
     share: ratio(total, denominator),
-    entries: entries.slice(0, LIST_LIMIT).map(([gram, count]) => ({ gram: labelOf(gram), count, share: ratio(count, denominator) })),
+    entries: entries.slice(0, limit).map(([gram, count]) => ({ gram: labelOf(gram), count, share: ratio(count, denominator) })),
   };
 }
 
@@ -129,9 +137,10 @@ export type AnalysisDetail = {
 };
 
 export function analyse(corpus: string, input: AnalysisInput): AnalysisDetail {
-  const { layout, replacements, level, language, compat = false } = input;
-  const keyMap = buildKeyMap(layout, { language, compat });
-  const adapter = createAdapter(keyMap, replacements, { level, language, compat });
+  const { layout, replacements, level, compat = false } = input;
+  const keyMap = buildKeyMap(layout, { compat });
+  const adapter = createAdapter(keyMap, replacements, { level, compat });
+  const label = (gram: string) => gramLabel(gram, keyMap);
   const counts = countCorpus(corpus, keyMap, adapter);
 
   const d = emptyDifficulties();
@@ -203,6 +212,17 @@ export function analyse(corpus: string, input: AnalysisInput): AnalysisDetail {
 
   const usageLabels = (pattern: string) => `${label(pattern)} → ${label(adapter.replacementOf.get(pattern) ?? "")}`;
 
+  const onMap = new Set<string>();
+  for (const slot of shape.keys) {
+    for (const char of Object.values(layout.keys[slot.id] ?? {})) onMap.add(keyMap.codec.encode(char.toLowerCase()));
+  }
+  const missing = new Map<string, number>();
+  let originalChars = 0;
+  for (const [char, count] of counts.originalChars) {
+    originalChars += count;
+    if (!onMap.has(char) && !keyMap.slotOf.has(char) && !keyMap.deadKeySequences.has(char)) missing.set(char, count);
+  }
+
   const result: AnalysisResult = {
     keyPresses,
     fingers: fingers.map((finger) => ({ home: ratio(finger.home, total), other: ratio(finger.other, total) })),
@@ -239,21 +259,22 @@ export function analyse(corpus: string, input: AnalysisInput): AnalysisDetail {
     },
     distribution: { distance: d.distance, scissors: d.scissors, stretch: d.stretch },
     lists: {
-      sfb: toList(d.sfb, bigramTotal),
-      skb: toList(d.skb, bigramTotal),
-      lsb: toList(d.lsb, bigramTotal),
-      fsb: toList(d.fsb, bigramTotal),
-      hsb: toList(d.hsb, bigramTotal),
-      rjb: toList(d.rjb, bigramTotal),
-      badRedirects: toList(d.badRedirects, withoutSpaceTrigrams),
-      sfsRedirect: toList(d.sfsRedirect, allTrigrams),
-      sfsAlternation: toList(d.sfsAlternation, allTrigrams),
-      fssRedirect: toList(d.fssRedirect, skipgramDenominator),
-      fssAlternation: toList(d.fssAlternation, skipgramDenominator),
+      sfb: toList(d.sfb, bigramTotal, label),
+      skb: toList(d.skb, bigramTotal, label),
+      lsb: toList(d.lsb, bigramTotal, label),
+      fsb: toList(d.fsb, bigramTotal, label),
+      hsb: toList(d.hsb, bigramTotal, label),
+      rjb: toList(d.rjb, bigramTotal, label),
+      badRedirects: toList(d.badRedirects, withoutSpaceTrigrams, label),
+      sfsRedirect: toList(d.sfsRedirect, allTrigrams, label),
+      sfsAlternation: toList(d.sfsAlternation, allTrigrams, label),
+      fssRedirect: toList(d.fssRedirect, skipgramDenominator, label),
+      fssAlternation: toList(d.fssAlternation, skipgramDenominator, label),
       cc: toList(adapter.usage, counts.originalPresses, usageLabels),
-      shs4: toList(onlyRepeated(counts.sameHand.four), 0),
-      shs5: toList(onlyRepeated(counts.sameHand.fiveOrMore), 0),
+      shs4: toList(onlyRepeated(counts.sameHand.four), 0, label),
+      shs5: toList(onlyRepeated(counts.sameHand.fiveOrMore), 0, label),
     },
+    missingChars: toList(missing, originalChars, label, MISSING_LIMIT),
     totals: { characters, corpusPresses: counts.originalPresses, words: sumMap(counts.words) },
   };
 

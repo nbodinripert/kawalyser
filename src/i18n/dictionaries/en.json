@@ -227,7 +227,13 @@
       "totalHint": "Sum of the scores in the table"
     },
     "table": "Show as a table",
-    "hideTable": "Hide the table"
+    "hideTable": "Hide the table",
+    "missing": {
+      "title": "Not on the map",
+      "summary": "{share} of the corpus characters are nowhere on the map. The statistics leave them out.",
+      "none": "Every character of the corpus is on the map.",
+      "listLabel": "Most frequent characters missing from the map"
+    }
   },
   "csv": {
     "words": "Words",

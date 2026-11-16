@@ -70,12 +70,15 @@ Les textes et les couleurs se modifient depuis github.com, sans rien installer :
 
 | Comportement de l'Excel | Sur le site |
 | --- | --- |
-| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Essentiels » | Tous les caractères valides doublés tapés d'une seule frappe (pas ceux de la couche morte : Repeat répète la dernière frappe), seulement si `$` est placé, quel que soit le niveau |
+| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Essentiels » | Tout caractère doublé tapé d'une seule frappe, ponctuation comprise (pas ceux de la couche morte : Repeat répète la dernière frappe), seulement si `$` est placé, quel que soit le niveau |
 | « Pas de lettre avant ou après » ne reconnaît que `a` à `z` et `é` | Toutes les lettres |
 | Les barres de charge des index oublient `B` et `K` | Toutes les touches comptent |
 | « Sans espace » retire aussi la touche voisine d'espace | Seule la touche espace est retirée |
 | La règle « majeur en haut, annulaire en bas » des ciseaux ne s'applique jamais (comparaison texte/nombre en VBA) | La règle s'applique |
-| `#` n'est pas retiré du corpus | `#` est retiré, car il note la touche Magic |
+| `$`, `£`, `€` et `&` sont retirés du corpus, car ils notaient ses touches spéciales | `*`, `$` et `#` sont retirés, car ils notent les touches spéciales sur la carte ; `£`, `€` et `&` sont gardés et peuvent être tapés |
+| Un emoji ou un idéogramme rare compte pour deux caractères | Il compte pour un seul |
+| Une lettre enregistrée avec un accent séparé compte pour deux caractères | Les deux sont réunis en un seul caractère (Unicode NFC) |
+| Les espaces insécables et les tabulations sont des caractères à part | Ils sont lus comme des espaces |
 | Toutes les règles de remplacement s'appliquent, même celles qui demandent une touche absente de la carte (Magic, Repeat, touche morte ou caractère) | Ces règles sont ignorées, car elles ne peuvent pas être tapées ; le panneau des remplacements les barre |
 
 ## Format des remplacements

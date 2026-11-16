@@ -70,12 +70,15 @@ Texts and colors can be changed from github.com, with nothing to install: see th
 
 | Excel behavior | On the site |
 | --- | --- |
-| Repeat replaces `aa` to `zz`, even without a `$` key, from the "Essential" level | Every doubled valid character typed with a single key press (not the dead key layer ones: Repeat repeats the last key press), only if `$` is placed, at every level |
+| Repeat replaces `aa` to `zz`, even without a `$` key, from the "Essential" level | Every doubled character typed with a single key press, punctuation included (not the dead key layer ones: Repeat repeats the last key press), only if `$` is placed, at every level |
 | "No letter before or after" only recognizes `a` to `z` and `é` | Every letter |
 | The index finger load bars miss `B` and `K` | Every key counts |
 | "Without space" also removes the key next to space | Only the space key is removed |
 | The scissor rule "middle finger on top, ring finger below" never applies (a text/number comparison in VBA) | The rule applies |
-| `#` is not removed from the corpus | `#` is removed, since it stands for the Magic key |
+| `$`, `£`, `€` and `&` are removed from the corpus, since they stood for its special keys | `*`, `$` and `#` are removed, since they stand for the special keys on the map; `£`, `€` and `&` are kept and can be typed |
+| An emoji or a rare ideogram counts as two characters | It counts as one |
+| A letter saved with a separate combining accent counts as two characters | They are joined into one character (Unicode NFC) |
+| No-break spaces and tabs are characters of their own | They are read as spaces |
 | Every replacement rule applies, even those that need a key missing from the map (Magic, Repeat, dead key or character) | These rules are ignored, since they cannot be typed; the replacements panel strikes them through |
 
 ## Replacements format
