@@ -1,5 +1,8 @@
 import type { ButtonHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 
+/** The width of every page: wide screens give the map and the results room, with a modest margin on each side. */
+export const pageWidth = "mx-auto w-full max-w-[96rem] px-4 sm:px-6 lg:px-10";
+
 export function cx(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(" ");
 }
@@ -25,9 +28,9 @@ export function Button({ variant = "secondary", className, type = "button", ...p
 
 export function Card({ title, actions, children, className }: { title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cx("min-w-0 rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]", className)}>
+    <section className={cx("min-w-0 rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:p-6", className)}>
       {(title || actions) && (
-        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
           {title && <h2 className="text-base font-semibold tracking-tight">{title}</h2>}
           {actions}
         </header>

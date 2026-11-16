@@ -6,10 +6,8 @@
     "imageAlt": "Kawalyser, keyboard layout analyzer, with the Propergol layout on a split keyboard"
   },
   "home": {
-    "tagline": "Keyboard layout analyzer supporting magic rules, 1DK and thumb alphas.",
-    "heading": "Kawalyser: keyboard layout analyzer",
-    "intro": "Kawalyser types a long text on your keyboard layout and counts how your fingers move: same-finger bigrams, scissors, rolls and finger load. Free, with no sign-up. {docs}",
-    "docsLink": "See how it works"
+    "tagline": "Test a keyboard layout before you learn it: finger load, same-finger bigrams, rolls, with 1DK, Repeat and Magic keys.",
+    "heading": "Kawalyser: keyboard layout analyzer"
   },
   "languageSwitcher": {
     "label": "Language"
@@ -25,6 +23,7 @@
   },
   "layout": {
     "title": "Layout",
+    "importTitle": "Import",
     "importCorpus": "Import corpus",
     "importToml": "Import .toml",
     "importReplacements": "Import replacements",
@@ -116,6 +115,7 @@
     "type": "type"
   },
   "analysis": {
+    "title": "Analysis",
     "run": "Run analysis",
     "running": "Analyzing…",
     "failed": "The analysis failed. Please try again in a moment.",

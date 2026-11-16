@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { localePath, repositoryUrl } from "@/lib/site";
+import { cx, pageWidth } from "./ui";
 
 type SiteFooterProps = { lang: Locale; dictionary: Dictionary };
 
@@ -12,7 +13,7 @@ export function SiteFooter({ lang, dictionary }: SiteFooterProps) {
   const labels = dictionary.footer;
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-5 text-xs text-muted sm:px-6">
+      <div className={cx(pageWidth, "flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-5 text-xs text-muted")}>
         <p>{dictionary.meta.title}</p>
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
           <li>

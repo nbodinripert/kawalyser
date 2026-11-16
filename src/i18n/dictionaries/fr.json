@@ -6,10 +6,8 @@
     "imageAlt": "Kawalyser, analyseur de disposition de clavier, avec la disposition Propergol sur un clavier séparé"
   },
   "home": {
-    "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces.",
-    "heading": "Kawalyser : analyseur de disposition de clavier",
-    "intro": "Kawalyser tape un long texte sur votre disposition de clavier et compte les mouvements de vos doigts : bigrammes du même doigt, ciseaux, roulements et charge des doigts. Gratuit, sans inscription. {docs}",
-    "docsLink": "Voir comment ça marche"
+    "tagline": "Testez une disposition de clavier avant de l'apprendre : charge des doigts, bigrammes du même doigt, roulements, avec 1DK, Repeat et Magic.",
+    "heading": "Kawalyser : analyseur de disposition de clavier"
   },
   "languageSwitcher": {
     "label": "Langue"
@@ -25,6 +23,7 @@
   },
   "layout": {
     "title": "Disposition",
+    "importTitle": "Importer",
     "importCorpus": "Importer un corpus",
     "importToml": "Importer un .toml",
     "importReplacements": "Importer des remplacements",
@@ -116,6 +115,7 @@
     "type": "taper"
   },
   "analysis": {
+    "title": "Analyse",
     "run": "Lancer l'analyse",
     "running": "Analyse en cours…",
     "failed": "L'analyse a échoué. Réessayez dans un instant.",

@@ -218,12 +218,18 @@ export function KeyboardMap({ layout, keyPresses, labels, onChange }: KeyboardMa
     >
       {/* A scrolling box also clips vertically: the 8px of room, cancelled by the negative margin,
           keep the enlarged target key and its outline visible on the first row and at the edges. */}
-      <div className="-m-2 overflow-x-auto p-2">
+      {/* Keys grow with the room the map has, not with the window: the column beside it takes its share on wide screens.
+          The gaps (0.375rem each) are taken off before sharing the width (100cqw, this box's content) between columns. */}
+      <div className="@container -m-2 overflow-x-auto p-2">
         <div
           role="group"
           aria-label={labels.mapLabel}
-          className={cx("mx-auto grid w-max gap-1.5 [--cap:clamp(2.6rem,4.1vw,3.35rem)]", drag && (drop?.refused !== undefined ? "cursor-not-allowed" : "cursor-grabbing"))}
-          style={{ gridTemplateColumns: `repeat(${shape.width}, var(--cap))`, gridAutoRows: "calc(var(--cap) * 0.92)" }}
+          className={cx("mx-auto grid w-max gap-1.5", drag && (drop?.refused !== undefined ? "cursor-not-allowed" : "cursor-grabbing"))}
+          style={{
+            ["--cap" as string]: `clamp(2.6rem, calc((100cqw - ${(shape.width - 1) * 0.375}rem) / ${shape.width}), 4rem)`,
+            gridTemplateColumns: `repeat(${shape.width}, var(--cap))`,
+            gridAutoRows: "calc(var(--cap) * 0.92)",
+          }}
         >
           {shape.keys.map((slot) => (
             <KeyCap

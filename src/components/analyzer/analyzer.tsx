@@ -14,7 +14,7 @@ import { decodeCorpus, MAX_CORPUS_BYTES } from "@/domain/corpus-file";
 import type { AnalysisResult } from "@/engine/analyse";
 import type { Locale } from "@/i18n/config";
 import type { AnalyzerDictionary } from "@/i18n/dictionaries";
-import { RedoIcon, ResetIcon, UndoIcon } from "../icons";
+import { DownloadIcon, FileTextIcon, KeyboardIcon, RedoIcon, ResetIcon, UndoIcon, WandIcon } from "../icons";
 import { Button, Card, Select, cx, format } from "../ui";
 import { KeyboardMap } from "./keyboard-map";
 import { formatters } from "./numbers";
@@ -308,9 +308,14 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
     if (preset) dispatch({ type: "loadPreset", preset, notice: { tone: "info", text: format(labels.presetLoaded, { name: preset.name }) } });
   };
 
+  const fileButton = "w-full justify-start";
+
   return (
-    <div className="grid min-w-0 gap-6 [&>*]:min-w-0">
+    // On wide screens, the map and the results share the main column, and the actions and the replacements stand
+    // beside them, so that the analysis can run again without scrolling back up. On a phone: map, actions, results.
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_21rem] xl:gap-8 [&>*]:min-w-0">
       <Card
+        className="xl:col-start-1 xl:row-start-1"
         title={
           <span className="flex items-baseline gap-2">
             {labels.title}
@@ -319,22 +324,31 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <input ref={corpusInput} type="file" accept=".txt,text/plain" className="hidden" onChange={onImportCorpus} />
-            <input ref={tomlInput} type="file" accept=".toml,text/plain" className="hidden" onChange={onImportToml} />
-            <input ref={jsonInput} type="file" accept=".json,application/json" className="hidden" onChange={onImportJson} />
-            <Button onClick={() => corpusInput.current?.click()}>{labels.importCorpus}</Button>
-            <Button onClick={() => tomlInput.current?.click()}>{labels.importToml}</Button>
-            <Button onClick={() => jsonInput.current?.click()}>{labels.importReplacements}</Button>
-            {state.replacementsName && (
-              <Button variant="ghost" onClick={() => dispatch({ type: "setReplacements", replacements: emptyReplacements, name: null, notice: null })}>
-                {labels.removeReplacements}
-              </Button>
-            )}
-            {state.personalCorpus && (
-              <Button variant="ghost" onClick={removeCorpus}>
-                {labels.removeCorpus}
-              </Button>
-            )}
+            {/* The shortcuts are handled above, on the whole page. */}
+            <Button
+              variant="ghost"
+              onClick={() => dispatch({ type: "undo" })}
+              disabled={state.past.length === 0}
+              title={`${labels.undo} (${labels.undoShortcut})`}
+              aria-keyshortcuts="Control+Z Meta+Z"
+            >
+              <UndoIcon />
+              {labels.undo}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => dispatch({ type: "redo" })}
+              disabled={state.future.length === 0}
+              title={`${labels.redo} (${labels.redoShortcut})`}
+              aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+            >
+              <RedoIcon />
+              {labels.redo}
+            </Button>
+            <Button variant="ghost" onClick={() => dispatch({ type: "reset" })} disabled={sameLayout(state.layout, state.imported)}>
+              <ResetIcon />
+              {labels.reset}
+            </Button>
           </div>
         }
       >
@@ -342,7 +356,7 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
           <p
             role={state.notice.tone === "error" ? "alert" : "status"}
             className={cx(
-              "mb-4 rounded-lg px-3 py-2 text-sm",
+              "mb-6 rounded-lg px-4 py-3 text-sm",
               state.notice.tone === "error" ? "bg-danger-soft text-danger" : "bg-accent-soft text-foreground",
             )}
           >
@@ -350,75 +364,97 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
           </p>
         )}
 
-        {/* The replacements column starts level with the selectors; the history buttons sit under the map's help text. */}
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
-          <div className="min-w-0">
-            <div className="mb-4 flex flex-wrap items-end gap-3">
-              <Select label={labels.preset} value={presetValue} onChange={(event) => onChoosePreset(event.target.value)}>
-                {presetValue === CURRENT_LAYOUT && <option value={CURRENT_LAYOUT}>{currentLabel}</option>}
-                {presets.map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.name}
-                  </option>
-                ))}
-              </Select>
-              <Select label={labels.shape} value={state.layout.shapeId} onChange={(event) => dispatch({ type: "setShape", shapeId: event.target.value as (typeof shapeIds)[number] })}>
-                {shapeIds.map((id) => (
-                  <option key={id} value={id}>
-                    {labels.shapes[id]}
-                  </option>
-                ))}
-              </Select>
-              <Select label={labels.corpus} value={state.corpus} onChange={(event) => dispatch({ type: "setCorpus", corpus: event.target.value as CorpusId })}>
-                {corpusLanguages.map((id) => (
-                  <option key={id} value={id}>
-                    {labels.corpora[id]}
-                  </option>
-                ))}
-                {state.personalCorpus && <option value={PERSONAL_CORPUS}>{format(labels.corpora.personal, { name: state.personalCorpus.name })}</option>}
-              </Select>
-              <Select label={labels.level} disabled={!state.replacementsName} value={state.level} onChange={(event) => dispatch({ type: "setLevel", level: event.target.value as (typeof analysisLevels)[number] })}>
-                {(state.replacementsName ? analysisLevels : analysisLevels.slice(0, 1)).map((id) => (
-                  <option key={id} value={id}>
-                    {labels.levels[id]}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <KeyboardMap
-              layout={state.layout}
-              keyPresses={state.result?.keyPresses ?? null}
-              labels={labels}
-              onChange={(layout) => dispatch({ type: "edit", layout })}
-            />
-            <div className="mt-2 -ml-3.5 flex flex-wrap items-center gap-1">
-              {/* The shortcuts are handled above, on the whole page. */}
-              <Button
-                variant="ghost"
-                onClick={() => dispatch({ type: "undo" })}
-                disabled={state.past.length === 0}
-                title={`${labels.undo} (${labels.undoShortcut})`}
-                aria-keyshortcuts="Control+Z Meta+Z"
-              >
-                <UndoIcon />
-                {labels.undo}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => dispatch({ type: "redo" })}
-                disabled={state.future.length === 0}
-                title={`${labels.redo} (${labels.redoShortcut})`}
-                aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
-              >
-                <RedoIcon />
-                {labels.redo}
-              </Button>
-              <Button variant="ghost" onClick={() => dispatch({ type: "reset" })} disabled={sameLayout(state.layout, state.imported)}>
-                <ResetIcon />
-                {labels.reset}
-              </Button>
-            </div>
+        <div className="mb-8 flex flex-wrap gap-4 [&>*]:min-w-44 [&>*]:flex-1">
+          <Select label={labels.preset} value={presetValue} onChange={(event) => onChoosePreset(event.target.value)}>
+            {presetValue === CURRENT_LAYOUT && <option value={CURRENT_LAYOUT}>{currentLabel}</option>}
+            {presets.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.name}
+              </option>
+            ))}
+          </Select>
+          <Select label={labels.shape} value={state.layout.shapeId} onChange={(event) => dispatch({ type: "setShape", shapeId: event.target.value as (typeof shapeIds)[number] })}>
+            {shapeIds.map((id) => (
+              <option key={id} value={id}>
+                {labels.shapes[id]}
+              </option>
+            ))}
+          </Select>
+          <Select label={labels.corpus} value={state.corpus} onChange={(event) => dispatch({ type: "setCorpus", corpus: event.target.value as CorpusId })}>
+            {corpusLanguages.map((id) => (
+              <option key={id} value={id}>
+                {labels.corpora[id]}
+              </option>
+            ))}
+            {state.personalCorpus && <option value={PERSONAL_CORPUS}>{format(labels.corpora.personal, { name: state.personalCorpus.name })}</option>}
+          </Select>
+          <Select label={labels.level} disabled={!state.replacementsName} value={state.level} onChange={(event) => dispatch({ type: "setLevel", level: event.target.value as (typeof analysisLevels)[number] })}>
+            {(state.replacementsName ? analysisLevels : analysisLevels.slice(0, 1)).map((id) => (
+              <option key={id} value={id}>
+                {labels.levels[id]}
+              </option>
+            ))}
+          </Select>
+        </div>
+
+        <KeyboardMap
+          layout={state.layout}
+          keyPresses={state.result?.keyPresses ?? null}
+          labels={labels}
+          onChange={(layout) => dispatch({ type: "edit", layout })}
+        />
+      </Card>
+
+      <div className="grid content-start gap-6 sm:grid-cols-2 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:grid-cols-1">
+        <Card title={dictionary.analysis.title}>
+          <div className="grid gap-3">
+            <Button variant="primary" className="h-11 w-full text-base" onClick={runAnalysis} disabled={running} aria-busy={running}>
+              {running && <span aria-hidden className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
+              {running ? dictionary.analysis.running : dictionary.analysis.run}
+            </Button>
+            <Button className={fileButton} onClick={() => download("ngrams")} disabled={!state.result || downloading !== null} aria-busy={downloading === "ngrams"}>
+              <DownloadIcon />
+              {dictionary.analysis.downloadNgrams}
+            </Button>
+            <Button className={fileButton} onClick={() => download("difficulties")} disabled={!state.result || downloading !== null} aria-busy={downloading === "difficulties"}>
+              <DownloadIcon />
+              {dictionary.analysis.downloadDifficulties}
+            </Button>
           </div>
+        </Card>
+
+        <Card title={labels.importTitle}>
+          <input ref={corpusInput} type="file" accept=".txt,text/plain" className="hidden" onChange={onImportCorpus} />
+          <input ref={tomlInput} type="file" accept=".toml,text/plain" className="hidden" onChange={onImportToml} />
+          <input ref={jsonInput} type="file" accept=".json,application/json" className="hidden" onChange={onImportJson} />
+          {/* In the order of the specs: the corpus first, then the layout and its replacements. */}
+          <div className="grid gap-3">
+            <Button className={fileButton} onClick={() => corpusInput.current?.click()}>
+              <FileTextIcon />
+              {labels.importCorpus}
+            </Button>
+            {state.personalCorpus && (
+              <Button variant="ghost" className={fileButton} onClick={removeCorpus}>
+                {labels.removeCorpus}
+              </Button>
+            )}
+            <Button className={fileButton} onClick={() => tomlInput.current?.click()}>
+              <KeyboardIcon />
+              {labels.importToml}
+            </Button>
+            <Button className={fileButton} onClick={() => jsonInput.current?.click()}>
+              <WandIcon />
+              {labels.importReplacements}
+            </Button>
+            {state.replacementsName && (
+              <Button variant="ghost" className={fileButton} onClick={() => dispatch({ type: "setReplacements", replacements: emptyReplacements, name: null, notice: null })}>
+                {labels.removeReplacements}
+              </Button>
+            )}
+          </div>
+        </Card>
+
+        <div className="sm:col-span-2 xl:col-span-1">
           <ReplacementsPanel
             replacements={state.replacements}
             level={state.level}
@@ -428,22 +464,9 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
             legend={labels.legend}
           />
         </div>
+      </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-5">
-          <Button variant="primary" onClick={runAnalysis} disabled={running} aria-busy={running}>
-            {running && <span aria-hidden className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-            {running ? dictionary.analysis.running : dictionary.analysis.run}
-          </Button>
-          <Button onClick={() => download("ngrams")} disabled={!state.result || downloading !== null} aria-busy={downloading === "ngrams"}>
-            {dictionary.analysis.downloadNgrams}
-          </Button>
-          <Button onClick={() => download("difficulties")} disabled={!state.result || downloading !== null} aria-busy={downloading === "difficulties"}>
-            {dictionary.analysis.downloadDifficulties}
-          </Button>
-        </div>
-      </Card>
-
-      <div aria-live="polite">
+      <div aria-live="polite" className="xl:col-start-1 xl:row-start-2">
         {state.status === "failed" && (
           <p role="alert" className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">
             {dictionary.analysis.failed}

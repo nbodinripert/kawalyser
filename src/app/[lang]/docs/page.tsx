@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Docs } from "@/components/docs/docs";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { cx, pageWidth } from "@/components/ui";
 import { hasLocale, locales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { languageAlternates, localePath, openGraphLocale, siteName } from "@/lib/site";
@@ -40,7 +41,7 @@ export default async function DocsPage({ params }: PageProps<"/[lang]/docs">) {
   return (
     <>
       <SiteHeader lang={lang} dictionary={dictionary} current="docs" />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className={cx(pageWidth, "flex-1 py-6 sm:py-8")}>
         <Docs lang={lang} dictionary={dictionary} />
       </main>
       <SiteFooter lang={lang} dictionary={dictionary} />
