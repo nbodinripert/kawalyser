@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { About } from "@/components/about";
 import { Analyzer } from "@/components/analyzer/analyzer";
 import { JsonLd } from "@/components/json-ld";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { hasLocale, locales } from "@/i18n/config";
-import { getDictionary } from "@/i18n/dictionaries";
-import { absoluteUrl, languageAlternates, localePath, openGraphLocale, repositoryUrl, siteName } from "@/lib/site";
+import { analyzerSections, getDictionary, type AnalyzerDictionary } from "@/i18n/dictionaries";
+import { absoluteUrl, languageAlternates, localePath, openGraphLocale, siteName } from "@/lib/site";
 import { loadPresets } from "@/server/presets";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
@@ -41,6 +40,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const [dictionary, presets] = await Promise.all([getDictionary(lang), loadPresets()]);
   const [initialPreset] = presets;
   if (!initialPreset) throw new Error("layouts/layouts.json lists no layout");
+  const analyzerDictionary = Object.fromEntries(analyzerSections.map((section) => [section, dictionary[section]])) as AnalyzerDictionary;
 
   // No rating or download count: Google wants real ones, and the site has none.
   const structuredData = {
@@ -55,7 +55,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     browserRequirements: "Requires JavaScript",
     isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-    featureList: dictionary.about.features,
+    featureList: Object.values(dictionary.docs.features.items).map((feature) => feature.title),
     license: "https://www.gnu.org/licenses/gpl-3.0.html",
     isBasedOn: "https://github.com/Kawamashi/Kawalyser",
   };
@@ -63,38 +63,14 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   return (
     <>
       <JsonLd data={structuredData} />
-      <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            {/* Same file as the browser tab icon, so the two never drift apart. */}
-            {/* eslint-disable-next-line @next/next/no-img-element -- a small static SVG gains nothing from next/image */}
-            <img src="/icon.svg" alt="" aria-hidden className="size-8 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold tracking-tight">{dictionary.meta.title}</p>
-              <p className="hidden text-xs text-muted sm:block">{dictionary.home.tagline}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher current={lang} label={dictionary.languageSwitcher.label} />
-            <ThemeToggle labels={dictionary.themeToggle} />
-          </div>
-        </div>
-      </header>
+      <SiteHeader lang={lang} dictionary={dictionary} current="analyzer" />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <h1 className="sr-only">{dictionary.home.heading}</h1>
-        <Analyzer dictionary={dictionary} locale={lang} presets={presets} initialPreset={initialPreset} />
-        <About labels={dictionary.about} />
+        <Analyzer dictionary={analyzerDictionary} locale={lang} presets={presets} initialPreset={initialPreset} />
       </main>
 
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-5 text-xs text-muted sm:flex-row sm:justify-between sm:gap-6 sm:px-6">
-          <p>{dictionary.footer.credits}</p>
-          <a href={repositoryUrl} className="shrink-0 underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-            {dictionary.footer.source}
-          </a>
-        </div>
-      </footer>
+      <SiteFooter lang={lang} dictionary={dictionary} />
     </>
   );
 }

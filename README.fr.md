@@ -53,6 +53,7 @@ Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque 
 | `src/server/` | Chargement privé des corpus, chargement de la liste des dispositions et cache des analyses |
 | `src/app/api/` | Routes `analyse` et `export` (CSV) |
 | `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques |
+| `src/components/docs/` | La page Docs : ce que fait le site, touches spéciales, statistiques, fichiers, confidentialité |
 | `src/i18n/` | Langues de l'interface et traductions |
 
 Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le texte de référence est `en.json`.

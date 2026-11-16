@@ -61,7 +61,8 @@ Some useful texts:
 | --- | --- |
 | Title and description for search engines and social networks | `meta` |
 | Line under the site name | `home.tagline` |
-| Presentation section at the bottom of the page | `about` |
+| Menu at the top of the page | `nav` |
+| Docs page | `docs` |
 | Metric names and their abbreviations | `results.difficulties.items`, `results.difficulties.short` |
 | CSV file headers | `csv` |
 | Footer | `footer` |

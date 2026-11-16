@@ -53,6 +53,7 @@ Every variable is described in [`.env.example`](.env.example). Each corpus is re
 | `src/server/` | Private corpus loading, layouts list loading and analysis cache |
 | `src/app/api/` | `analyse` and `export` (CSV) routes |
 | `src/components/analyzer/` | Keyboard map, drag and drop, results and charts |
+| `src/components/docs/` | The Docs page: what the site does, special keys, statistics, files, privacy |
 | `src/i18n/` | Interface languages and translations |
 
 A translation missing from `fr.json` breaks the build. The reference text is `en.json`.

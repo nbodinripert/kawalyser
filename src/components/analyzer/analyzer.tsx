@@ -13,7 +13,7 @@ import { corpusLanguages, PERSONAL_CORPUS, type CorpusId, type CorpusLanguage } 
 import { decodeCorpus, MAX_CORPUS_BYTES } from "@/domain/corpus-file";
 import type { AnalysisResult } from "@/engine/analyse";
 import type { Locale } from "@/i18n/config";
-import type { Dictionary } from "@/i18n/dictionaries";
+import type { AnalyzerDictionary } from "@/i18n/dictionaries";
 import { RedoIcon, ResetIcon, UndoIcon } from "../icons";
 import { Button, Card, Select, cx, format } from "../ui";
 import { KeyboardMap } from "./keyboard-map";
@@ -25,7 +25,7 @@ import { createLocalAnalysis, type ExportKind, type LocalAnalysis } from "./loca
 import { presetState, reducer, requestKey, resultStorageKey, storageKey, toSaved, type SavedState } from "./state";
 
 /** `presets` is the list of layouts the site provides; a first visit opens `initialPreset`, its first one. */
-type AnalyzerProps = { dictionary: Dictionary; locale: Locale; presets: Preset[]; initialPreset: Preset };
+type AnalyzerProps = { dictionary: AnalyzerDictionary; locale: Locale; presets: Preset[]; initialPreset: Preset };
 
 /** The option standing for the layout on the map when it is not one of the list as provided. */
 const CURRENT_LAYOUT = "current";
@@ -94,7 +94,7 @@ function writeSavedResult(key: string, result: AnalysisResult) {
   }
 }
 
-function importProblemText(problem: ImportProblem, labels: Dictionary["layout"]["errors"]): string {
+function importProblemText(problem: ImportProblem, labels: AnalyzerDictionary["layout"]["errors"]): string {
   switch (problem.kind) {
     case "unreadable":
       return format(labels.unreadable, { detail: problem.detail });

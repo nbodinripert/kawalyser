@@ -4,12 +4,12 @@ import { useState } from "react";
 import { hasOuterColumns, type ShapeId } from "@/domain/geometry";
 import { difficultyIds, listIds, type AnalysisResult, type HandSplit } from "@/engine/analyse";
 import type { TrigramScope } from "@/engine/metrics";
-import type { Dictionary } from "@/i18n/dictionaries";
+import type { AnalyzerDictionary } from "@/i18n/dictionaries";
 import { Card, Segmented, cx, format } from "../ui";
 import type { Formatters } from "./numbers";
 import { StackedColumns } from "./stacked-columns";
 
-type ResultsProps = { result: AnalysisResult; dictionary: Dictionary; numbers: Formatters };
+type ResultsProps = { result: AnalysisResult; dictionary: AnalyzerDictionary; numbers: Formatters };
 
 /** The shape of the analysed layout: changing it clears the result, so it is always the current one. */
 export function Results({ result, dictionary, numbers, shapeId }: ResultsProps & { shapeId: ShapeId }) {

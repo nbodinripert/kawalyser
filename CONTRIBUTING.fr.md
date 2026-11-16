@@ -61,7 +61,8 @@ Quelques textes utiles :
 | --- | --- |
 | Titre et description pour les moteurs de recherche et les réseaux sociaux | `meta` |
 | Phrase sous le nom du site | `home.tagline` |
-| Section de présentation en bas de page | `about` |
+| Menu en haut de page | `nav` |
+| Page Docs | `docs` |
 | Noms des métriques et leurs abréviations | `results.difficulties.items`, `results.difficulties.short` |
 | En-têtes des fichiers CSV | `csv` |
 | Pied de page | `footer` |

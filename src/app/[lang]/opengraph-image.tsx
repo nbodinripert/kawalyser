@@ -28,7 +28,7 @@ export default async function Image({ params }: { params: Promise<{ lang: string
   if (!hasLocale(lang)) notFound();
 
   // The layout a first visit opens: the first of layouts/layouts.json.
-  const [{ meta, about }, [preset]] = await Promise.all([getDictionary(lang), loadPresets()]);
+  const [{ meta, docs }, [preset]] = await Promise.all([getDictionary(lang), loadPresets()]);
   const keys = preset?.layout.keys ?? {};
 
   return new ImageResponse(
@@ -50,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ lang: string
             <div style={{ width: 18, height: 56, borderRadius: 6, background: ogColors.accent }} />
             <div style={{ fontSize: 68, fontWeight: 700, letterSpacing: -2 }}>{meta.title}</div>
           </div>
-          <div style={{ fontSize: 34, color: ogColors.muted, maxWidth: 1000 }}>{about.title}</div>
+          <div style={{ fontSize: 34, color: ogColors.muted, maxWidth: 1000 }}>{docs.hero.title}</div>
         </div>
 
         <div
