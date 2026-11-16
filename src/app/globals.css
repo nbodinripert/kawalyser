@@ -8,8 +8,8 @@
  * Each color is written once, as light-dark(light theme, dark theme). Visitors follow their system theme
  * until they pick one with the toggle, which sets data-theme on <html> (see src/lib/theme.ts).
  *
- * Every color apart from the background and the error red stays between green and blue, around the turquoise
- * accent. The chart colors were picked by eye and have not been run through a color-blind or contrast
+ * The turquoise accent leads. A violet second accent ends the gradients (header line, site name, main button,
+ * card titles) and colors one series per chart; the background glows with both. The chart colors were picked by eye and have not been run through a color-blind or contrast
  * validator: they differ in lightness as well as in hue to compensate.
  * src/app/[lang]/opengraph-image.tsx copies a few light theme colors: a test checks that they stay equal.
  */
@@ -17,28 +17,31 @@
   color-scheme: light dark;
 
   /* Page background, behind the cards. */
-  --background: light-dark(#f6f8f8, #0c1312);
+  --background: light-dark(#f2f7f8, #05090f);
   /* Cards, panels and secondary buttons. */
-  --surface: light-dark(#ffffff, #131c1b);
+  --surface: light-dark(#ffffff, #0b1219);
   /* Insets inside cards (statistic tiles, selectors) and hovered buttons. */
-  --surface-muted: light-dark(#eef3f2, #1a2524);
+  --surface-muted: light-dark(#e8f1f3, #111c25);
   /* Main text. */
-  --foreground: light-dark(#142120, #e6efee);
+  --foreground: light-dark(#0d1b22, #e2f3f5);
   /* Secondary text: hints, labels, chart labels. */
-  --muted: light-dark(#586866, #9fb0ae);
+  --muted: light-dark(#4e6470, #8fa9b3);
   /* Least important text: the chart axis numbers and small notes. */
-  --faint: light-dark(#8a9896, #6f817f);
+  --faint: light-dark(#80939c, #5f7883);
   /* Card and panel borders. */
-  --border: light-dark(#dbe4e3, #253331);
+  --border: light-dark(#d2e1e5, #1b2b35);
 
   /* The turquoise of the site: main button, links, selected items, keyboard focus. */
-  --accent: light-dark(#00766f, #3fc4b6);
+  --accent: light-dark(#00766f, #34d6c4);
   /* The main button when hovered. */
-  --accent-strong: light-dark(#005c56, #6fd8cb);
+  --accent-strong: light-dark(#005c56, #74e8da);
   /* Pale accent background: selected zones and notices. */
-  --accent-soft: light-dark(#dff3f0, #15302d);
+  --accent-soft: light-dark(#d8f5f1, #0b2a2c);
   /* Text written on the accent color, such as the main button's label. */
   --accent-contrast: light-dark(#ffffff, #062421);
+  /* The violet second accent: the end of the gradients that start with --accent. Text on it takes
+     --accent-contrast (6:1 in the light theme, 8:1 in the dark one). */
+  --accent-2: light-dark(#6b3fe0, #a98bff);
 
   /* Errors and refused moves. */
   --danger: light-dark(#b4232c, #f07a80);
@@ -52,23 +55,23 @@
   --info-ink: light-dark(#0b1a2e, #0b1a2e);
 
   /* Keys of the keyboard map. */
-  --key: light-dark(#e8efee, #223230);
-  --key-border: light-dark(#c2d0ce, #364a47);
+  --key: light-dark(#e4eef0, #142029);
+  --key-border: light-dark(#bfd2d6, #2a3e4a);
   /* Color of the most typed keys once an analysis is shown (less typed keys mix it with --key). */
   --heat: light-dark(#067a72, #4fcdbf);
   /* Text on the most typed keys, where the main text would not be readable. */
   --heat-ink: light-dark(#ffffff, #011311);
 
   /* Chart grid lines, and the zero line. */
-  --grid: light-dark(#e4ebea, #22302e);
-  --axis: light-dark(#c5d1cf, #34443f);
+  --grid: light-dark(#dfe9ec, #16232c);
+  --axis: light-dark(#c0d0d5, #2a3b45);
   /* "Finger load" chart: home keys, then the other keys. */
   --series-home: light-dark(#0e8a8c, #2fc0b4);
-  --series-other: light-dark(#86bcdc, #3f77a8);
+  --series-other: light-dark(#a99cf2, #6d50d8);
   /* "Where difficulties land" chart: distance, scissors, stretches. */
   --distribution-1: light-dark(#256aa8, #6aa8f0);
   --distribution-2: light-dark(#1aa6a6, #1f9e9a);
-  --distribution-3: light-dark(#5cbf8a, #7edba8);
+  --distribution-3: light-dark(#8a5ce6, #c0a8ff);
 
   /* Not a color: the heat level (0 to 1) past which key text switches to --heat-ink, see .heat-text. */
   --heat-switch: 0.89;
@@ -101,6 +104,7 @@
   --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
   --color-accent-contrast: var(--accent-contrast);
+  --color-accent-2: var(--accent-2);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-info: var(--info);
@@ -127,10 +131,38 @@
   }
 }
 
+/*
+ * The page background: a turquoise glow on the left and a violet one on the right, over the background color.
+ * They stay put when the page scrolls.
+ */
 body {
-  background: var(--background);
+  background:
+    radial-gradient(60rem 32rem at 5% -10%, color-mix(in oklab, var(--accent) 11%, transparent), transparent 70%),
+    radial-gradient(52rem 30rem at 100% 0%, color-mix(in oklab, var(--accent-2) 9%, transparent), transparent 70%),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Text painted with the turquoise-to-violet gradient: the site name and the docs title. */
+@utility text-gradient {
+  background: linear-gradient(90deg, var(--accent) 35%, var(--accent-2));
+  background-clip: text;
+  color: transparent;
+}
+
+/* Cards: a thin lit edge on top and a soft turquoise halo around, as if lit from inside. */
+@utility panel-glow {
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--accent) 15%, transparent),
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 12px 32px -16px color-mix(in oklab, var(--accent) 20%, transparent);
+}
+
+/* The main button and selected items glow with the accent. */
+@utility glow {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 20%, transparent), 0 4px 14px -4px color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
 /*

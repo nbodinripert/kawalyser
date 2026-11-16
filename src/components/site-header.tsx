@@ -11,7 +11,7 @@ type SiteHeaderProps = { lang: Locale; dictionary: Dictionary; current: SitePage
 /** The bar on top of every page: the site name, the menu between the analyzer and the docs, language and theme. */
 export function SiteHeader({ lang, dictionary, current }: SiteHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-20 bg-background/75 backdrop-blur-md">
       <div className={cx(pageWidth, "flex items-center justify-between gap-4 py-3")}>
         <Link
           href={localePath(lang)}
@@ -22,7 +22,7 @@ export function SiteHeader({ lang, dictionary, current }: SiteHeaderProps) {
           <img src="/icon.svg" alt="" aria-hidden className="size-8 shrink-0" />
           <span className="min-w-0">
             {/* On a phone, the menu needs the room: the name stays for screen readers, the logo for the eye. */}
-            <span className="sr-only text-sm font-semibold tracking-tight sm:not-sr-only sm:block">{dictionary.meta.title}</span>
+            <span className="sr-only text-sm font-semibold tracking-tight sm:not-sr-only sm:block sm:w-fit sm:text-gradient">{dictionary.meta.title}</span>
             <span className="hidden text-xs text-muted xl:block">{dictionary.home.tagline}</span>
           </span>
         </Link>
@@ -34,7 +34,7 @@ export function SiteHeader({ lang, dictionary, current }: SiteHeaderProps) {
                   <Link
                     href={localePath(lang, page)}
                     aria-current={page === current ? "page" : undefined}
-                    className="rounded-md px-2 py-1 font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent aria-[current=page]:bg-accent-soft aria-[current=page]:text-foreground"
+                    className="rounded-md px-2 py-1 font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-accent aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent"
                   >
                     {dictionary.nav[page]}
                   </Link>
@@ -47,6 +47,8 @@ export function SiteHeader({ lang, dictionary, current }: SiteHeaderProps) {
           <ThemeToggle labels={dictionary.themeToggle} />
         </div>
       </div>
+      {/* The lower edge of the bar: a line that fades from turquoise to violet. */}
+      <span aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-accent from-35% via-accent-2 via-75% to-border" />
     </header>
   );
 }

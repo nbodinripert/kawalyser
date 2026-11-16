@@ -16,7 +16,7 @@ export function Button({ variant = "secondary", className, type = "button", ...p
       className={cx(
         "inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "bg-accent text-accent-contrast shadow-sm hover:bg-accent-strong",
+        variant === "primary" && "bg-linear-to-r from-accent from-65% to-accent-2 text-accent-contrast glow hover:brightness-110",
         variant === "secondary" && "border border-border bg-surface text-foreground hover:bg-surface-muted",
         variant === "ghost" && "text-muted hover:bg-surface-muted hover:text-foreground",
         className,
@@ -28,10 +28,16 @@ export function Button({ variant = "secondary", className, type = "button", ...p
 
 export function Card({ title, actions, children, className }: { title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cx("min-w-0 rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:p-6", className)}>
+    <section className={cx("min-w-0 rounded-2xl border border-border bg-surface/85 p-5 panel-glow backdrop-blur-sm sm:p-6", className)}>
       {(title || actions) && (
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          {title && <h2 className="text-base font-semibold tracking-tight">{title}</h2>}
+          {title && (
+            <h2 className="flex items-center gap-2.5 text-base font-semibold tracking-tight">
+              {/* A small turquoise-to-violet bar marks every card title. */}
+              <span aria-hidden className="h-4 w-1 shrink-0 rounded-full bg-linear-to-b from-accent from-50% to-accent-2" />
+              {title}
+            </h2>
+          )}
           {actions}
         </header>
       )}
@@ -91,7 +97,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
           onClick={() => onChange(option.value)}
           className={cx(
             "h-8 rounded-md px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-accent",
-            option.value === value ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground",
+            option.value === value ? "bg-surface text-accent shadow-sm ring-1 ring-accent/40" : "text-muted hover:text-foreground",
           )}
         >
           {option.label}

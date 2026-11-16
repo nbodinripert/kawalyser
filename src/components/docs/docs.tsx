@@ -351,12 +351,12 @@ function Hero({ lang, labels }: { lang: Locale; labels: Labels["hero"] }) {
     <div className="grid items-center gap-10 rounded-3xl border border-border bg-surface px-6 py-10 sm:px-10 lg:grid-cols-[minmax(0,1fr)_auto]">
       <div>
         <p className="text-xs font-semibold tracking-wide text-accent uppercase">{labels.eyebrow}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{labels.title}</h1>
+        <h1 className="mt-2 w-fit text-3xl font-semibold tracking-tight text-balance text-gradient sm:text-4xl">{labels.title}</h1>
         <p className="mt-4 max-w-2xl text-base text-muted">{labels.intro}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={localePath(lang)}
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-contrast hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-linear-to-r from-accent from-65% to-accent-2 px-4 text-sm font-medium text-accent-contrast glow hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             {labels.open}
             <ArrowRightIcon />
