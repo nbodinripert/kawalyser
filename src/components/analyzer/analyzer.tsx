@@ -311,8 +311,8 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
   const fileButton = "w-full justify-start";
 
   return (
-    // On wide screens, the map and the results share the main column, and the actions and the replacements stand
-    // beside them, so that the analysis can run again without scrolling back up. On a phone: map, actions, results.
+    // On wide screens, the actions stand beside the layout card and follow it as it scrolls; the results take the
+    // whole width under both. On a phone: layout, actions, results.
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_21rem] xl:gap-8 [&>*]:min-w-0">
       <Card
         className="xl:col-start-1 xl:row-start-1"
@@ -403,9 +403,19 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
           labels={labels}
           onChange={(layout) => dispatch({ type: "edit", layout })}
         />
+        <div className="mt-8">
+          <ReplacementsPanel
+            replacements={state.replacements}
+            level={state.level}
+            name={state.replacementsName}
+            layout={state.layout}
+            labels={dictionary.replacements}
+            legend={labels.legend}
+          />
+        </div>
       </Card>
 
-      <div className="grid content-start gap-6 sm:grid-cols-2 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:grid-cols-1">
+      <div className="grid content-start gap-6 sm:grid-cols-2 xl:sticky xl:top-24 xl:col-start-2 xl:row-start-1 xl:grid-cols-1 xl:self-start">
         <Card title={dictionary.analysis.title}>
           <div className="grid gap-3">
             <Button variant="primary" className="h-11 w-full text-base" onClick={runAnalysis} disabled={running} aria-busy={running}>
@@ -454,19 +464,9 @@ export function Analyzer({ dictionary, locale, presets, initialPreset }: Analyze
           </div>
         </Card>
 
-        <div className="sm:col-span-2 xl:col-span-1">
-          <ReplacementsPanel
-            replacements={state.replacements}
-            level={state.level}
-            name={state.replacementsName}
-            layout={state.layout}
-            labels={dictionary.replacements}
-            legend={labels.legend}
-          />
-        </div>
       </div>
 
-      <div aria-live="polite" className="xl:col-start-1 xl:row-start-2">
+      <div aria-live="polite" className="xl:col-span-2 xl:row-start-2">
         {state.status === "failed" && (
           <p role="alert" className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">
             {dictionary.analysis.failed}

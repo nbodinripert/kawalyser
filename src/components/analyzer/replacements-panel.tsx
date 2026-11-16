@@ -39,25 +39,24 @@ export function ReplacementsPanel({ replacements, level, name, layout, labels, l
     return special ? `${char} (${special})` : char === SPACE ? "␣" : char;
   };
 
-  // The list is cut right under the 12th replacement, whatever the headings above it.
+  // The list is cut right under the 12th replacement from the top, whatever the headings above it. On a wide panel,
+  // the two groups stand side by side: the rows are taken in the order they appear from the top, column or not.
   const list = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const element = list.current;
     if (!element) return;
-    const rows = element.querySelectorAll("tr[data-rule]");
-    const last = rows[VISIBLE_RULES - 1];
-    if (rows.length <= VISIBLE_RULES || !last) {
-      element.style.maxHeight = "";
-      return;
-    }
+    element.style.maxHeight = "";
+    const bottoms = Array.from(element.querySelectorAll("tr[data-rule]"), (row) => row.getBoundingClientRect().bottom).sort((a, b) => a - b);
+    const last = bottoms[VISIBLE_RULES - 1];
+    if (bottoms.length <= VISIBLE_RULES || last === undefined) return;
     const padding = parseFloat(getComputedStyle(element).paddingBottom);
-    const bottom = last.getBoundingClientRect().bottom - element.getBoundingClientRect().top + element.scrollTop;
+    const bottom = last - element.getBoundingClientRect().top + element.scrollTop;
     element.style.maxHeight = `${Math.ceil(bottom + padding)}px`;
   });
 
   return (
-    <aside className="flex min-h-0 flex-col self-start rounded-xl border border-border bg-surface-muted/60" aria-label={labels.title}>
-      <header className="border-b border-border px-3 py-2">
+    <aside className="flex min-h-0 flex-col rounded-xl border border-border bg-surface-muted/60" aria-label={labels.title}>
+      <header className="border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold">{labels.title}</h3>
         {name && <p className="truncate text-xs text-muted">{name}</p>}
         {missing.length > 0 && (
@@ -67,12 +66,16 @@ export function ReplacementsPanel({ replacements, level, name, layout, labels, l
         )}
       </header>
       {groups.length === 0 ? (
-        <p className="px-3 py-3 text-xs text-muted">{name ? labels.hidden : labels.empty}</p>
+        <p className="px-4 py-3 text-xs text-muted">{name ? labels.hidden : labels.empty}</p>
       ) : (
         // The scrollbar stays visible, so that the hidden replacements are not overlooked.
-        <div ref={list} tabIndex={0} className="scrollbar-visible overflow-y-auto px-3 py-2 focus-visible:outline-2 focus-visible:outline-accent">
+        <div
+          ref={list}
+          tabIndex={0}
+          className="scrollbar-visible grid content-start gap-x-10 gap-y-4 overflow-y-auto px-4 py-3 focus-visible:outline-2 focus-visible:outline-accent md:grid-cols-2"
+        >
           {groups.map((group) => (
-            <section key={group.title} className="mb-3 last:mb-0">
+            <section key={group.title}>
               <h4 className="mb-1 text-[0.7rem] font-semibold tracking-wide text-faint uppercase">{group.title}</h4>
               <table className="w-full text-sm">
                 <thead className="sr-only">
