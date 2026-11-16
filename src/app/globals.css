@@ -45,6 +45,12 @@
   /* Background of error messages. */
   --danger-soft: light-dark(#fbe9ea, #3a1a1d);
 
+  /* Messages in the corner of the screen (toast.tsx): a solid blue, so that they stand out from the turquoise page.
+     White on it reads at 6.7:1 in the light theme, 5.2:1 in the dark one. */
+  --info: light-dark(#1d4ed8, #2563eb);
+  /* Text, icon and time bar on --info. */
+  --info-ink: light-dark(#ffffff, #ffffff);
+
   /* Keys of the keyboard map. */
   --key: light-dark(#e8efee, #223230);
   --key-border: light-dark(#c2d0ce, #364a47);
@@ -97,18 +103,27 @@
   --color-accent-contrast: var(--accent-contrast);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-ink: var(--info-ink);
   --color-key: var(--key);
   --color-key-border: var(--key-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* A message slides up from the corner of the screen (toast.tsx). */
+  /* A message slides up from the corner of the screen, and its time bar empties until it leaves (toast.tsx). */
   --animate-toast-in: toast-in 200ms ease-out;
+  --animate-toast-timer: toast-timer 5s linear forwards;
 }
 
 @keyframes toast-in {
   from {
     opacity: 0;
     transform: translateY(0.75rem);
+  }
+}
+
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
   }
 }
 
