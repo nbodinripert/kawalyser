@@ -144,6 +144,24 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/*
+ * Tailwind's reset gives buttons the default arrow. Everything the visitor can act on shows the pointing hand
+ * instead, unless it is disabled. In the base layer so that a utility such as cursor-grab (the draggable keys) still wins.
+ */
+@layer base {
+  a[href],
+  summary,
+  button:not(:disabled),
+  select:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([aria-disabled="true"]),
+  input:is([type="checkbox"], [type="radio"], [type="file"], [type="range"]):not(:disabled),
+  label:has(input:not(:disabled)) {
+    cursor: pointer;
+  }
+}
+
 /* Text painted with the turquoise-to-violet gradient: the site name and the docs title. */
 @utility text-gradient {
   background: linear-gradient(90deg, var(--accent) 35%, var(--accent-2));
