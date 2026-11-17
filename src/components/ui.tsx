@@ -16,7 +16,7 @@ export function Button({ variant = "secondary", className, type = "button", ...p
       className={cx(
         "inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "bg-linear-to-r from-accent from-65% to-accent-2 text-accent-contrast glow hover:brightness-110",
+        variant === "primary" && "bg-accent text-accent-contrast glow hover:brightness-110",
         variant === "secondary" && "border border-border bg-surface text-foreground hover:bg-surface-muted",
         variant === "ghost" && "text-muted hover:bg-surface-muted hover:text-foreground",
         className,

@@ -356,7 +356,7 @@ function Hero({ lang, labels }: { lang: Locale; labels: Labels["hero"] }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={localePath(lang)}
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-linear-to-r from-accent from-65% to-accent-2 px-4 text-sm font-medium text-accent-contrast glow hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-accent-contrast glow hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             {labels.open}
             <ArrowRightIcon />

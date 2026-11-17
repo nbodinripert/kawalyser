@@ -8,8 +8,7 @@
  * Each color is written once, as light-dark(light theme, dark theme). Visitors follow their system theme
  * until they pick one with the toggle, which sets data-theme on <html> (see src/lib/theme.ts).
  *
- * The turquoise accent leads. A violet second accent ends the gradients (header line, site name, main button,
- * card titles) and colors one series per chart; the background glows with both. The chart colors were picked by eye and have not been run through a color-blind or contrast
+ * The turquoise accent leads. A violet second accent ends the gradients (header line, site name, card titles) and colors one series per chart; the background glows with both. The chart colors were picked by eye and have not been run through a color-blind or contrast
  * validator: they differ in lightness as well as in hue to compensate.
  * src/app/[lang]/opengraph-image.tsx copies a few light theme colors: a test checks that they stay equal.
  */
