@@ -39,11 +39,13 @@ Le moteur ne lit que la zone `base` d'une touche : `*`, `$`, `#` et l'espace n'y
 
 Repeat ne sert que pour un caractère tapé en une frappe : `ôô` reste `*o*o`. Une règle de remplacement qu'on ne peut pas taper sur la carte (touche spéciale ou caractère absent) est ignorée hors `compat`, et le panneau la barre (`missingKeys` dans `keymap.ts`).
 
+Il n'y a plus de liste de caractères autorisés (specs v2) : tout caractère de la carte s'affiche et peut être tapé. Hors `compat`, un emoji ou un caractère à usage privé du corpus passe par `codec.ts` : un seul symbole pendant l'analyse, le vrai caractère à l'affichage et dans les CSV.
+
 Doublons : un caractère présent deux fois sur la grille principale dans la même couche fait refuser l'import du `.toml` (`duplicates.ts`). Sinon la priorité est grille > pouces > colonnes extérieures, puis couche directe > couche morte (question 24).
 
 ### Les niveaux d'analyse
 
-1. `raw` (« Aucun ») : le texte tel quel ; seuls les caractères simples de la couche morte sont convertis en deux frappes, et les lettres doublées passent par Repeat si `$` est sur la carte.
+1. `raw` (« Aucun ») : le texte tel quel ; seuls les caractères simples de la couche morte sont convertis en deux frappes, et les caractères doublés passent par Repeat si `$` est sur la carte.
 2. `corrections` : en plus, les séquences de touche morte de plusieurs caractères, puis les `essentialCorrections`.
 3. `clever` : les `optionalCorrections` (Clever Keys) d'abord, puis tout ce qui précède.
 
@@ -71,7 +73,7 @@ Les trigrammes se lisent sur trois périmètres : `all`, `noSpace` (sans espace)
 
 ### Kalamine
 
-Les `.toml` décrivent la disposition en dessin ASCII. `base` porte la couche morte à droite de chaque touche, `full` y met AltGr à la place. `**` est la 1DK, `*x` une autre touche morte. Géométries lues : ANSI, ISO, ERGO, ALT. La rangée des chiffres et AltGr sont ignorées. À l'import, Magic va sur `tli`, Repeat sur `tri` et l'espace sur `tro`.
+Les `.toml` décrivent la disposition en dessin ASCII. `base` porte la couche morte à droite de chaque touche, `full` y met AltGr à la place. `**` est la 1DK, `*x` une autre touche morte. Géométries lues : ANSI, ISO, ERGO, ALT. La rangée des chiffres et AltGr sont ignorées. À l'import, Magic va sur `tli`, Repeat sur `tri` et l'espace sur `tro`. Les dispositions de la liste (`layouts/layouts.json`) décrivent elles-mêmes leurs quatre pouces : `leftHome` (`tlo`), `leftSecondary` (`tli`), `rightSecondary` (`tri`), `rightHome` (`tro`) ; la touche de repos est l'extérieure (question 36).
 
 ## Comment traiter une demande
 

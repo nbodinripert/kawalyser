@@ -1,7 +1,7 @@
 import { shapes, type KeySlot } from "@/domain/geometry";
 import type { Layout } from "@/domain/layout";
 import { DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
-import { isValidChar, type CorpusLanguage } from "@/domain/valid-chars";
+import { createCodec, identityCodec, type Codec } from "./codec";
 
 /**
  * Inside the engine, each key press is one UTF-16 unit. Special keys use private-use characters,
@@ -55,6 +55,8 @@ export type KeyMap = {
   deadKeySequences: Map<string, string>;
   /** The symbol each key types when pressed alone. */
   symbolOf: Map<string, string>;
+  /** Turns the corpus, the map and the replacements into one symbol per character, and back for display. */
+  codec: Codec;
 };
 
 /**
@@ -63,7 +65,7 @@ export type KeyMap = {
  */
 export function missingKeys(keyMap: KeyMap, keys: string): string[] {
   return Array.from(keys).filter((char) => {
-    const token = toToken(char);
+    const token = toToken(keyMap.codec.encode(char));
     return !keyMap.slotOf.has(token) && !keyMap.deadKeySequences.has(token);
   });
 }
@@ -72,7 +74,7 @@ export function canType(keyMap: KeyMap, keys: string): boolean {
   return missingKeys(keyMap, keys).length === 0;
 }
 
-export type KeyMapOptions = { language: CorpusLanguage; compat?: boolean };
+export type KeyMapOptions = { compat?: boolean };
 
 const rolePriority = { pad: 0, thumb: 1, outer: 2 } as const;
 
@@ -80,18 +82,17 @@ const rolePriority = { pad: 0, thumb: 1, outer: 2 } as const;
  * Builds the key lookups. A character on several keys resolves to the main pad first,
  * then to direct access over the dead key layer (question 24 of the specs).
  */
-export function buildKeyMap(layout: Layout, { language, compat = false }: KeyMapOptions): KeyMap {
+export function buildKeyMap(layout: Layout, { compat = false }: KeyMapOptions = {}): KeyMap {
   const slots = [...shapes[layout.shapeId].keys].sort((a, b) => rolePriority[a.role] - rolePriority[b.role]);
-  const usable = (char: string) =>
-    char === SPACE || char === DEAD_KEY || char === REPEAT_KEY || char === MAGIC_KEY || compat || isValidChar(char, language);
+  const codec = compat ? identityCodec : createCodec();
 
   const slotOf = new Map<string, KeySlot>();
   const symbolOf = new Map<string, string>();
 
   for (const slot of slots) {
     const base = layout.keys[slot.id]?.base;
-    if (base === undefined || !usable(base)) continue;
-    const symbol = toToken(base.toLowerCase());
+    if (base === undefined) continue;
+    const symbol = toToken(codec.encode(base.toLowerCase()));
     if (slotOf.has(symbol)) continue;
     slotOf.set(symbol, slot);
     symbolOf.set(slot.id, symbol);
@@ -107,13 +108,12 @@ export function buildKeyMap(layout: Layout, { language, compat = false }: KeyMap
       const dk = chars?.dk;
       const keySymbol = symbolOf.get(slot.id);
       if (dk === undefined || keySymbol === undefined || keySymbol === DK) continue;
-      if (!compat && !isValidChar(dk, language) && Array.from(dk).length === 1) continue;
-      const char = dk.toLowerCase();
+      const char = codec.encode(dk.toLowerCase());
       if (!compat && slotOf.has(char)) continue;
       if (deadKeySequences.has(char)) continue;
       deadKeySequences.set(char, DK + (keySymbol === SPACE ? DK_SPACE : keySymbol));
     }
   }
 
-  return { slotOf, deadKeySequences, symbolOf };
+  return { slotOf, deadKeySequences, symbolOf, codec };
 }

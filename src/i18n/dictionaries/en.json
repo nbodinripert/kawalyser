@@ -6,11 +6,16 @@
     "imageAlt": "Kawalyser, keyboard layout analyzer, with the Propergol layout on a split keyboard"
   },
   "home": {
-    "tagline": "Keyboard layout analyzer supporting magic rules, 1DK and thumb alphas.",
+    "tagline": "Test a keyboard layout before you learn it: finger load, same-finger bigrams, rolls, with 1DK, Repeat and Magic keys.",
     "heading": "Kawalyser: keyboard layout analyzer"
   },
   "languageSwitcher": {
     "label": "Language"
+  },
+  "nav": {
+    "label": "Main",
+    "analyzer": "Analyzer",
+    "docs": "Docs"
   },
   "themeToggle": {
     "toDark": "Switch to dark theme",
@@ -18,9 +23,20 @@
   },
   "layout": {
     "title": "Layout",
+    "importTitle": "Import",
+    "importCorpus": "Import corpus",
     "importToml": "Import .toml",
     "importReplacements": "Import replacements",
     "removeReplacements": "Remove replacements",
+    "removeCorpus": "Remove corpus",
+    "corpusImported": "{name} imported: {count} characters. It stays in your browser.",
+    "corpusLegacyEncoding": "The file was not in UTF-8, so it was read as Windows-1252. If accented letters look wrong in the results, save it as UTF-8 and import it again.",
+    "corpusNotStored": "This browser could not store it: it will be gone after a reload.",
+    "preset": "Layout",
+    "modified": "{name} (modified)",
+    "unnamed": "Imported layout",
+    "presetLoaded": "{name} loaded.",
+    "closeNotice": "Close",
     "shape": "Keyboard",
     "shapes": {
       "split40": "Split, 40 keys",
@@ -29,7 +45,8 @@
     "corpus": "Corpus",
     "corpora": {
       "fr": "French",
-      "en": "English"
+      "en": "English",
+      "personal": "Custom ({name})"
     },
     "level": "Replacements",
     "levels": {
@@ -52,9 +69,16 @@
       "notPlaced": "not placed",
       "dragHint": "Drag it onto a key to place it"
     },
+    "mapKey": {
+      "label": "Key colors",
+      "least": "Least typed",
+      "most": "Most typed"
+    },
     "refused": "Not possible: {char} must stay in the lower-left corner of a key, the only place the analysis reads it.",
     "trash": "Trash",
     "trashHint": "To delete a character, drag it onto the trash, or select its zone and press Delete or Backspace.",
+    "homeHint": "The {outlined} are the home keys, where the fingers rest.",
+    "homeOutlined": "outlined keys",
     "drag": {
       "deleted": "Character deleted.",
       "placed": "Key placed.",
@@ -81,7 +105,10 @@
       "noLayer": "This file has no base or full layer.",
       "unknownGeometry": "The {geometry} geometry is not supported. Supported geometries: ERGO, ISO, ANSI and ALT.",
       "duplicates": "{chars} appear on several keys of the main pad. The analyzer could not tell which key is typed, so the file was not imported.",
-      "replacements": "This replacement file is not valid: {detail}"
+      "replacements": "This replacement file is not valid: {detail}",
+      "corpusEmpty": "{name} is empty.",
+      "corpusTooLarge": "{name} is larger than 10 MB, the limit for a corpus.",
+      "corpusNotText": "{name} does not look like text. Save it as a .txt file in UTF-8, then try again."
     }
   },
   "replacements": {
@@ -96,11 +123,12 @@
     "type": "type"
   },
   "analysis": {
+    "title": "Analysis",
     "run": "Run analysis",
     "running": "Analyzing…",
     "failed": "The analysis failed. Please try again in a moment.",
     "empty": "Run the analysis to see the statistics of this layout.",
-    "cleared": "The layout changed, so the previous statistics were cleared.",
+    "cleared": "The previous statistics were cleared: run the analysis again to update them.",
     "downloadNgrams": "Download n-grams",
     "downloadDifficulties": "Download difficulties",
     "downloadFailed": "The download failed. Please try again."
@@ -227,7 +255,13 @@
       "totalHint": "Sum of the scores in the table"
     },
     "table": "Show as a table",
-    "hideTable": "Hide the table"
+    "hideTable": "Hide the table",
+    "missing": {
+      "title": "Not on the map",
+      "summary": "{share} of the corpus characters are nowhere on the map, and no replacement types them. The statistics leave them out.",
+      "none": "Every character of the corpus is on the map.",
+      "listLabel": "Most frequent characters missing from the map"
+    }
   },
   "csv": {
     "words": "Words",
@@ -258,27 +292,291 @@
       "shs5": "SHS 5+"
     }
   },
-  "about": {
-    "title": "Test a keyboard layout before you learn it",
-    "intro": "Learning a new keyboard layout takes weeks. Kawalyser first tells you if it is comfortable. It types a long French or English text on your layout and counts how your fingers move.",
-    "measuresTitle": "What it measures",
-    "measures": [
-      "Same-finger bigrams (SFB) and skipgrams (SFS).",
-      "Scissors, lateral stretches and row jumps.",
-      "Hand alternation, inward and outward rolls, and redirects.",
-      "The load on each finger and each hand."
-    ],
-    "featuresTitle": "Made for modern layouts",
-    "features": [
-      "Split keyboards with 34 or 40 keys, letters under the thumbs included.",
-      "A dead key (1DK) for accented letters and symbols.",
-      "Repeat and Magic keys, and Clever Keys rules from a replacements file.",
-      "Kalamine .toml import, drag-and-drop editing and CSV export."
-    ],
-    "free": "Free, with no sign-up."
+  "docs": {
+    "pageTitle": "Docs: test a keyboard layout without learning it · Kawalyser",
+    "description": "How Kawalyser works: ready-made layouts, Kalamine import, 1DK, Repeat and Magic keys, Clever Keys, your own corpus, and every statistic explained.",
+    "tocLabel": "On this page",
+    "hero": {
+      "eyebrow": "Documentation",
+      "title": "Test a keyboard layout before you learn it",
+      "intro": "Kawalyser types a long text on a keyboard layout and counts how your fingers move. In a few seconds, you know whether a layout is comfortable, without spending weeks learning it.",
+      "open": "Open the analyzer",
+      "source": "Source code"
+    },
+    "purpose": {
+      "title": "Why Kawalyser",
+      "intro": "A keyboard layout is the choice of which character goes on which key. QWERTY is one, but many others aim to type more comfortably. Kawalyser helps you choose and tune them.",
+      "problemLabel": "The problem",
+      "answerLabel": "Kawalyser's answer",
+      "items": [
+        {
+          "problem": "Learning a layout takes weeks.",
+          "answer": "Kawalyser measures it first, on real text, before you commit."
+        },
+        {
+          "problem": "Modern layouts rely on tricks most analyzers ignore: a dead key for accents, Repeat and Magic keys, Clever Keys.",
+          "answer": "Kawalyser types the text the way your keyboard would, tricks included."
+        },
+        {
+          "problem": "The analyzer these layouts come from is an Excel workbook: slow, and not interactive.",
+          "answer": "Kawalyser keeps its algorithms and its results in a fast, free website. Move a key, analyze again."
+        }
+      ]
+    },
+    "features": {
+      "title": "What you can do",
+      "items": {
+        "presets": {
+          "title": "Pick a layout",
+          "text": "Propergol, Ergo-L, Erglace, Strud-L or StrudE-L, with their thumb keys and replacements, in one click."
+        },
+        "toml": {
+          "title": "Import your layout",
+          "text": "Load any Kalamine .toml file. The characters land on the right keys by themselves."
+        },
+        "edit": {
+          "title": "Move keys",
+          "text": "Drag a character onto another key, or select a zone and type. Undo and redo at will."
+        },
+        "replacements": {
+          "title": "Add replacements",
+          "text": "Import a .json file of Magic rules and Clever Keys, and choose how many apply."
+        },
+        "corpus": {
+          "title": "Use your own text",
+          "text": "Import a .txt corpus in any language. It never leaves your browser."
+        },
+        "analyze": {
+          "title": "Analyze",
+          "text": "Finger load, rolls, same-finger bigrams, scissors and more, on a French or English corpus, or yours."
+        },
+        "download": {
+          "title": "Download the details",
+          "text": "Export every n-gram and every difficulty as CSV files for your spreadsheet."
+        },
+        "shapes": {
+          "title": "Choose the keyboard",
+          "text": "Split keyboards with 40 or 34 keys, thumb keys included."
+        }
+      }
+    },
+    "start": {
+      "title": "Get started in four steps",
+      "steps": [
+        {
+          "title": "Choose a layout",
+          "text": "Pick one in the Layout list, or import your .toml file."
+        },
+        {
+          "title": "Adjust it",
+          "text": "Move characters, add replacements, pick a corpus."
+        },
+        {
+          "title": "Run the analysis",
+          "text": "Click Run analysis. It takes a few seconds."
+        },
+        {
+          "title": "Read the results",
+          "text": "Compare the statistics, then download the details to dig deeper. On the map, the outlined keys are the home keys, where the fingers rest, and the colors show how much each key is typed."
+        }
+      ]
+    },
+    "keys": {
+      "title": "Special keys",
+      "intro": "Kawalyser understands the keys that make modern layouts efficient. On the map, each one is written with a symbol.",
+      "items": {
+        "dead": {
+          "name": "1DK dead key",
+          "text": "One dead key opens a second layer: press it, then a key, to type the character drawn at the bottom right of that key.",
+          "example": "* then e types ê"
+        },
+        "repeat": {
+          "name": "Repeat",
+          "text": "Types the previous key press again, so a doubled letter needs no move of the same finger.",
+          "example": "l then $ types ll"
+        },
+        "magic": {
+          "name": "Magic",
+          "text": "Its output depends on the previous key press. Your replacements file says what it types.",
+          "example": "u then # types ui on Propergol"
+        },
+        "clever": {
+          "name": "Clever Keys",
+          "text": "Firmware rules that type a whole string from a short sequence, sometimes only at the start or end of a word.",
+          "example": "q then n types quand on Propergol"
+        }
+      },
+      "levelsTitle": "Three analysis levels",
+      "levelsIntro": "The Replacements list sets which rules of your file the analysis applies.",
+      "levels": {
+        "raw": "The text as it is. Repeat still serves if it is on the map.",
+        "corrections": "Adds the essential corrections, and the dead key strings of several characters.",
+        "clever": "Adds the optional corrections too: the Clever Keys."
+      }
+    },
+    "metrics": {
+      "title": "The statistics",
+      "intro": "Kawalyser cleans the corpus, types it on your layout, then cuts it into bigrams (two key presses) and trigrams (three). The text is read in lowercase: Shift is left out. For every difficulty, lower is better.",
+      "bigramsTitle": "Uncomfortable bigrams",
+      "bigramsIntro": "Two key presses in a row with the same hand. Each diagram shows a left hand: 1 is the first press, 2 the second.",
+      "fingers": [
+        "Pinky",
+        "Ring",
+        "Middle",
+        "Index",
+        "Index"
+      ],
+      "bigrams": {
+        "sfb": {
+          "name": "SFB · Same finger bigram",
+          "text": "Two different keys with the same finger: the slowest move to type."
+        },
+        "skb": {
+          "name": "SKB · Same key bigram",
+          "text": "The same key twice, as in a doubled letter. Repeat avoids it."
+        },
+        "lsb": {
+          "name": "LSB · Lateral stretch bigram",
+          "text": "Neighboring fingers two columns apart: the hand stretches sideways."
+        },
+        "fsb": {
+          "name": "FSB · Full scissor bigram",
+          "text": "Two rows apart, a long finger below a shorter one: the fingers fold the wrong way."
+        },
+        "hsb": {
+          "name": "HSB · Half scissor bigram",
+          "text": "The same fold, one row apart."
+        },
+        "rjb": {
+          "name": "RJB · Row jump bigram",
+          "text": "Two rows apart, without a scissor."
+        }
+      },
+      "othersTitle": "Other statistics",
+      "nameHeader": "Statistic",
+      "textHeader": "What it measures",
+      "others": {
+        "load": {
+          "name": "Finger and hand load",
+          "text": "The share of key presses on each finger and each hand, home row keys apart."
+        },
+        "alternation": {
+          "name": "Alternation",
+          "text": "Three presses: one hand, the other, then the first again."
+        },
+        "rolls": {
+          "name": "Rolls",
+          "text": "Two presses with one hand, one with the other, inward (towards the thumb) or outward."
+        },
+        "oneHand": {
+          "name": "One-hand trigrams",
+          "text": "Three presses with one hand, in one direction."
+        },
+        "redirects": {
+          "name": "Redirects",
+          "text": "Three presses with one hand that change direction. Bad when none is on the index or the thumb."
+        },
+        "sfs": {
+          "name": "SFS and STS · Same finger skipgrams",
+          "text": "The first and third presses of a trigram on the same finger. SFS leaves out the trigrams with a space, STS counts them."
+        },
+        "fss": {
+          "name": "FSS · Full scissor skipgram",
+          "text": "A full scissor between the first and third presses of a trigram."
+        },
+        "cc": {
+          "name": "CC · Cognitive load",
+          "text": "How often a replacement rule applies, per key press of the original text."
+        },
+        "shs": {
+          "name": "SHS · Same hand sequences",
+          "text": "Runs of four or more presses with one hand inside a word. Long runs that come back score more."
+        },
+        "missing": {
+          "name": "Not on the map",
+          "text": "The most frequent characters of the corpus that neither a key nor a replacement types."
+        }
+      }
+    },
+    "files": {
+      "title": "Files you can import",
+      "toml": {
+        "title": "Layout: Kalamine .toml",
+        "text": "The format of {kalamine}, the layout creation tool. Kawalyser reads the base layer, and the dead key layer drawn on the right of each key.",
+        "points": [
+          "The number row and AltGr are left out.",
+          "The bottom left key goes to the left thumb, Magic, Repeat and space to the other thumbs.",
+          "A character on two keys of the main block stops the import: Kawalyser could not tell which one you type."
+        ]
+      },
+      "replacements": {
+        "title": "Replacements: .json",
+        "text": "Each rule reads: to write text, type keys. In keys, * is the dead key, $ Repeat and # Magic. Essential corrections apply from the Essential level, optional ones at the Essential + Optional level."
+      },
+      "corpus": {
+        "title": "Corpus: .txt",
+        "text": "Any plain text, in any language, up to 10 MB.",
+        "points": [
+          "UTF-8 is best. A file in another encoding is read as Windows-1252, with a warning.",
+          "Curly apostrophes become straight ones, and ... becomes … when the map has it.",
+          "Characters missing from the map are left out of the statistics, and listed under the results."
+        ]
+      }
+    },
+    "privacy": {
+      "title": "Your data",
+      "items": [
+        "No account, no sign-up, no ads.",
+        "The site's French and English corpora stay on the server: they are never sent to your browser.",
+        "Your own corpus stays in your browser: it is analyzed there and never sent to the server.",
+        "To analyze the French or English corpus, your layout and replacements go to the server for the time of the analysis.",
+        "Your layout, replacements and corpus are kept in your browser, so that you find them on your next visit."
+      ]
+    },
+    "faq": {
+      "title": "Questions",
+      "items": [
+        {
+          "question": "Why does a character of my text not count?",
+          "answer": "The analysis reads the text in lowercase and leaves Shift out. A character that no key types without Shift, directly or after the dead key, and that no replacement of the chosen level types, is left out of the statistics. The Not on the map card lists the most frequent ones."
+        },
+        {
+          "question": "Can I test a second dead key or a second Magic key?",
+          "answer": "Yes. Place a rare character, such as ¤, on a key, then use it in the keys of your replacements file. The rule ion → i¤ turns it into a second Magic key. Pick a character your corpus does not contain."
+        },
+        {
+          "question": "Why do my numbers differ from the Excel workbook?",
+          "answer": "The site corrects a few behaviors of the workbook, decided with its author. The {readme} lists them."
+        },
+        {
+          "question": "My keyboard is not split.",
+          "answer": "For now, Kawalyser only knows split keyboards with 40 or 34 keys."
+        }
+      ]
+    },
+    "source": {
+      "title": "Source code and credits",
+      "code": "The site's code is open source, under the GPLv3 license, on {github}.",
+      "contribute": "Texts, colors and layouts can be changed from GitHub, with nothing to install: the {guide} explains how. For anything else, open an {issue}.",
+      "creditsTitle": "Credits",
+      "algorithms": "The algorithms come from the {excel} by Kawamashi, who also designed Propergol.",
+      "layouts": "Layouts: {propergol} (MIT license), {ergol} (WTFPL), {erglace}, Strud-L and StrudE-L.",
+      "links": {
+        "github": "GitHub",
+        "guide": "contributing guide",
+        "issue": "issue",
+        "excel": "Kawalyser Excel analyzer",
+        "propergol": "Propergol",
+        "ergol": "Ergo-L",
+        "erglace": "Erglace",
+        "kalamine": "Kalamine",
+        "readme": "README"
+      }
+    }
   },
   "footer": {
-    "credits": "Algorithms ported from the Kawalyser Excel analyzer by Kawamashi. Default layout: Propergol (MIT license).",
-    "source": "Source code"
+    "docs": "Docs",
+    "source": "Source code",
+    "license": "GPLv3 license"
   }
 }

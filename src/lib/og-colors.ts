@@ -4,11 +4,11 @@
  * Each key is the name of a globals.css variable in camelCase; src/app/theme-colors.test.ts checks they match.
  */
 export const ogColors = {
-  background: "#f6f8f8",
-  foreground: "#142120",
-  muted: "#586866",
+  background: "#f2f7f8",
+  foreground: "#0d1b22",
+  muted: "#4e6470",
   accent: "#00766f",
-  accentSoft: "#dff3f0",
-  key: "#e8efee",
-  keyBorder: "#c2d0ce",
+  accentSoft: "#d8f5f1",
+  key: "#e4eef0",
+  keyBorder: "#bfd2d6",
 } as const;

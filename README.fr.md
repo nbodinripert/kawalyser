@@ -4,7 +4,20 @@
 
 Site gratuit pour tester une disposition de clavier et mesurer si elle est agréable à taper, sans avoir à l'apprendre. Il reprend les algorithmes de l'[analyseur Excel Kawalyser](https://github.com/Kawamashi/Kawalyser), y compris la touche morte 1DK, les touches Repeat et Magic, et les Clever Keys.
 
-Licence : [GPLv3](LICENSE). La disposition par défaut est [Propergol](https://github.com/Kawamashi/Propergol), sous licence MIT.
+Licence : [GPLv3](LICENSE). Les dispositions de la liste sont dans [`layouts/`](layouts) : [Propergol](https://github.com/Kawamashi/Propergol) (licence MIT), ouverte par défaut, [Ergo-L](https://github.com/Nuclear-Squid/ergol) (WTFPL), [Erglace](https://github.com/Lysquid/Erglace), Strud-L et StrudE-L.
+
+## Fonctions
+
+- **Dispositions prêtes à l'emploi.** Choisissez-en une dans la liste « Disposition » : ses touches, ses pouces, ses remplacements et son corpus se chargent en un clic. Après une modification, la liste affiche « (modifiée) », et Ctrl+Z annule aussi le choix d'une disposition.
+- **Import Kalamine.** Chargez n'importe quel fichier `.toml` sur un clavier séparé de 40 ou 34 touches. Glissez un caractère sur une autre touche, ou sélectionnez une zone et tapez.
+- **Touches spéciales.** La touche morte 1DK (`*`), Repeat (`$`), Magic (`#`) et les Clever Keys, avec un fichier de remplacements. Trois niveaux de remplacements : Aucun, Essentiels, Essentiels + Optionnels.
+- **Tous les caractères comptent.** Tout caractère placé sur la carte peut être tapé. Un caractère rare utilisé dans un fichier de remplacements devient une deuxième touche morte ou une deuxième touche Magic.
+- **Votre propre corpus.** Importez un fichier `.txt` dans n'importe quelle langue, jusqu'à 10 Mo, en UTF-8 ou Windows-1252. Il est analysé dans le navigateur et n'atteint jamais le serveur.
+- **Statistiques.** Charge des doigts et des mains, bigrammes, trigrammes, les 12 difficultés, charge cognitive, et les caractères du corpus absents de la carte les plus fréquents. Tout le détail se télécharge en CSV.
+- **Page Docs.** `/fr/docs` explique les touches spéciales, chaque statistique et les formats de fichier.
+- Anglais et français, thèmes clair et sombre, utilisable au clavier seul et sur téléphone.
+
+Les chiffres diffèrent un peu de ceux de la première version du site : tous les caractères de la carte comptent désormais, le tiret compris.
 
 ## Démarrer
 
@@ -27,6 +40,8 @@ Les corpus restent privés : ils ne sont jamais envoyés au navigateur et ne son
 | Développement | Le dossier `corpus/` à la racine, ignoré par git, ou `CORPUS_DIR` |
 | Production | Un dépôt GitHub privé, lu avec `CORPUS_GITHUB_REPO` et `CORPUS_GITHUB_TOKEN` |
 
+Un visiteur peut aussi importer son propre corpus (`.txt`, 10 Mo au plus, en UTF-8 ou Windows-1252). Il n'atteint jamais le serveur : il est analysé dans le navigateur, par un Web Worker qui fait tourner le même moteur, et gardé dans le stockage IndexedDB du navigateur.
+
 Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque corpus est lu une fois par instance du serveur, puis gardé en mémoire. Un workflow GitHub Actions du dépôt des corpus appelle un « deploy hook » Vercel (secret `VERCEL_DEPLOY_HOOK_URL`) à chaque changement de corpus, pour que le site le prenne en compte tout de suite.
 
 ## Commandes
@@ -45,24 +60,27 @@ Toutes les variables sont décrites dans [`.env.example`](.env.example). Chaque 
 
 | Emplacement | Rôle |
 | --- | --- |
-| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine) et des remplacements `.json` |
+| `layouts/` | Les dispositions de la liste : fichiers `.toml`, remplacements, et `layouts.json` avec leurs touches de pouce |
+| `src/domain/` | Formes de clavier, disposition, lecture des `.toml` (Kalamine), des remplacements `.json`, de la liste des dispositions et du corpus importé par le visiteur |
 | `src/engine/` | Le moteur d'analyse, porté du VBA, sans dépendance au navigateur ni au serveur |
-| `src/server/` | Chargement privé des corpus et cache des analyses |
+| `src/server/` | Chargement privé des corpus, chargement de la liste des dispositions et cache des analyses |
 | `src/app/api/` | Routes `analyse` et `export` (CSV) |
-| `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques |
+| `src/components/analyzer/` | Carte du clavier, glisser-déposer, résultats et graphiques, analyse du corpus du visiteur dans un Web Worker |
+| `src/components/docs/` | La page Docs : ce que fait le site, touches spéciales, statistiques, fichiers, confidentialité |
 | `src/i18n/` | Langues de l'interface et traductions |
 
 Une traduction manquante dans `fr.json` provoque une erreur de compilation. Le texte de référence est `en.json`.
 
 ## Contribuer
 
-Les textes et les couleurs se modifient depuis github.com, sans rien installer : le guide est dans [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md). Chaque pull request passe par les vérifications automatiques (`.github/workflows/ci.yml`) et reçoit un aperçu Vercel avant d'être acceptée.
+Les textes, les couleurs et les dispositions se modifient depuis github.com, sans rien installer : le guide est dans [CONTRIBUTING.fr.md](CONTRIBUTING.fr.md). Chaque pull request passe par les vérifications automatiques (`.github/workflows/ci.yml`) et reçoit un aperçu Vercel avant d'être acceptée.
 
 | Pour changer | Fichier |
 | --- | --- |
 | Les textes | `src/i18n/dictionaries/en.json` et `fr.json` |
 | Les couleurs | `src/app/globals.css`, chaque couleur écrite `light-dark(clair, sombre)` |
 | Les couleurs de l'image de partage | `src/lib/og-colors.ts` (copie du thème clair, vérifiée par un test) |
+| Les dispositions de la liste | `layouts/`, avec `layouts.json` (vérifié par un test) |
 
 ## Fidélité à l'Excel
 
@@ -70,12 +88,15 @@ Les textes et les couleurs se modifient depuis github.com, sans rien installer :
 
 | Comportement de l'Excel | Sur le site |
 | --- | --- |
-| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Essentiels » | Tous les caractères valides doublés tapés d'une seule frappe (pas ceux de la couche morte : Repeat répète la dernière frappe), seulement si `$` est placé, quel que soit le niveau |
+| Repeat remplace `aa` à `zz`, même sans touche `$`, à partir du niveau « Essentiels » | Tout caractère doublé tapé d'une seule frappe, ponctuation comprise (pas ceux de la couche morte : Repeat répète la dernière frappe), seulement si `$` est placé, quel que soit le niveau |
 | « Pas de lettre avant ou après » ne reconnaît que `a` à `z` et `é` | Toutes les lettres |
 | Les barres de charge des index oublient `B` et `K` | Toutes les touches comptent |
 | « Sans espace » retire aussi la touche voisine d'espace | Seule la touche espace est retirée |
 | La règle « majeur en haut, annulaire en bas » des ciseaux ne s'applique jamais (comparaison texte/nombre en VBA) | La règle s'applique |
-| `#` n'est pas retiré du corpus | `#` est retiré, car il note la touche Magic |
+| `$`, `£`, `€` et `&` sont retirés du corpus, car ils notaient ses touches spéciales | `*`, `$` et `#` sont retirés, car ils notent les touches spéciales sur la carte ; `£`, `€` et `&` sont gardés et peuvent être tapés |
+| Un emoji ou un idéogramme rare compte pour deux caractères | Il compte pour un seul |
+| Une lettre enregistrée avec un accent séparé compte pour deux caractères | Les deux sont réunis en un seul caractère (Unicode NFC) |
+| Les espaces insécables et les tabulations sont des caractères à part | Ils sont lus comme des espaces |
 | Toutes les règles de remplacement s'appliquent, même celles qui demandent une touche absente de la carte (Magic, Repeat, touche morte ou caractère) | Ces règles sont ignorées, car elles ne peuvent pas être tapées ; le panneau des remplacements les barre |
 
 ## Format des remplacements

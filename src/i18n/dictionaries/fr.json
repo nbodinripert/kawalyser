@@ -6,11 +6,16 @@
     "imageAlt": "Kawalyser, analyseur de disposition de clavier, avec la disposition Propergol sur un clavier séparé"
   },
   "home": {
-    "tagline": "Analyseur de dispositions de clavier compatible avec les règles Magic, la 1DK et les lettres sous les pouces.",
+    "tagline": "Testez une disposition de clavier avant de l'apprendre : charge des doigts, bigrammes du même doigt, roulements, avec 1DK, Repeat et Magic.",
     "heading": "Kawalyser : analyseur de disposition de clavier"
   },
   "languageSwitcher": {
     "label": "Langue"
+  },
+  "nav": {
+    "label": "Principale",
+    "analyzer": "Analyseur",
+    "docs": "Docs"
   },
   "themeToggle": {
     "toDark": "Passer au thème sombre",
@@ -18,9 +23,20 @@
   },
   "layout": {
     "title": "Disposition",
+    "importTitle": "Importer",
+    "importCorpus": "Importer un corpus",
     "importToml": "Importer un .toml",
     "importReplacements": "Importer des remplacements",
     "removeReplacements": "Retirer les remplacements",
+    "removeCorpus": "Retirer le corpus",
+    "corpusImported": "{name} importé : {count} caractères. Il reste dans votre navigateur.",
+    "corpusLegacyEncoding": "Le fichier n'était pas en UTF-8 : il a été lu en Windows-1252. Si les accents semblent faux dans les résultats, enregistrez-le en UTF-8 et importez-le de nouveau.",
+    "corpusNotStored": "Ce navigateur n'a pas pu l'enregistrer : il disparaîtra au rechargement de la page.",
+    "preset": "Disposition",
+    "modified": "{name} (modifiée)",
+    "unnamed": "Disposition importée",
+    "presetLoaded": "{name} chargée.",
+    "closeNotice": "Fermer",
     "shape": "Clavier",
     "shapes": {
       "split40": "Split, 40 touches",
@@ -29,7 +45,8 @@
     "corpus": "Corpus",
     "corpora": {
       "fr": "Français",
-      "en": "Anglais"
+      "en": "Anglais",
+      "personal": "Personnel ({name})"
     },
     "level": "Remplacements",
     "levels": {
@@ -52,9 +69,16 @@
       "notPlaced": "non placée",
       "dragHint": "Glissez-la sur une touche pour la placer"
     },
+    "mapKey": {
+      "label": "Couleurs des touches",
+      "least": "Moins tapées",
+      "most": "Plus tapées"
+    },
     "refused": "Impossible : {char} doit rester en bas à gauche d'une touche, seul endroit lu par l'analyse.",
     "trash": "Corbeille",
     "trashHint": "Pour supprimer un caractère, glissez-le sur la corbeille, ou sélectionnez sa zone et appuyez sur Suppr ou Retour arrière.",
+    "homeHint": "Les {outlined} sont les touches de repos, où les doigts se posent.",
+    "homeOutlined": "touches cerclées",
     "drag": {
       "deleted": "Caractère supprimé.",
       "placed": "Touche placée.",
@@ -81,7 +105,10 @@
       "noLayer": "Ce fichier ne contient pas de bloc base ni full.",
       "unknownGeometry": "La forme {geometry} n'est pas prise en charge. Formes acceptées : ERGO, ISO, ANSI et ALT.",
       "duplicates": "{chars} figurent sur plusieurs touches du pavé principal. L'analyseur ne pourrait pas savoir laquelle est tapée : le fichier n'a pas été importé.",
-      "replacements": "Ce fichier de remplacements n'est pas valide : {detail}"
+      "replacements": "Ce fichier de remplacements n'est pas valide : {detail}",
+      "corpusEmpty": "{name} est vide.",
+      "corpusTooLarge": "{name} dépasse 10 Mo, la taille maximale d'un corpus.",
+      "corpusNotText": "{name} ne semble pas être du texte. Enregistrez-le au format .txt en UTF-8, puis réessayez."
     }
   },
   "replacements": {
@@ -96,11 +123,12 @@
     "type": "taper"
   },
   "analysis": {
+    "title": "Analyse",
     "run": "Lancer l'analyse",
     "running": "Analyse en cours…",
     "failed": "L'analyse a échoué. Réessayez dans un instant.",
     "empty": "Lancez l'analyse pour voir les statistiques de cette disposition.",
-    "cleared": "La disposition a changé : les statistiques précédentes ont été effacées.",
+    "cleared": "Les statistiques précédentes ont été effacées : relancez l'analyse pour les mettre à jour.",
     "downloadNgrams": "Télécharger les n-grammes",
     "downloadDifficulties": "Télécharger les difficultés",
     "downloadFailed": "Le téléchargement a échoué. Réessayez."
@@ -227,7 +255,13 @@
       "totalHint": "Somme des scores du tableau"
     },
     "table": "Afficher sous forme de tableau",
-    "hideTable": "Masquer le tableau"
+    "hideTable": "Masquer le tableau",
+    "missing": {
+      "title": "Absents de la carte",
+      "summary": "{share} des caractères du corpus ne sont nulle part sur la carte, et aucun remplacement ne les tape. Les statistiques les laissent de côté.",
+      "none": "Tous les caractères du corpus sont sur la carte.",
+      "listLabel": "Caractères absents de la carte les plus fréquents"
+    }
   },
   "csv": {
     "words": "Mots",
@@ -258,27 +292,291 @@
       "shs5": "SHS 5+"
     }
   },
-  "about": {
-    "title": "Testez une disposition de clavier avant de l'apprendre",
-    "intro": "Apprendre une nouvelle disposition de clavier prend des semaines. Kawalyser vous dit d'abord si elle est confortable. Il tape un long texte français ou anglais sur votre disposition et compte les mouvements de vos doigts.",
-    "measuresTitle": "Ce qu'il mesure",
-    "measures": [
-      "Les bigrammes à un doigt (SFB) et les skipgrammes à un doigt (SFS).",
-      "Les ciseaux, les étirements latéraux et les sauts de rangée.",
-      "L'alternance des mains, les roulements vers l'intérieur et l'extérieur, et les redirections.",
-      "La charge de chaque doigt et de chaque main."
-    ],
-    "featuresTitle": "Pensé pour les dispositions modernes",
-    "features": [
-      "Claviers séparés de 34 ou 40 touches, lettres sous les pouces comprises.",
-      "Une touche morte (1DK) pour les lettres accentuées et les symboles.",
-      "Les touches Repeat et Magic, et les règles Clever Keys d'un fichier de remplacements.",
-      "Import des fichiers Kalamine .toml, édition par glisser-déposer et export CSV."
-    ],
-    "free": "Gratuit et sans inscription."
+  "docs": {
+    "pageTitle": "Docs : tester une disposition de clavier sans l'apprendre · Kawalyser",
+    "description": "Le fonctionnement de Kawalyser : dispositions prêtes à l'emploi, import Kalamine, touches 1DK, Repeat et Magic, Clever Keys, votre propre corpus, et chaque statistique expliquée.",
+    "tocLabel": "Sur cette page",
+    "hero": {
+      "eyebrow": "Documentation",
+      "title": "Testez une disposition de clavier avant de l'apprendre",
+      "intro": "Kawalyser tape un long texte sur une disposition de clavier et compte les mouvements de vos doigts. En quelques secondes, vous savez si elle est confortable, sans passer des semaines à l'apprendre.",
+      "open": "Ouvrir l'analyseur",
+      "source": "Code source"
+    },
+    "purpose": {
+      "title": "Pourquoi Kawalyser",
+      "intro": "Une disposition de clavier, c'est le choix du caractère placé sur chaque touche. AZERTY en est une, mais bien d'autres visent une frappe plus confortable. Kawalyser aide à les choisir et à les régler.",
+      "problemLabel": "Le problème",
+      "answerLabel": "La réponse de Kawalyser",
+      "items": [
+        {
+          "problem": "Apprendre une disposition prend des semaines.",
+          "answer": "Kawalyser la mesure d'abord, sur du vrai texte, avant que vous vous lanciez."
+        },
+        {
+          "problem": "Les dispositions modernes reposent sur des astuces que la plupart des analyseurs ignorent : une touche morte pour les accents, les touches Repeat et Magic, les Clever Keys.",
+          "answer": "Kawalyser tape le texte comme le ferait votre clavier, astuces comprises."
+        },
+        {
+          "problem": "L'analyseur dont viennent ces dispositions est un classeur Excel : lent, et non interactif.",
+          "answer": "Kawalyser garde ses algorithmes et ses résultats, dans un site rapide et gratuit. Déplacez une touche, relancez l'analyse."
+        }
+      ]
+    },
+    "features": {
+      "title": "Ce que vous pouvez faire",
+      "items": {
+        "presets": {
+          "title": "Choisir une disposition",
+          "text": "Propergol, Ergo-L, Erglace, Strud-L ou StrudE-L, avec leurs touches de pouce et leurs remplacements, en un clic."
+        },
+        "toml": {
+          "title": "Importer votre disposition",
+          "text": "Chargez n'importe quel fichier .toml de Kalamine. Les caractères se placent tout seuls sur les bonnes touches."
+        },
+        "edit": {
+          "title": "Déplacer des touches",
+          "text": "Glissez un caractère sur une autre touche, ou sélectionnez une zone et tapez. Annulez et rétablissez à volonté."
+        },
+        "replacements": {
+          "title": "Ajouter des remplacements",
+          "text": "Importez un fichier .json de règles Magic et de Clever Keys, et choisissez combien s'appliquent."
+        },
+        "corpus": {
+          "title": "Utiliser votre texte",
+          "text": "Importez un corpus .txt dans n'importe quelle langue. Il ne quitte jamais votre navigateur."
+        },
+        "analyze": {
+          "title": "Analyser",
+          "text": "Charge des doigts, roulements, bigrammes du même doigt, ciseaux et plus, sur un corpus français, anglais ou le vôtre."
+        },
+        "download": {
+          "title": "Télécharger le détail",
+          "text": "Exportez chaque n-gramme et chaque difficulté en fichiers CSV pour votre tableur."
+        },
+        "shapes": {
+          "title": "Choisir le clavier",
+          "text": "Claviers séparés de 40 ou 34 touches, touches de pouce comprises."
+        }
+      }
+    },
+    "start": {
+      "title": "Prise en main en quatre étapes",
+      "steps": [
+        {
+          "title": "Choisissez une disposition",
+          "text": "Prenez-en une dans la liste Disposition, ou importez votre fichier .toml."
+        },
+        {
+          "title": "Ajustez-la",
+          "text": "Déplacez des caractères, ajoutez des remplacements, choisissez un corpus."
+        },
+        {
+          "title": "Lancez l'analyse",
+          "text": "Cliquez sur Lancer l'analyse. Cela prend quelques secondes."
+        },
+        {
+          "title": "Lisez les résultats",
+          "text": "Comparez les statistiques, puis téléchargez le détail pour creuser. Sur la carte, les touches cerclées sont les touches de repos, où les doigts se posent, et les couleurs montrent combien chaque touche est tapée."
+        }
+      ]
+    },
+    "keys": {
+      "title": "Les touches spéciales",
+      "intro": "Kawalyser comprend les touches qui rendent les dispositions modernes efficaces. Sur la carte, chacune s'écrit avec un symbole.",
+      "items": {
+        "dead": {
+          "name": "Touche morte 1DK",
+          "text": "Une seule touche morte ouvre une seconde couche : appuyez dessus, puis sur une touche, pour taper le caractère dessiné en bas à droite de cette touche.",
+          "example": "* puis e tape ê"
+        },
+        "repeat": {
+          "name": "Repeat",
+          "text": "Retape la frappe précédente : une lettre doublée ne demande plus deux appuis du même doigt.",
+          "example": "l puis $ tape ll"
+        },
+        "magic": {
+          "name": "Magic",
+          "text": "Sa sortie dépend de la frappe précédente. Votre fichier de remplacements dit ce qu'elle tape.",
+          "example": "u puis # tape ui sur Propergol"
+        },
+        "clever": {
+          "name": "Clever Keys",
+          "text": "Des règles du firmware qui tapent toute une suite à partir d'une séquence courte, parfois seulement en début ou en fin de mot.",
+          "example": "q puis n tape quand sur Propergol"
+        }
+      },
+      "levelsTitle": "Trois niveaux d'analyse",
+      "levelsIntro": "La liste Remplacements choisit les règles de votre fichier que l'analyse applique.",
+      "levels": {
+        "raw": "Le texte tel quel. Repeat sert quand même s'il est sur la carte.",
+        "corrections": "Ajoute les corrections essentielles, et les suites de plusieurs caractères de la touche morte.",
+        "clever": "Ajoute aussi les corrections optionnelles : les Clever Keys."
+      }
+    },
+    "metrics": {
+      "title": "Les statistiques",
+      "intro": "Kawalyser nettoie le corpus, le tape sur votre disposition, puis le découpe en bigrammes (deux frappes) et en trigrammes (trois). Le texte est lu en minuscules : Shift n'est pas compté. Pour chaque difficulté, plus c'est bas, mieux c'est.",
+      "bigramsTitle": "Les bigrammes inconfortables",
+      "bigramsIntro": "Deux frappes de suite avec la même main. Chaque schéma montre une main gauche : 1 est la première frappe, 2 la seconde.",
+      "fingers": [
+        "Auric.",
+        "Annul.",
+        "Majeur",
+        "Index",
+        "Index"
+      ],
+      "bigrams": {
+        "sfb": {
+          "name": "SFB · Same finger bigram",
+          "text": "Deux touches différentes avec le même doigt : le mouvement le plus lent à taper."
+        },
+        "skb": {
+          "name": "SKB · Same key bigram",
+          "text": "Deux fois la même touche, comme pour une lettre doublée. Repeat l'évite."
+        },
+        "lsb": {
+          "name": "LSB · Lateral stretch bigram",
+          "text": "Deux doigts voisins à deux colonnes d'écart : la main s'étire sur le côté."
+        },
+        "fsb": {
+          "name": "FSB · Full scissor bigram",
+          "text": "Deux rangées d'écart, un doigt long plus bas qu'un doigt court : les doigts se replient dans le mauvais sens."
+        },
+        "hsb": {
+          "name": "HSB · Half scissor bigram",
+          "text": "Le même repli, avec une rangée d'écart."
+        },
+        "rjb": {
+          "name": "RJB · Row jump bigram",
+          "text": "Deux rangées d'écart, sans ciseaux."
+        }
+      },
+      "othersTitle": "Les autres statistiques",
+      "nameHeader": "Statistique",
+      "textHeader": "Ce qu'elle mesure",
+      "others": {
+        "load": {
+          "name": "Charge des doigts et des mains",
+          "text": "La part des frappes sur chaque doigt et chaque main, touches de repos à part."
+        },
+        "alternation": {
+          "name": "Alternance",
+          "text": "Trois frappes : une main, l'autre, puis la première."
+        },
+        "rolls": {
+          "name": "Roulements",
+          "text": "Deux frappes d'une main, une de l'autre, vers l'intérieur (vers le pouce) ou l'extérieur."
+        },
+        "oneHand": {
+          "name": "Trigrammes à une main",
+          "text": "Trois frappes d'une main, dans un seul sens."
+        },
+        "redirects": {
+          "name": "Redirections",
+          "text": "Trois frappes d'une main qui changent de sens. Mauvaises quand aucune n'est sur l'index ou le pouce."
+        },
+        "sfs": {
+          "name": "SFS et STS · Same finger skipgrams",
+          "text": "La première et la troisième frappe d'un trigramme sur le même doigt. SFS laisse de côté les trigrammes avec une espace, STS les compte."
+        },
+        "fss": {
+          "name": "FSS · Full scissor skipgram",
+          "text": "Des ciseaux complets entre la première et la troisième frappe d'un trigramme."
+        },
+        "cc": {
+          "name": "CC · Charge cognitive",
+          "text": "Combien de fois une règle de remplacement s'applique, par frappe du texte d'origine."
+        },
+        "shs": {
+          "name": "SHS · Same hand sequences",
+          "text": "Des suites de quatre frappes ou plus d'une même main dans un mot. Les longues suites qui reviennent comptent davantage."
+        },
+        "missing": {
+          "name": "Absents de la carte",
+          "text": "Les caractères les plus fréquents du corpus que ni une touche ni un remplacement ne tape."
+        }
+      }
+    },
+    "files": {
+      "title": "Les fichiers à importer",
+      "toml": {
+        "title": "Disposition : .toml de Kalamine",
+        "text": "Le format de {kalamine}, l'outil de création de dispositions. Kawalyser lit la couche de base, et la couche de la touche morte dessinée à droite de chaque touche.",
+        "points": [
+          "La rangée des chiffres et AltGr sont ignorées.",
+          "La touche en bas à gauche va au pouce gauche, Magic, Repeat et espace aux autres pouces.",
+          "Un caractère sur deux touches du bloc principal bloque l'import : Kawalyser ne saurait pas laquelle vous tapez."
+        ]
+      },
+      "replacements": {
+        "title": "Remplacements : .json",
+        "text": "Chaque règle se lit : pour écrire text, taper keys. Dans keys, * est la touche morte, $ Repeat et # Magic. Les corrections essentielles s'appliquent dès le niveau Essentiels, les optionnelles au niveau Essentiels + Optionnels."
+      },
+      "corpus": {
+        "title": "Corpus : .txt",
+        "text": "N'importe quel texte brut, dans n'importe quelle langue, jusqu'à 10 Mo.",
+        "points": [
+          "L'UTF-8 est préférable. Un fichier dans un autre encodage est lu en Windows-1252, avec un avertissement.",
+          "Les apostrophes courbes deviennent droites, et ... devient … si la carte l'a.",
+          "Les caractères absents de la carte sont laissés de côté par les statistiques, et listés sous les résultats."
+        ]
+      }
+    },
+    "privacy": {
+      "title": "Vos données",
+      "items": [
+        "Pas de compte, pas d'inscription, pas de publicité.",
+        "Les corpus français et anglais du site restent sur le serveur : ils ne sont jamais envoyés à votre navigateur.",
+        "Votre propre corpus reste dans votre navigateur : il y est analysé et n'est jamais envoyé au serveur.",
+        "Pour analyser le corpus français ou anglais, votre disposition et vos remplacements vont au serveur le temps de l'analyse.",
+        "Votre disposition, vos remplacements et votre corpus sont gardés dans votre navigateur, pour que vous les retrouviez à votre prochaine visite."
+      ]
+    },
+    "faq": {
+      "title": "Questions",
+      "items": [
+        {
+          "question": "Pourquoi un caractère de mon texte ne compte-t-il pas ?",
+          "answer": "L'analyse lit le texte en minuscules et laisse Shift de côté. Un caractère qu'aucune touche ne tape sans Shift, en direct ou après la touche morte, et qu'aucun remplacement du niveau choisi ne tape, est laissé de côté par les statistiques. La carte Absents de la carte liste les plus fréquents."
+        },
+        {
+          "question": "Puis-je tester une deuxième touche morte ou une deuxième touche Magic ?",
+          "answer": "Oui. Placez un caractère rare, comme ¤, sur une touche, puis utilisez-le dans les keys de votre fichier de remplacements. La règle ion → i¤ en fait une deuxième touche Magic. Choisissez un caractère que votre corpus ne contient pas."
+        },
+        {
+          "question": "Pourquoi mes chiffres diffèrent-ils du classeur Excel ?",
+          "answer": "Le site corrige quelques comportements du classeur, décidés avec son auteur. Le {readme} les liste."
+        },
+        {
+          "question": "Mon clavier n'est pas séparé.",
+          "answer": "Pour l'instant, Kawalyser ne connaît que les claviers séparés de 40 ou 34 touches."
+        }
+      ]
+    },
+    "source": {
+      "title": "Code source et crédits",
+      "code": "Le code du site est libre, sous licence GPLv3, sur {github}.",
+      "contribute": "Les textes, les couleurs et les dispositions se modifient depuis GitHub, sans rien installer : le {guide} explique comment. Pour le reste, ouvrez une {issue}.",
+      "creditsTitle": "Crédits",
+      "algorithms": "Les algorithmes viennent de l'{excel} de Kawamashi, qui a aussi conçu Propergol.",
+      "layouts": "Dispositions : {propergol} (licence MIT), {ergol} (WTFPL), {erglace}, Strud-L et StrudE-L.",
+      "links": {
+        "github": "GitHub",
+        "guide": "guide de contribution",
+        "issue": "issue",
+        "excel": "analyseur Excel Kawalyser",
+        "propergol": "Propergol",
+        "ergol": "Ergo-L",
+        "erglace": "Erglace",
+        "kalamine": "Kalamine",
+        "readme": "README"
+      }
+    }
   },
   "footer": {
-    "credits": "Algorithmes repris de l'analyseur Excel Kawalyser de Kawamashi. Disposition par défaut : Propergol (licence MIT).",
-    "source": "Code source"
+    "docs": "Docs",
+    "source": "Code source",
+    "license": "Licence GPLv3"
   }
 }

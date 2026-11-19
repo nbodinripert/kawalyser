@@ -1,6 +1,5 @@
 import type { AnalysisLevel, Replacements } from "@/domain/replacements";
-import { validChars, type CorpusLanguage } from "@/domain/valid-chars";
-import { canType, keysToTokens, REPEAT, type KeyMap } from "./keymap";
+import { canType, DK, DK_SPACE, keysToTokens, MAGIC, REPEAT, type KeyMap } from "./keymap";
 
 /**
  * Turns the corpus into what is really typed, word by word, as the Excel analyser does:
@@ -16,7 +15,6 @@ type Rule = {
 
 export type AdaptOptions = {
   level: AnalysisLevel;
-  language: CorpusLanguage;
   /** Reproduces the Excel analyser exactly, including the behaviours the specs correct. */
   compat?: boolean;
 };
@@ -28,7 +26,18 @@ export type Adapter = {
   replacementOf: Map<string, string>;
 };
 
-const strippedChars = { current: /[#$£€&-]/g, compat: /[$£€&]/g };
+/**
+ * The Excel analyser removes "$", "£", "€" and "&", which stood for its special keys. On the site, "*", "$" and "#"
+ * stand for them and cannot be real characters of the map, while "£", "€" and "&" can now be placed and typed
+ * (question 32 of the specs). Private-use characters no longer need removing: the codec keeps them apart.
+ */
+const strippedChars = { current: /[*$#]/g, compat: /[$£€&]/g };
+
+/** No-break spaces, the narrow one of French typography included, and tabs are typed with the space bar (question 33). */
+const spaceLikeChars = /[\u00a0\u2007\u202f\t]/g;
+
+/** Repeat repeats a character, not a special key nor the space. */
+const notRepeatable = new Set([DK, REPEAT, MAGIC, DK_SPACE, " "]);
 
 function isLetterExcel(char: string): boolean {
   const code = char.charCodeAt(0);
@@ -54,7 +63,8 @@ function boundaryCheck(
 }
 
 export function createAdapter(keyMap: KeyMap, replacements: Replacements, options: AdaptOptions): Adapter {
-  const { level, language, compat = false } = options;
+  const { level, compat = false } = options;
+  const { codec } = keyMap;
   const isLetter = compat ? isLetterExcel : isLetterUnicode;
   const usage = new Map<string, number>();
   const replacementOf = new Map<string, string>();
@@ -72,14 +82,14 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
     level === "clever"
       ? replacements.optionalCorrections.filter(typeable).map((rule) =>
           register({
-            pattern: rule.text,
-            replacement: keysToTokens(rule.keys),
+            pattern: codec.encode(rule.text),
+            replacement: keysToTokens(codec.encode(rule.keys)),
             // As in the Excel analyser, a one-character Clever Key ignores its conditions.
             check: rule.text.length < 2 ? undefined : boundaryCheck(
               isLetter,
               { active: rule.noLetterBefore === true || (rule.allowedBefore?.length ?? 0) > 0, allowed: rule.allowedBefore ?? [] },
               { active: rule.noLetterAfter === true || (rule.allowedAfter?.length ?? 0) > 0, allowed: rule.allowedAfter ?? [] },
-              rule.text.length,
+              codec.encode(rule.text).length,
             ),
           }),
         )
@@ -95,13 +105,14 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
 
   // Repeat: the Excel analyser applies it from the "corrections" level, to "aa" to "zz", even without the key.
   // Now the key alone decides (feedback on Repeat): placed on the map, it serves at every level, for every doubled
-  // character typed with one key press. Repeat repeats the last press, so after "*o" it types "o", not "ô":
-  // a character of the dead key layer, or one missing from the map, is left as it is. A firmware can be taught to repeat
-  // the dead key character, but Kawamashi finds these doubles rare enough to keep the plain behaviour.
+  // character typed with one key press, punctuation included (question 26 of the specs). Repeat repeats the last press,
+  // so after "*o" it types "o", not "ô": a character of the dead key layer, or one missing from the map, is left as it is.
+  // A firmware can be taught to repeat the dead key character, but Kawamashi finds these doubles rare enough to keep
+  // the plain behaviour.
   const repeatable = compat
     ? Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i))
     : keyMap.slotOf.has(REPEAT)
-      ? [...validChars[language]].filter((char) => keyMap.slotOf.has(char))
+      ? [...keyMap.slotOf.keys()].filter((symbol) => !notRepeatable.has(symbol))
       : [];
   const repeatRules = repeatable.map((char) => register({ pattern: char + char, replacement: char + REPEAT }));
 
@@ -110,7 +121,7 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
   if (!compat || level !== "raw") correctionRules.push(...repeatRules);
   if (level !== "raw") {
     for (const rule of replacements.essentialCorrections.filter(typeable)) {
-      correctionRules.push(register({ pattern: rule.text, replacement: keysToTokens(rule.keys) }));
+      correctionRules.push(register({ pattern: codec.encode(rule.text), replacement: keysToTokens(codec.encode(rule.keys)) }));
     }
   }
 
@@ -135,7 +146,12 @@ export function createAdapter(keyMap: KeyMap, replacements: Replacements, option
     usage,
     replacementOf,
     adaptLine(line: string) {
-      let cleaned = line.toLowerCase().replaceAll("’", "'").replace(compat ? strippedChars.compat : strippedChars.current, "");
+      let cleaned = compat
+        ? line.toLowerCase().replaceAll("’", "'").replace(strippedChars.compat, "")
+        : codec.encode(
+            // NFC: a letter saved with a separate combining accent becomes one character again.
+            line.normalize("NFC").toLowerCase().replaceAll("’", "'").replace(spaceLikeChars, " ").replace(strippedChars.current, ""),
+          );
       const original = cleaned;
       if (ellipsisOnMap) cleaned = cleaned.replaceAll("...", "…");
 

@@ -19,15 +19,15 @@ import { clearZone, dropZone, tryMove, tryType, type EditResult, type ZoneRef } 
 import { shapes, type KeySlot } from "@/domain/geometry";
 import { baseCharsOnMap, visibleZones, type Layout, type Zone } from "@/domain/layout";
 import { actionKeys, DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
-import type { CorpusLanguage } from "@/domain/valid-chars";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { heatColor, heatGradient } from "../heat";
+import { richText } from "../rich-text";
 import { cx, format } from "../ui";
 
 type Labels = Dictionary["layout"];
 
 type KeyboardMapProps = {
   layout: Layout;
-  language: CorpusLanguage;
   keyPresses: Record<string, number> | null;
   labels: Labels;
   onChange: (layout: Layout) => void;
@@ -77,17 +77,17 @@ const showChar =(char: string, labels: Labels) => {
 };
 
 /** The zones a move would change, to highlight them while the user is still dragging. */
-function changedZones(before: Layout, after: Layout, keys: string[], language: CorpusLanguage): Set<string> {
+function changedZones(before: Layout, after: Layout, keys: string[]): Set<string> {
   const changed = new Set<string>();
   for (const key of keys) {
-    const was = visibleZones(before.keys[key] ?? {}, language);
-    const will = visibleZones(after.keys[key] ?? {}, language);
+    const was = visibleZones(before.keys[key] ?? {});
+    const will = visibleZones(after.keys[key] ?? {});
     for (const zone of zoneOrder) if (was[zone] !== will[zone] && will[zone] !== undefined) changed.add(zoneId({ key, zone }));
   }
   return changed;
 }
 
-export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: KeyboardMapProps) {
+export function KeyboardMap({ layout, keyPresses, labels, onChange }: KeyboardMapProps) {
   const shape = shapes[layout.shapeId];
   const [selected, setSelected] = useState<ZoneRef | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -101,12 +101,12 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
   // While dragging over a key, the map already shows the result of the drop, or why it is refused.
   const drop = drag?.target ? dropResult(layout, drag, drag.target) : null;
   const preview = drop?.layout ?? layout;
-  const changed = drop ? changedZones(layout, preview, shape.keys.map((slot) => slot.id), language) : new Set<string>();
+  const changed = drop ? changedZones(layout, preview, shape.keys.map((slot) => slot.id)) : new Set<string>();
   const refused = drop ? drop.refused : refusal?.layout === layout ? refusal.char : undefined;
 
-  const charAt = (ref: ZoneRef) => visibleZones(layout.keys[ref.key] ?? {}, language)[ref.zone];
+  const charAt = (ref: ZoneRef) => visibleZones(layout.keys[ref.key] ?? {})[ref.zone];
   const keyName = (key: string) => {
-    const zones = visibleZones(layout.keys[key] ?? {}, language);
+    const zones = visibleZones(layout.keys[key] ?? {});
     const main = zones.shift ?? zones.base ?? zones.dk;
     return main === undefined ? "" : showChar(main, labels);
   };
@@ -220,19 +220,24 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
     >
       {/* A scrolling box also clips vertically: the 8px of room, cancelled by the negative margin,
           keep the enlarged target key and its outline visible on the first row and at the edges. */}
-      <div className="-m-2 overflow-x-auto p-2">
+      {/* Keys grow with the room the map has, not with the window: the column beside it takes its share on wide screens.
+          The gaps (0.375rem each) are taken off before sharing the width (100cqw, this box's content) between columns. */}
+      <div className="@container -m-2 overflow-x-auto p-2">
         <div
           role="group"
           aria-label={labels.mapLabel}
-          className={cx("mx-auto grid w-max gap-1.5 [--cap:clamp(2.6rem,4.1vw,3.35rem)]", drag && (drop?.refused !== undefined ? "cursor-not-allowed" : "cursor-grabbing"))}
-          style={{ gridTemplateColumns: `repeat(${shape.width}, var(--cap))`, gridAutoRows: "calc(var(--cap) * 0.92)" }}
+          className={cx("mx-auto grid w-max gap-1.5", drag && (drop?.refused !== undefined ? "cursor-not-allowed" : "cursor-grabbing"))}
+          style={{
+            ["--cap" as string]: `clamp(2.6rem, calc((100cqw - ${(shape.width - 1) * 0.375}rem) / ${shape.width}), 4rem)`,
+            gridTemplateColumns: `repeat(${shape.width}, var(--cap))`,
+            gridAutoRows: "calc(var(--cap) * 0.92)",
+          }}
         >
           {shape.keys.map((slot) => (
             <KeyCap
               key={slot.id}
               slot={slot}
               layout={preview}
-              language={language}
               heat={heat(slot.id)}
               labels={labels}
               selected={selected?.key === slot.id ? selected.zone : null}
@@ -250,15 +255,24 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
           ))}
         </div>
       </div>
+      <MapKey labels={labels.mapKey} analysed={keyPresses !== null} />
       <Legend layout={layout} labels={labels} draggingKey={drag && !drag.from ? drag.char : null} />
       {/* A key of the legend is only placed, never deleted: the trash ignores it. */}
       <Trash label={labels.trash} active={drag?.overTrash ?? false} dragging={drag?.from != null} disabled={drag !== null && drag.from === null} />
-      <p className={cx("mt-3 min-h-5 text-xs", refused !== undefined ? "font-medium text-danger" : "text-muted")} aria-live="polite">
+      <p className={cx("mt-3 min-h-5 text-xs leading-6", refused !== undefined ? "font-medium text-danger" : "text-muted")} aria-live="polite">
         {refused !== undefined
           ? format(labels.refused, { char: showChar(refused, labels) })
           : selected
             ? labels.selectedHint
-            : `${labels.hint} ${labels.trashHint}`}
+            : (
+              <>
+                {labels.hint} {labels.trashHint}{" "}
+                {/* The words that name the outline wear it, so that the hint doubles as the legend of the home keys. */}
+                {richText(labels.homeHint, {
+                  outlined: <span className="rounded-[4px] px-1 py-px whitespace-nowrap text-foreground ring-1 ring-home-key">{labels.homeOutlined}</span>,
+                })}
+              </>
+            )}
       </p>
       <p className="sr-only" role="status">
         {notice}
@@ -278,7 +292,6 @@ export function KeyboardMap({ layout, language, keyPresses, labels, onChange }: 
 type KeyCapProps = {
   slot: KeySlot;
   layout: Layout;
-  language: CorpusLanguage;
   heat: number | null;
   labels: Labels;
   selected: Zone | null;
@@ -292,14 +305,13 @@ type KeyCapProps = {
   onZoneKeyDown: (ref: ZoneRef, event: KeyboardEvent<HTMLButtonElement>) => void;
 };
 
-function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
+function KeyCap({ slot, layout, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
   const { setNodeRef } = useDroppable({ id: slot.id });
-  const visible = visibleZones(layout.keys[slot.id] ?? {}, language);
-  // The 14% floor tints even the rarest keys, so that every used key reads as used.
-  const background =
-    heat === null || heat === 0 ? undefined : `color-mix(in oklab, var(--heat) ${Math.round(14 + heat * 80)}%, var(--key))`;
+  const visible = visibleZones(layout.keys[slot.id] ?? {});
+  // Every typed key takes a heat color, even the rarest one, so that it reads as used.
+  const background = heat === null || heat === 0 ? undefined : heatColor(heat);
   // Read by the `heat-text` classes of globals.css, which pick the text colour for the theme.
-  const heatLevel = { "--heat-level": heat ?? 0 } as CSSProperties;
+  const heatLevel = { "--heat-level": heat ?? 0, "--glow": background } as CSSProperties;
 
   return (
     <div
@@ -311,7 +323,9 @@ function KeyCap({ slot, layout, language, heat, labels, selected, changed, isTar
         !dragging && "group/key",
         slot.role === "outer" ? "border-dashed border-key-border bg-surface" : "border-key-border bg-key",
         slot.role === "thumb" && "rounded-[7px]",
-        "heat-text",
+        // Home keys stand out, where the fingers rest (Kawamashi's feedback): the ring is drawn outside the key.
+        slot.home && "home-key",
+        "key-glass heat-text",
         isTarget && (refused ? "z-10 ring-2 ring-danger" : "z-10 scale-[1.06] shadow-lg ring-2 ring-accent"),
         isSource && !isTarget && dragging && "outline-2 outline-offset-1 outline-dashed outline-accent/60",
       )}
@@ -403,6 +417,21 @@ function ZoneCell({ refId, char, labels, selected, highlighted, interactive, onS
         </span>
       )}
     </button>
+  );
+}
+
+/**
+ * The scale of the heat colors, once an analysis is shown. The ring of the home keys has no legend here: the visitor
+ * cannot act on it, so the docs explain it instead (Kawamashi's feedback on a crowded map).
+ */
+function MapKey({ labels, analysed }: { labels: Labels["mapKey"]; analysed: boolean }) {
+  if (!analysed) return null;
+  return (
+    <div role="group" aria-label={labels.label} className="mx-auto mt-4 flex w-max max-w-full items-center justify-center gap-2 text-xs text-muted">
+      {labels.least}
+      <span aria-hidden className="h-2 w-24 rounded-full" style={{ background: heatGradient }} />
+      {labels.most}
+    </div>
   );
 }
 

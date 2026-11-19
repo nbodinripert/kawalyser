@@ -54,8 +54,7 @@ export type EditResult = { layout: Layout; refused?: string };
 
 /**
  * Moves what sits in one zone to another zone, swapping with what was there.
- * A letter always fills its whole layer with its capital, so a move that involves a letter swaps whole layers,
- * even when the layer also holds a character hidden for the current language.
+ * A letter always fills its whole layer with its capital, so a move that involves a letter swaps whole layers.
  */
 export function moveZone(layout: Layout, from: ZoneRef, to: ZoneRef): Layout {
   return tryMove(layout, from, to).layout;

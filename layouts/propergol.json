@@ -1,0 +1,82 @@
+{
+    "essentialCorrections": [
+        {
+            "text": "quoi",
+            "keys": "qh"
+        },
+        {
+            "text": "qu",
+            "keys": "q"
+        },
+        {
+            "text": "ui",
+            "keys": "u#"
+        },
+        {
+            "text": "'",
+            "keys": "$"
+        },
+        {
+            "text": "à",
+            "keys": "#"
+        },
+        {
+            "text": "yi",
+            "keys": "y#"
+        }
+    ],
+    "optionalCorrections": [
+        {
+            "text": "ion",
+            "keys": "i#"
+        },
+        {
+            "text": "même",
+            "keys": "m#"
+        },
+        {
+            "text": "quand",
+            "keys": "qn"
+        },
+        {
+            "text": "qué",
+            "keys": "qè"
+        },
+        {
+            "text": "ch",
+            "keys": "cm"
+        },
+        {
+            "text": "ment",
+            "keys": "m#",
+            "noLetterAfter": true,
+            "allowedAfter": [
+                "s"
+            ]
+        },
+        {
+            "text": "you",
+            "keys": "yè"
+        },
+        {
+            "text": "ck",
+            "keys": "cj"
+        },
+        {
+            "text": "pour",
+            "keys": "pj",
+            "noLetterBefore": true,
+            "noLetterAfter": true
+        },
+        {
+            "text": "pas",
+            "keys": "pc",
+            "noLetterBefore": true,
+            "noLetterAfter": true
+        },
+        {
+            "text": "éa",
+            "keys": "é#"
+        }
+    ]
+}

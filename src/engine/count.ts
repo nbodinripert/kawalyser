@@ -10,6 +10,8 @@ export type CorpusCounts = {
   invalid: [number, number, number, number];
   /** Characters of the cleaned corpus, before any replacement. */
   originalChars: Map<string, number>;
+  /** Characters still in the typed text that no key types: neither the map nor a replacement could type them. */
+  untypedChars: Map<string, number>;
   /** Key presses needed without the layout's tricks: circumflexes and diaereses count twice. */
   originalPresses: number;
   sameHand: { score: number; sequences: number; four: Map<string, number>; fiveOrMore: Map<string, number> };
@@ -24,6 +26,7 @@ export function countCorpus(text: string, keyMap: KeyMap, adapter: Adapter): Cor
     ngrams: [new Map(), new Map(), new Map(), new Map()],
     invalid: [0, 0, 0, 0],
     originalChars: new Map(),
+    untypedChars: new Map(),
     originalPresses: 0,
     sameHand: { score: 0, sequences: 0, four: new Map(), fiveOrMore: new Map() },
   };
@@ -60,6 +63,7 @@ export function countCorpus(text: string, keyMap: KeyMap, adapter: Adapter): Cor
         const index = size - 1;
         if (!ok) {
           counts.invalid[index as 0 | 1 | 2 | 3]++;
+          if (size === 1) counts.untypedChars.set(gram, (counts.untypedChars.get(gram) ?? 0) + 1);
           continue;
         }
         const map = counts.ngrams[index as 0 | 1 | 2 | 3];

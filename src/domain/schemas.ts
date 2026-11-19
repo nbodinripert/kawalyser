@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { shapeIds } from "./geometry";
 import { analysisLevels, replacementsSchema } from "./replacements";
-import { corpusLanguages } from "./valid-chars";
+import { corpusLanguages } from "./corpora";
 
 const zoneChar = z.string().min(1).max(8).optional();
 
