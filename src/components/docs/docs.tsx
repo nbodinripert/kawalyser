@@ -16,6 +16,7 @@ import {
   UploadIcon,
   WandIcon,
 } from "../icons";
+import { heatColor } from "../heat";
 import { cx } from "../ui";
 import { MiniBoard, type Press } from "./mini-board";
 import { richText } from "../rich-text";
@@ -375,13 +376,14 @@ function Hero({ lang, labels }: { lang: Locale; labels: Labels["hero"] }) {
   );
 }
 
-/** Propergol's home rows on a split keyboard, warmer where the fingers press most: decoration only. */
+/** Propergol's letters on a split keyboard, warmer where the fingers press most, home keys ringed: decoration only. */
 function SplitKeyboardArt() {
   const halves = [
     ["!ÉUP?", "OAIN:", "QÈYHB"],
     ["VMCJX", "GTSRL", "KDFW;"],
   ];
   // How warm each key is drawn, from 0 to 3, row by row: an illustration in the style of the analyzer's heat map, not a result.
+  const heatOf = [0, 0.3, 0.65, 1];
   const heat = [
     ["01110", "23332", "01011"],
     ["11211", "13332", "02110"],
@@ -393,17 +395,17 @@ function SplitKeyboardArt() {
           {rows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex gap-1.5">
               {Array.from(row).map((char, col) => {
-                const level = Number(heat[half]?.[rowIndex]?.[col] ?? 0);
+                const level = heatOf[Number(heat[half]?.[rowIndex]?.[col] ?? 0)] ?? 0;
+                // The middle row, without the index's inner column, as on the analyzer's map.
+                const home = rowIndex === 1 && col !== (half === 0 ? 4 : 0);
                 return (
                   <span
                     key={col}
                     className={cx(
-                      "flex size-10 items-center justify-center rounded-lg border text-sm font-semibold",
-                      level === 0 && "border-key-border bg-key",
-                      level === 1 && "border-accent/20 bg-accent/15",
-                      level === 2 && "border-accent/40 bg-accent/35",
-                      level === 3 && "border-accent bg-accent text-accent-contrast",
+                      "key-glass heat-text relative flex size-10 items-center justify-center rounded-lg border border-key-border bg-key text-sm font-semibold",
+                      home && "home-key",
                     )}
+                    style={{ ["--heat-level" as string]: level, ["--glow" as string]: heatColor(level), background: level === 0 ? undefined : heatColor(level) }}
                   >
                     {char}
                   </span>

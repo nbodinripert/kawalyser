@@ -81,6 +81,7 @@ Règles :
 
 - Changez toujours les deux thèmes, et regardez les deux sur l'aperçu.
 - **Lisibilité** : un texte doit rester lisible sur son fond. Vérifiez le contraste avec [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) : au moins 4,5 pour du texte normal, 3 pour les gros titres et les bordures.
+- Les **couleurs des touches après une analyse** vont de `--heat-1` (touches les moins tapées) à `--heat-4` (les plus tapées). En thème clair, le texte de toutes les touches tapées prend `--heat-ink`. En thème sombre, il passe à `--heat-ink` au-delà du niveau `--heat-switch`, un nombre de 0 à 1 écrit quelques lignes sous les couleurs. Si vous changez ces couleurs, vérifiez le texte des touches les moins et les plus tapées dans les deux thèmes.
 - L'**image de partage** (celle qui s'affiche quand on partage le lien du site) reprend quelques couleurs du thème clair dans [`src/lib/og-colors.ts`](src/lib/og-colors.ts). Si vous changez `--background`, `--foreground`, `--muted`, `--accent`, `--accent-soft`, `--key` ou `--key-border`, recopiez la couleur claire dans ce fichier. Sinon la vérification sera rouge et vous le dira.
 
 ## Ajouter ou changer une disposition

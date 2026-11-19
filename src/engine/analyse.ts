@@ -75,7 +75,8 @@ export type AnalysisResult = {
   /** Each list's total, its share of the list's own denominator, and its first entries. */
   lists: Record<ListId, { total: number; share: number; entries: ListEntry[] }>;
   /**
-   * The most frequent characters of the cleaned corpus that are nowhere on the map, with their share of its characters
+   * The most frequent characters of the cleaned corpus that are nowhere on the map and that no replacement types,
+   * with their share of its characters
    * (question 34 of the specs): with a corpus in another language, they show what the statistics leave out.
    * A character in a Shift zone is on the map, though the analysis leaves it out too (question 8).
    */
@@ -216,12 +217,14 @@ export function analyse(corpus: string, input: AnalysisInput): AnalysisDetail {
   for (const slot of shape.keys) {
     for (const char of Object.values(layout.keys[slot.id] ?? {})) onMap.add(keyMap.codec.encode(char.toLowerCase()));
   }
+  // Read from the typed text, not from the corpus: a character that a replacement types, such as the apostrophe that
+  // Propergol types with Repeat, is in the statistics (feedback on characters typed by replacements).
   const missing = new Map<string, number>();
-  let originalChars = 0;
-  for (const [char, count] of counts.originalChars) {
-    originalChars += count;
-    if (!onMap.has(char) && !keyMap.slotOf.has(char) && !keyMap.deadKeySequences.has(char)) missing.set(char, count);
+  for (const [char, count] of counts.untypedChars) {
+    if (!onMap.has(char)) missing.set(char, count);
   }
+  let originalChars = 0;
+  for (const count of counts.originalChars.values()) originalChars += count;
 
   const result: AnalysisResult = {
     keyPresses,

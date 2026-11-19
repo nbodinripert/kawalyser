@@ -69,9 +69,16 @@
       "notPlaced": "not placed",
       "dragHint": "Drag it onto a key to place it"
     },
+    "mapKey": {
+      "label": "Key colors",
+      "least": "Least typed",
+      "most": "Most typed"
+    },
     "refused": "Not possible: {char} must stay in the lower-left corner of a key, the only place the analysis reads it.",
     "trash": "Trash",
     "trashHint": "To delete a character, drag it onto the trash, or select its zone and press Delete or Backspace.",
+    "homeHint": "The {outlined} are the home keys, where the fingers rest.",
+    "homeOutlined": "outlined keys",
     "drag": {
       "deleted": "Character deleted.",
       "placed": "Key placed.",
@@ -251,7 +258,7 @@
     "hideTable": "Hide the table",
     "missing": {
       "title": "Not on the map",
-      "summary": "{share} of the corpus characters are nowhere on the map. The statistics leave them out.",
+      "summary": "{share} of the corpus characters are nowhere on the map, and no replacement types them. The statistics leave them out.",
       "none": "Every character of the corpus is on the map.",
       "listLabel": "Most frequent characters missing from the map"
     }
@@ -370,7 +377,7 @@
         },
         {
           "title": "Read the results",
-          "text": "Compare the statistics, then download the details to dig deeper."
+          "text": "Compare the statistics, then download the details to dig deeper. On the map, the outlined keys are the home keys, where the fingers rest, and the colors show how much each key is typed."
         }
       ]
     },
@@ -487,7 +494,7 @@
         },
         "missing": {
           "name": "Not on the map",
-          "text": "The most frequent characters of the corpus that no key types."
+          "text": "The most frequent characters of the corpus that neither a key nor a replacement types."
         }
       }
     },
@@ -531,7 +538,7 @@
       "items": [
         {
           "question": "Why does a character of my text not count?",
-          "answer": "The analysis reads the text in lowercase and leaves Shift out. A character that no key types without Shift, directly or after the dead key, is left out of the statistics. The Not on the map card lists the most frequent ones."
+          "answer": "The analysis reads the text in lowercase and leaves Shift out. A character that no key types without Shift, directly or after the dead key, and that no replacement of the chosen level types, is left out of the statistics. The Not on the map card lists the most frequent ones."
         },
         {
           "question": "Can I test a second dead key or a second Magic key?",

@@ -69,9 +69,16 @@
       "notPlaced": "non placée",
       "dragHint": "Glissez-la sur une touche pour la placer"
     },
+    "mapKey": {
+      "label": "Couleurs des touches",
+      "least": "Moins tapées",
+      "most": "Plus tapées"
+    },
     "refused": "Impossible : {char} doit rester en bas à gauche d'une touche, seul endroit lu par l'analyse.",
     "trash": "Corbeille",
     "trashHint": "Pour supprimer un caractère, glissez-le sur la corbeille, ou sélectionnez sa zone et appuyez sur Suppr ou Retour arrière.",
+    "homeHint": "Les {outlined} sont les touches de repos, où les doigts se posent.",
+    "homeOutlined": "touches cerclées",
     "drag": {
       "deleted": "Caractère supprimé.",
       "placed": "Touche placée.",
@@ -251,7 +258,7 @@
     "hideTable": "Masquer le tableau",
     "missing": {
       "title": "Absents de la carte",
-      "summary": "{share} des caractères du corpus ne sont nulle part sur la carte. Les statistiques les laissent de côté.",
+      "summary": "{share} des caractères du corpus ne sont nulle part sur la carte, et aucun remplacement ne les tape. Les statistiques les laissent de côté.",
       "none": "Tous les caractères du corpus sont sur la carte.",
       "listLabel": "Caractères absents de la carte les plus fréquents"
     }
@@ -370,7 +377,7 @@
         },
         {
           "title": "Lisez les résultats",
-          "text": "Comparez les statistiques, puis téléchargez le détail pour creuser."
+          "text": "Comparez les statistiques, puis téléchargez le détail pour creuser. Sur la carte, les touches cerclées sont les touches de repos, où les doigts se posent, et les couleurs montrent combien chaque touche est tapée."
         }
       ]
     },
@@ -487,7 +494,7 @@
         },
         "missing": {
           "name": "Absents de la carte",
-          "text": "Les caractères les plus fréquents du corpus qu'aucune touche ne tape."
+          "text": "Les caractères les plus fréquents du corpus que ni une touche ni un remplacement ne tape."
         }
       }
     },
@@ -531,7 +538,7 @@
       "items": [
         {
           "question": "Pourquoi un caractère de mon texte ne compte-t-il pas ?",
-          "answer": "L'analyse lit le texte en minuscules et laisse Shift de côté. Un caractère qu'aucune touche ne tape sans Shift, en direct ou après la touche morte, est laissé de côté par les statistiques. La carte Absents de la carte liste les plus fréquents."
+          "answer": "L'analyse lit le texte en minuscules et laisse Shift de côté. Un caractère qu'aucune touche ne tape sans Shift, en direct ou après la touche morte, et qu'aucun remplacement du niveau choisi ne tape, est laissé de côté par les statistiques. La carte Absents de la carte liste les plus fréquents."
         },
         {
           "question": "Puis-je tester une deuxième touche morte ou une deuxième touche Magic ?",

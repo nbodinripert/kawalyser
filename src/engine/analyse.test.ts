@@ -26,6 +26,23 @@ describe("characters missing from the map (question 34 of the specs)", () => {
     // In Propergol, "?" is the Shift character of the "," key.
     expect(run("? ü\n").result.missingChars.entries.map((entry) => entry.gram)).toEqual(["ü"]);
   });
+
+  describe("a character that a replacement types (feedback on characters typed by replacements)", () => {
+    // Without the outer columns, Propergol has no apostrophe key: Repeat types it, as in propergol.json.
+    const withoutApostrophe = { ...layout, shapeId: "split34" as const };
+    const replacements = { essentialCorrections: [{ text: "'", keys: "$" }], optionalCorrections: [] };
+    const missingAt = (level: "raw" | "corrections") =>
+      analyse("l'eau ü\n", { layout: withoutApostrophe, replacements, level }).result.missingChars;
+
+    it("is analysed, so it is not listed", () => {
+      expect(missingAt("corrections").entries.map((entry) => entry.gram)).toEqual(["ü"]);
+      expect(missingAt("corrections").share).toBeCloseTo(1 / 7);
+    });
+
+    it("is listed when the level leaves the replacements out", () => {
+      expect(missingAt("raw").entries.map((entry) => entry.gram)).toEqual(["'", "ü"]);
+    });
+  });
 });
 
 describe("characters outside the Basic Multilingual Plane", () => {

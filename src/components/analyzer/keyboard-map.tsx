@@ -20,6 +20,8 @@ import { shapes, type KeySlot } from "@/domain/geometry";
 import { baseCharsOnMap, visibleZones, type Layout, type Zone } from "@/domain/layout";
 import { actionKeys, DEAD_KEY, MAGIC_KEY, REPEAT_KEY, SPACE } from "@/domain/symbols";
 import type { Dictionary } from "@/i18n/dictionaries";
+import { heatColor, heatGradient } from "../heat";
+import { richText } from "../rich-text";
 import { cx, format } from "../ui";
 
 type Labels = Dictionary["layout"];
@@ -253,15 +255,24 @@ export function KeyboardMap({ layout, keyPresses, labels, onChange }: KeyboardMa
           ))}
         </div>
       </div>
+      <MapKey labels={labels.mapKey} analysed={keyPresses !== null} />
       <Legend layout={layout} labels={labels} draggingKey={drag && !drag.from ? drag.char : null} />
       {/* A key of the legend is only placed, never deleted: the trash ignores it. */}
       <Trash label={labels.trash} active={drag?.overTrash ?? false} dragging={drag?.from != null} disabled={drag !== null && drag.from === null} />
-      <p className={cx("mt-3 min-h-5 text-xs", refused !== undefined ? "font-medium text-danger" : "text-muted")} aria-live="polite">
+      <p className={cx("mt-3 min-h-5 text-xs leading-6", refused !== undefined ? "font-medium text-danger" : "text-muted")} aria-live="polite">
         {refused !== undefined
           ? format(labels.refused, { char: showChar(refused, labels) })
           : selected
             ? labels.selectedHint
-            : `${labels.hint} ${labels.trashHint}`}
+            : (
+              <>
+                {labels.hint} {labels.trashHint}{" "}
+                {/* The words that name the outline wear it, so that the hint doubles as the legend of the home keys. */}
+                {richText(labels.homeHint, {
+                  outlined: <span className="rounded-[4px] px-1 py-px whitespace-nowrap text-foreground ring-1 ring-home-key">{labels.homeOutlined}</span>,
+                })}
+              </>
+            )}
       </p>
       <p className="sr-only" role="status">
         {notice}
@@ -297,11 +308,10 @@ type KeyCapProps = {
 function KeyCap({ slot, layout, heat, labels, selected, changed, isTarget, refused, isSource, dragging, onSelect, onZoneKeyDown }: KeyCapProps) {
   const { setNodeRef } = useDroppable({ id: slot.id });
   const visible = visibleZones(layout.keys[slot.id] ?? {});
-  // The 14% floor tints even the rarest keys, so that every used key reads as used.
-  const background =
-    heat === null || heat === 0 ? undefined : `color-mix(in oklab, var(--heat) ${Math.round(14 + heat * 80)}%, var(--key))`;
+  // Every typed key takes a heat color, even the rarest one, so that it reads as used.
+  const background = heat === null || heat === 0 ? undefined : heatColor(heat);
   // Read by the `heat-text` classes of globals.css, which pick the text colour for the theme.
-  const heatLevel = { "--heat-level": heat ?? 0 } as CSSProperties;
+  const heatLevel = { "--heat-level": heat ?? 0, "--glow": background } as CSSProperties;
 
   return (
     <div
@@ -313,7 +323,9 @@ function KeyCap({ slot, layout, heat, labels, selected, changed, isTarget, refus
         !dragging && "group/key",
         slot.role === "outer" ? "border-dashed border-key-border bg-surface" : "border-key-border bg-key",
         slot.role === "thumb" && "rounded-[7px]",
-        "heat-text",
+        // Home keys stand out, where the fingers rest (Kawamashi's feedback): the ring is drawn outside the key.
+        slot.home && "home-key",
+        "key-glass heat-text",
         isTarget && (refused ? "z-10 ring-2 ring-danger" : "z-10 scale-[1.06] shadow-lg ring-2 ring-accent"),
         isSource && !isTarget && dragging && "outline-2 outline-offset-1 outline-dashed outline-accent/60",
       )}
@@ -405,6 +417,21 @@ function ZoneCell({ refId, char, labels, selected, highlighted, interactive, onS
         </span>
       )}
     </button>
+  );
+}
+
+/**
+ * The scale of the heat colors, once an analysis is shown. The ring of the home keys has no legend here: the visitor
+ * cannot act on it, so the docs explain it instead (Kawamashi's feedback on a crowded map).
+ */
+function MapKey({ labels, analysed }: { labels: Labels["mapKey"]; analysed: boolean }) {
+  if (!analysed) return null;
+  return (
+    <div role="group" aria-label={labels.label} className="mx-auto mt-4 flex w-max max-w-full items-center justify-center gap-2 text-xs text-muted">
+      {labels.least}
+      <span aria-hidden className="h-2 w-24 rounded-full" style={{ background: heatGradient }} />
+      {labels.most}
+    </div>
   );
 }
 

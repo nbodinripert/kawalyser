@@ -81,6 +81,7 @@ Rules:
 
 - Always change both themes, and look at both on the preview.
 - **Readability**: text must stay readable on its background. Check the contrast with the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/): at least 4.5 for normal text, 3 for large headings and borders.
+- The **key colors after an analysis** go from `--heat-1` (least typed keys) to `--heat-4` (most typed keys). In the light theme, the text of every typed key is `--heat-ink`. In the dark theme, it switches to `--heat-ink` past the heat level `--heat-switch`, a number from 0 to 1 written a few lines below the colors. If you change these colors, check the text on the least and the most typed keys in both themes.
 - The **sharing image** (the one shown when someone shares the site's link) reuses a few light theme colors in [`src/lib/og-colors.ts`](src/lib/og-colors.ts). If you change `--background`, `--foreground`, `--muted`, `--accent`, `--accent-soft`, `--key` or `--key-border`, copy the light color into that file too. Otherwise the checks turn red and tell you so.
 
 ## Adding or changing a layout
